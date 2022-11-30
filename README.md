@@ -2,7 +2,7 @@
 
 ---
 
-a simple CPU mwith Chisel
+a simple CPU with Chisel
 
 ---
 
