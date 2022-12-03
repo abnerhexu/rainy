@@ -20,8 +20,17 @@ class MemAccess extends Module {
     val memPass = new MemaOutPort
   })
 
-  // 从CSR寄存器或主存中取数
+  // 从CSR中取数并完成计算
   io.csrRead.csr_read_addr := io.controlSignal.csrAddr
+
+  val csr_wdata = MuxCase(0.U(DOUBLE_WORD_LEN_WIDTH), Seq(
+    (io.controlSignal.CSRType === CSR_W) -> io.aluOut.alu_result,
+    (io.controlSignal.CSRType === CSR_S) -> (io.csrRead.csr_read_data | io.aluOut.alu_result),
+    (io.controlSignal.CSRType === CSR_C) -> (io.csrRead.csr_read_data & (~io.aluOut.alu_result).asUInt),
+    (io.controlSignal.CSRType === CSR_E) -> 11.U(DOUBLE_WORD_LEN_WIDTH)
+  ))
+
+  // 从主存中取数并完成计算
   io.dataReadPort.read_addr_b := io.dataReadPort.read_addr_b
   val load_data = MuxCase(io.dataReadPort.read_data_b, Seq(
     (io.controlSignal.memType === MEM_LB) -> Cat(Fill(56, io.dataReadPort.read_data_b(7)), io.dataReadPort.read_data_b(7,0)),
@@ -36,7 +45,7 @@ class MemAccess extends Module {
   val writeback_data = MuxCase(io.aluOut.alu_result, Seq(
     (io.controlSignal.wbType === WB_MEM) -> load_data,
     (io.controlSignal.wbType === WB_PC) -> io.linkedPC,
-    (io.controlSignal.wbType === WB_CSR) -> io.csrRead.csr_read_data
+    (io.controlSignal.wbType === WB_CSR) -> csr_wdata
   ))
 
   // 写回内存，针对store指令
@@ -44,9 +53,15 @@ class MemAccess extends Module {
   io.dataWritePort.write_data := io.aluOut.regB_data
   when(io.controlSignal.memType(2).asBool){
     io.dataWritePort.write_enable := true.asBool
+  }.otherwise{
+    io.dataWritePort.write_enable := false.asBool
   }
   io.dataWritePort.write_lenth := io.controlSignal.memType
 
   io.memPass.writeback_addr := io.aluOut.writeback_addr
   io.memPass.writeback_data := writeback_data
+  io.memPass.regwrite_enable := io.controlSignal.regType
+  io.memPass.csrwrite_addr := io.controlSignal.csrAddr
+  io.memPass.csrwrite_data := csr_wdata
+  io.memPass.CSRType := io.controlSignal.CSRType
 }
