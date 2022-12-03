@@ -8,6 +8,7 @@ object Defines {
   val START_ADDR                      = 0x10004000.U(DOUBLE_WORD_LEN_WIDTH)
   val BYTE_LEN_WIDTH                  = 8.W
   val REG_ADDR_WIDTH                  = 5.W
+  val CSR_ADDR_LEN_WIDTH               = 12.W
 
   val ALU_EXE_FUN_LEN = 5.W
   val ALU_X = 0.U(ALU_EXE_FUN_LEN)
@@ -38,7 +39,7 @@ object Defines {
   val SRCA_PC    = 3.U(SRCA_LEN)
 
   // op_src_B
-  val SRCB_LEN = 10.W
+  val SRCB_LEN = 3.W
   val SRCB_X = 0.U(SRCB_LEN)
   val SRCB_REG = 1.U(SRCB_LEN)
   val SRCB_IMM_I = 2.U(SRCB_LEN)
@@ -47,10 +48,20 @@ object Defines {
   val SRCB_IMM_U = 5.U(SRCB_LEN)
 
   // mem type
-  val MEM_TYPE_LEN = 2.W
+  val MEM_TYPE_LEN = 4.W
   val MEM_X = 0.U(MEM_TYPE_LEN)
-  val MEM_S = 1.U(MEM_TYPE_LEN)
-  val MEM_V = 2.U(MEM_TYPE_LEN)
+  val MEM_SB = 4.U(MEM_TYPE_LEN)
+  val MEM_SH = 5.U(MEM_TYPE_LEN)
+  val MEM_SW = 6.U(MEM_TYPE_LEN)
+  val MEM_SD = 7.U(MEM_TYPE_LEN)
+  val MEM_V = 1.U(MEM_TYPE_LEN)
+  val MEM_LB = 8.U(MEM_TYPE_LEN)
+  val MEM_LBU = 9.U(MEM_TYPE_LEN)
+  val MEM_LH = 10.U(MEM_TYPE_LEN)
+  val MEM_LHU = 11.U(MEM_TYPE_LEN)
+  val MEM_LW = 12.U(MEM_TYPE_LEN)
+  val MEM_LWU = 13.U(MEM_TYPE_LEN)
+  val MEM_LD = 14.U(MEM_TYPE_LEN)
 
   // reg type
   val REG_TYPE_LEN = 2.W
@@ -58,7 +69,7 @@ object Defines {
   val REG_S = 1.U(REG_TYPE_LEN)
   val REG_V = 2.U(REG_TYPE_LEN)
 
-  // wb type
+  // wb type (where the writeback data come from)
   val WB_TYPE_LEN = 3.W
   val WB_X = 0.U(WB_TYPE_LEN)
   val WB_ALU = 1.U(WB_TYPE_LEN)

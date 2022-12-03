@@ -4,29 +4,55 @@ package core.backend.alu
 import chisel3._
 import chisel3.util.{Cat, Fill}
 import common.Defines._
+
 import chisel3.util.MuxCase
+import core.backend.decode.{ControlOutPort, SrcOutPort}
 
 class Alu extends Module {
   val io = IO(new Bundle() {
-    val alu_in = new AluInPort
+    val cur_pc = Input(UInt(DOUBLE_WORD_LEN_WIDTH))
+    val controlSignal = Flipped(new ControlOutPort)
+    val alu_in = new SrcOutPort
     val alu_out = new AluOutPort
+    val controlPass = new AluConOut
+    val branchFlag = Output(Bool())
+    val linkedPC = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
   })
   val inv_one = Cat(Fill(DOUBLE_WORD_LEN-1, 1.U(1.W)), 0.U(1.U))
   val alu_out = MuxCase(0.U(DOUBLE_WORD_LEN_WIDTH), Seq(
-    (io.alu_in.alu_op === ALU_ADD) -> (io.alu_in.aluSrc_a+io.alu_in.aluSrc_b),
-    (io.alu_in.alu_op === ALU_SUB) -> (io.alu_in.aluSrc_a-io.alu_in.aluSrc_b),
-    (io.alu_in.alu_op === ALU_AND) -> (io.alu_in.aluSrc_a & io.alu_in.aluSrc_b),
-    (io.alu_in.alu_op === ALU_OR)  -> (io.alu_in.aluSrc_a | io.alu_in.aluSrc_b),
-    (io.alu_in.alu_op === ALU_XOR) -> (io.alu_in.aluSrc_a ^ io.alu_in.aluSrc_b),
-    (io.alu_in.alu_op === ALU_SLL) -> (io.alu_in.aluSrc_a << io.alu_in.aluSrc_b(4, 0)).asUInt,
-    (io.alu_in.alu_op === ALU_SRL) -> (io.alu_in.aluSrc_a >> io.alu_in.aluSrc_b(4, 0)).asUInt,
-    (io.alu_in.alu_op === ALU_SRA) -> (io.alu_in.aluSrc_a.asSInt >> io.alu_in.aluSrc_b(4, 0)).asUInt,
-    (io.alu_in.alu_op === ALU_SLT) -> (io.alu_in.aluSrc_a.asSInt < io.alu_in.aluSrc_b.asSInt).asUInt,
-    (io.alu_in.alu_op === ALU_SLTU) -> (io.alu_in.aluSrc_a.asUInt < io.alu_in.aluSrc_b.asUInt).asUInt,
-    (io.alu_in.alu_op === ALU_JALR) -> ((io.alu_in.aluSrc_a+io.alu_in.aluSrc_b) & inv_one),
-    (io.alu_in.alu_op === ALU_NOP_CSR) -> (io.alu_in.aluSrc_a)
+    (io.controlSignal.alu_exe_fun === ALU_ADD) -> (io.alu_in.aluSrc_a+io.alu_in.aluSrc_b),
+    (io.controlSignal.alu_exe_fun === ALU_SUB) -> (io.alu_in.aluSrc_a-io.alu_in.aluSrc_b),
+    (io.controlSignal.alu_exe_fun === ALU_AND) -> (io.alu_in.aluSrc_a & io.alu_in.aluSrc_b),
+    (io.controlSignal.alu_exe_fun === ALU_OR)  -> (io.alu_in.aluSrc_a | io.alu_in.aluSrc_b),
+    (io.controlSignal.alu_exe_fun === ALU_XOR) -> (io.alu_in.aluSrc_a ^ io.alu_in.aluSrc_b),
+    (io.controlSignal.alu_exe_fun === ALU_SLL) -> (io.alu_in.aluSrc_a << io.alu_in.aluSrc_b(4, 0)).asUInt,
+    (io.controlSignal.alu_exe_fun === ALU_SRL) -> (io.alu_in.aluSrc_a >> io.alu_in.aluSrc_b(4, 0)).asUInt,
+    (io.controlSignal.alu_exe_fun === ALU_SRA) -> (io.alu_in.aluSrc_a.asSInt >> io.alu_in.aluSrc_b(4, 0)).asUInt,
+    (io.controlSignal.alu_exe_fun === ALU_SLT) -> (io.alu_in.aluSrc_a.asSInt < io.alu_in.aluSrc_b.asSInt).asUInt,
+    (io.controlSignal.alu_exe_fun === ALU_SLTU) -> (io.alu_in.aluSrc_a.asUInt < io.alu_in.aluSrc_b.asUInt).asUInt,
+    (io.controlSignal.alu_exe_fun === ALU_JALR) -> ((io.alu_in.aluSrc_a+io.alu_in.aluSrc_b) & inv_one),
+    (io.controlSignal.alu_exe_fun === ALU_NOP_CSR) -> (io.alu_in.aluSrc_a)
   ))
+  /*
   val is_zero = (alu_out & Cat(Fill(DOUBLE_WORD_LEN, 1.U(1.W)))).asBool
   io.alu_out.alu_result := alu_out
   io.alu_out.is_zero := is_zero
+   */
+
+  val branch_flag = MuxCase(false.asBool, Seq(
+    (io.controlSignal.alu_exe_fun === BR_BEQ) -> (io.alu_in.aluSrc_a === io.alu_in.aluSrc_b).asBool,
+    (io.controlSignal.alu_exe_fun === BR_BNE) -> (io.alu_in.aluSrc_a =/= io.alu_in.aluSrc_b).asBool,
+    (io.controlSignal.alu_exe_fun === BR_BLTU) -> (io.alu_in.aluSrc_a < io.alu_in.aluSrc_b).asBool,
+    (io.controlSignal.alu_exe_fun === BR_BLT) -> (io.alu_in.aluSrc_a.asSInt < io.alu_in.aluSrc_b.asSInt).asBool,
+    (io.controlSignal.alu_exe_fun === BR_BGEU) -> (io.alu_in.aluSrc_a >= io.alu_in.aluSrc_b).asBool,
+    (io.controlSignal.alu_exe_fun === BR_BGE) -> (io.alu_in.aluSrc_a.asSInt >= io.alu_in.aluSrc_b.asSInt).asBool
+  ))
+
+  io.branchFlag := branch_flag
+  io.controlPass <> io.controlSignal
+  io.linkedPC := io.cur_pc + 4.U(DOUBLE_WORD_LEN_WIDTH)
+
+  io.alu_out.alu_result := alu_out
+  io.alu_out.writeback_addr := io.alu_in.writeback_addr
+  io.alu_out.regB_data := io.alu_in.regB_data
 }
