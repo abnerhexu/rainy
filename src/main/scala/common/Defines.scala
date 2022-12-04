@@ -1,6 +1,7 @@
 package rainy.shaheway.org
 package common
 import chisel3._
+import chisel3.util.BitPat
 object Defines {
   val WORD_LEN_WIDTH                  = 32.W
   val DOUBLE_WORD_LEN                 = 64
@@ -9,6 +10,7 @@ object Defines {
   val BYTE_LEN_WIDTH                  = 8.W
   val REG_ADDR_WIDTH                  = 5.W
   val CSR_ADDR_LEN_WIDTH               = 12.W
+  val BUBBLE = 0x13000000.U(WORD_LEN_WIDTH) // ADDI x0, x0, 0
 
   val ALU_EXE_FUN_LEN = 5.W
   val ALU_X = 0.U(ALU_EXE_FUN_LEN)
@@ -88,4 +90,10 @@ object Defines {
   val CSR_C = 3.U(CSR_TYPE_LEN)
   val CSR_E = 4.U(CSR_TYPE_LEN)
   val CSR_V = 5.U(CSR_TYPE_LEN)
+
+  //AluBMux
+  val ALUSRC_MUX_LEN = 2.W
+  val ALUSRC_FROM_ID = 0.W
+  val ALUSRC_FROM_EX = 1.W
+  val ALUSRC_FROM_MEA = 2.W
 }
