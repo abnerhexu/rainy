@@ -8,6 +8,8 @@ import common.Defines._
 import chisel3.util.MuxCase
 import core.backend.decode.{ControlOutPort, SrcOutPort}
 
+import core.backend.datahazard.WithExecute
+
 class Alu extends Module {
   val io = IO(new Bundle() {
     val cur_pc = Input(UInt(DOUBLE_WORD_LEN_WIDTH))
@@ -17,6 +19,7 @@ class Alu extends Module {
     val controlPass = new AluConOut
     val branchFlag = Output(Bool())
     val linkedPC = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
+    val dataHazard = Flipped(new WithExecute)
   })
   val inv_one = Cat(Fill(DOUBLE_WORD_LEN-1, 1.U(1.W)), 0.U(1.U))
   val alu_out = MuxCase(0.U(DOUBLE_WORD_LEN_WIDTH), Seq(
@@ -55,4 +58,9 @@ class Alu extends Module {
   io.alu_out.alu_result := alu_out
   io.alu_out.writeback_addr := io.alu_in.writeback_addr
   io.alu_out.regB_data := io.alu_in.regB_data
+
+  // data hazard
+  io.dataHazard.wbDataFromExe := alu_out
+  io.dataHazard.wbAddrFromExecute := io.alu_in.writeback_addr
+  io.dataHazard.regTypeFromExecute := io.controlSignal.regType
 }

@@ -8,6 +8,7 @@ import mem.{DataReadPort, MemWritePort}
 
 import chisel3._
 import chisel3.util.{Cat, Fill, MuxCase}
+import core.backend.datahazard.WithMema
 
 class MemAccess extends Module {
   val io = IO(new Bundle() {
@@ -18,6 +19,7 @@ class MemAccess extends Module {
     val linkedPC = Input(UInt(DOUBLE_WORD_LEN_WIDTH))
     val csrRead = Flipped(new CSRReadPort)
     val memPass = new MemaOutPort
+    val dataHazard = Flipped(new WithMema)
   })
 
   // 从CSR中取数并完成计算
@@ -64,4 +66,9 @@ class MemAccess extends Module {
   io.memPass.csrwrite_addr := io.controlSignal.csrAddr
   io.memPass.csrwrite_data := csr_wdata
   io.memPass.CSRType := io.controlSignal.CSRType
+
+  // data hazard
+  io.dataHazard.wbDataFromMema := writeback_data
+  io.dataHazard.wbAddrFromMema := io.aluOut.writeback_addr
+  io.dataHazard.regTypeFromMema := io.controlSignal.regType
 }

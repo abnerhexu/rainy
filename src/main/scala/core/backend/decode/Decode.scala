@@ -5,27 +5,26 @@ import chisel3._
 import chisel3.util._
 import common.Defines._
 import common.Instructions._
-import core.backend.regfile.RegReadPort
+
+import core.backend.datahazard.WithDecode
 class Decode extends Module {
   val io = IO(new Bundle() {
     val inst = Input(UInt(WORD_LEN_WIDTH))
     val cur_pc = Input(UInt(DOUBLE_WORD_LEN_WIDTH))
-    val regin = Flipped(new RegReadPort)
     val decodeOut = new ControlOutPort
     val srcOut = new SrcOutPort
     val branchTarget = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
     val jumpFlag = Output(Bool())
+    val dataHazard = Flipped(new WithDecode)
   })
 
   // 取出register中的内容
   val rsA_addr = io.inst(19, 15)
   val rsB_addr = io.inst(24, 20)
-  io.regin.read_addr_a := rsA_addr
-  io.regin.read_addr_b := rsB_addr
-  val regA_in_data = io.regin.read_data_a
-  val regB_in_data = io.regin.read_data_b
-  val regA_data = Mux(rsA_addr =/= 0.U(WORD_LEN_WIDTH), regA_in_data, 0.U(WORD_LEN_WIDTH))
-  val regB_data = Mux(rsB_addr =/= 0.U(WORD_LEN_WIDTH), regB_in_data, 0.U(WORD_LEN_WIDTH))
+  io.dataHazard.srcAddrA := rsA_addr
+  io.dataHazard.srcAddrB := rsB_addr
+  val regA_data = io.dataHazard.hazardAData
+  val regB_data = io.dataHazard.hazardBData
 
   // 写回地址
   val write_back_reg_addr = io.inst(11, 7)
