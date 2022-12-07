@@ -5,44 +5,49 @@ import chisel3._
 import chisel3.util._
 import common.Defines._
 import common.Instructions._
-
-import core.backend.datahazard.WithDecode
+import core.backend.datahazard.{ForwardWithDecode, StallWithDecode}
 class Decode extends Module {
   val io = IO(new Bundle() {
+    val branchFlag = Input(Bool())
+    val jumpFlag = Input(Bool())
+    val stallFlag = Input(Bool())
     val inst = Input(UInt(WORD_LEN_WIDTH))
     val cur_pc = Input(UInt(DOUBLE_WORD_LEN_WIDTH))
+    val branchTarget = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
+    val pcOut = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
     val decodeOut = new ControlOutPort
     val srcOut = new SrcOutPort
-    val branchTarget = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
-    val jumpFlag = Output(Bool())
-    val dataHazard = Flipped(new WithDecode)
+    val forward = Flipped(new ForwardWithDecode)
+    val stall = Flipped(new StallWithDecode)
   })
 
+  // 判断是否有需要暂停流水线的数据依赖
+  val de_inst = Mux(io.stallFlag || io.branchFlag || io.jumpFlag, BUBBLE, io.inst)
   // 取出register中的内容
-  val rsA_addr = io.inst(19, 15)
-  val rsB_addr = io.inst(24, 20)
-  io.dataHazard.srcAddrA := rsA_addr
-  io.dataHazard.srcAddrB := rsB_addr
-  val regA_data = io.dataHazard.hazardAData
-  val regB_data = io.dataHazard.hazardBData
+  val rsA_addr = de_inst(19, 15)
+  val rsB_addr = de_inst(24, 20)
+  io.forward.srcAddrA := rsA_addr
+  io.forward.srcAddrB := rsB_addr
+  val regA_data = io.forward.hazardAData
+  val regB_data = io.forward.hazardBData
 
   // 写回地址
-  val write_back_reg_addr = io.inst(11, 7)
+  val write_back_reg_addr = de_inst(11, 7)
 
   // 立即数
-  val imm_i = io.inst(31, 20)
+  val imm_i = de_inst(31, 20)
   val imm_i_sext = Cat(Fill(52, imm_i(11)), imm_i)
-  val imm_s = Cat(io.inst(31, 25), io.inst(11, 7))
+  val imm_s = Cat(de_inst(31, 25), de_inst(11, 7))
   val imm_s_sext = Cat(Fill(52, imm_s(11)), imm_s)
-  val imm_b = Cat(io.inst(31), io.inst(7), io.inst(30, 25), io.inst(11, 8))
+  val imm_b = Cat(de_inst(31), de_inst(7), de_inst(30, 25), de_inst(11, 8))
   val imm_b_sext = Cat(Fill(51, imm_b(11)), imm_b, 0.U(1.U))
-  val imm_j = Cat(io.inst(31), io.inst(19, 12), io.inst(20), io.inst(30, 21))
+  val imm_j = Cat(de_inst(31), de_inst(19, 12), de_inst(20), de_inst(30, 21))
   val imm_j_sext = Cat(Fill(43, imm_j(19)), imm_j, 0.U(1.U))
-  val imm_u = io.inst(31, 12)
+  val imm_u = de_inst(31, 12)
   val imm_u_shifted = Cat(imm_u, Fill(12, 0.U))
-  val imm_z = io.inst(19, 15)
+  val imm_z = de_inst(19, 15)
   val imm_z_uext = Cat(Fill(59, 0.U), imm_z)
-  val controlSignals = ListLookup(io.inst, List(ALU_X, SRCA_X, SRCB_X, MEM_X, REG_X, WB_X, CSR_X), Array(
+  val controlSignals = ListLookup(de_inst, List(ALU_X, SRCA_X, SRCB_X, MEM_X, REG_X, WB_X, CSR_X), Array(
     R_ADD      -> List(ALU_ADD, SRCA_REG, SRCB_REG, MEM_X, REG_S, WB_ALU, CSR_X),
     R_ADDW     -> List(ALU_ADD, SRCA_REG, SRCB_REG, MEM_X, REG_S, WB_ALU, CSR_X),
     R_SUB      -> List(ALU_SUB, SRCA_REG, SRCB_REG, MEM_X, REG_S, WB_ALU, CSR_X),
@@ -113,9 +118,9 @@ class Decode extends Module {
     (srcBtype === SRCB_IMM_S) -> imm_s_sext
   ))
 
-  val csr_addr = Mux(csrType === CSR_E, 0x342.U(CSR_TYPE_LEN), io.inst(31, 20))
+  val csr_addr = Mux(csrType === CSR_E, 0x342.U(CSR_TYPE_LEN), de_inst(31, 20))
   val branch_target = io.cur_pc + imm_b_sext
-  val jump_flag = (wbType === WB_PC).asBool
+
 
 
   io.srcOut.aluSrc_a := srcAdata
@@ -132,5 +137,4 @@ class Decode extends Module {
 
   io.branchTarget := branch_target
 
-  io.jumpFlag := jump_flag
 }

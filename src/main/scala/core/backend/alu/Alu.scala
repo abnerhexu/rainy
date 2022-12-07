@@ -8,18 +8,20 @@ import common.Defines._
 import chisel3.util.MuxCase
 import core.backend.decode.{ControlOutPort, SrcOutPort}
 
-import core.backend.datahazard.WithExecute
+import core.backend.datahazard.ForwardWithExecute
 
 class Alu extends Module {
   val io = IO(new Bundle() {
     val cur_pc = Input(UInt(DOUBLE_WORD_LEN_WIDTH))
-    val controlSignal = Flipped(new ControlOutPort)
+    val jumpFlag = Output(Bool())
+    val branchFlag = Output(Bool())
+    val linkedPC = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
     val alu_in = new SrcOutPort
     val alu_out = new AluOutPort
     val controlPass = new AluConOut
-    val branchFlag = Output(Bool())
-    val linkedPC = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
-    val dataHazard = Flipped(new WithExecute)
+    val controlSignal = Flipped(new ControlOutPort)
+    val dataHazard = Flipped(new ForwardWithExecute)
+
   })
   val inv_one = Cat(Fill(DOUBLE_WORD_LEN-1, 1.U(1.W)), 0.U(1.U))
   val alu_out = MuxCase(0.U(DOUBLE_WORD_LEN_WIDTH), Seq(
@@ -52,12 +54,19 @@ class Alu extends Module {
   ))
 
   io.branchFlag := branch_flag
-  io.controlPass <> io.controlSignal
+  io.controlPass.regType := io.controlSignal.regType
+  io.controlPass.wbType := io.controlSignal.wbType
+  io.controlPass.CSRType := io.controlSignal.CSRType
+  io.controlPass.csrAddr := io.controlSignal.csrAddr
+  io.controlPass.memType := io.controlSignal.memType
+
   io.linkedPC := io.cur_pc + 4.U(DOUBLE_WORD_LEN_WIDTH)
 
   io.alu_out.alu_result := alu_out
   io.alu_out.writeback_addr := io.alu_in.writeback_addr
   io.alu_out.regB_data := io.alu_in.regB_data
+  val jump_flag = (io.controlSignal.wbType === WB_PC).asBool
+  io.jumpFlag := jump_flag
 
   // data hazard
   io.dataHazard.wbDataFromExe := alu_out

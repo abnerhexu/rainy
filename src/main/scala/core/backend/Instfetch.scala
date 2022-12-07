@@ -11,11 +11,13 @@ import core.backend.regfile.CSRReadPort
 class Instfetch extends Module {
   val io = IO(new Bundle() {
     val branchFlag = Input(Bool())
-    val branchTarget = Input(UInt(DOUBLE_WORD_LEN_WIDTH))
     val jumpFlag = Input(Bool())
+    val stallFlag = Input(Bool())
+    val branchTarget = Input(UInt(DOUBLE_WORD_LEN_WIDTH))
     val jumpTarget = Input(UInt(DOUBLE_WORD_LEN_WIDTH))
-    val fetchMem = Flipped(new InstReadPort)
     val instOut = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
+    val pcOut = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
+    val fetchMem = Flipped(new InstReadPort)
     val envRead = Flipped(new CSRReadPort)
   })
   val progcnter = RegInit(START_ADDR)
@@ -23,11 +25,14 @@ class Instfetch extends Module {
   io.envRead.csr_read_addr := ecallAddr
   val pcIncrement = progcnter + 4.U(DOUBLE_WORD_LEN_WIDTH)
   val pcNext = MuxCase(pcIncrement, Seq(
+    // 顺序很重要，排序越靠前优先级越高
     io.branchFlag -> io.branchTarget,
     io.jumpFlag -> io.jumpTarget,
-    (io.fetchMem.read_inst_a === ECALL) -> io.envRead.csr_read_data
+    (io.fetchMem.read_inst_a === ECALL) -> io.envRead.csr_read_data,
+    io.stallFlag -> progcnter
   ))
   progcnter := pcNext
   io.fetchMem.read_addr_a := progcnter
   io.instOut := io.fetchMem.read_inst_a
+  io.pcOut := progcnter
 }

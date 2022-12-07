@@ -7,12 +7,12 @@ import core.backend.alu.{AluConOut, AluOutPort}
 
 class ExecuteToMema extends Module {
   val io = IO(new Bundle() {
-    val aluOut = new AluOutPort
-    val controlSignal = new AluConOut
     val linkedPC = Input(UInt(DOUBLE_WORD_LEN_WIDTH))
-    val aluOutPass = Flipped(new AluOutPort)
-    val controlSignalPass = Flipped(new AluConOut)
     val linkedPCPass = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
+    val aluOut = Flipped(new AluOutPort)
+    val controlSignal = Flipped(new AluConOut)
+    val aluOutPass = new AluOutPort
+    val controlSignalPass = new AluConOut
   })
 
   val alu_result = RegNext(0.U(DOUBLE_WORD_LEN_WIDTH), io.aluOut.alu_result)

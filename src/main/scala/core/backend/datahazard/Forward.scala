@@ -5,11 +5,11 @@ import common.Defines._
 
 import chisel3.util.MuxCase
 import core.backend.regfile.RegReadPort
-class DatahazardPathA extends Module {
+class Forward extends Module {
   val io = IO(new Bundle() {
-    val withDecode = new WithDecode
-    val withExecute = new WithExecute
-    val withMema = new WithMema
+    val withDecode = new ForwardWithDecode
+    val withExecute = new ForwardWithExecute
+    val withMema = new ForwardWithMema
     val regReadPort = Flipped(new RegReadPort)
   })
 

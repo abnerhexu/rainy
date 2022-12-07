@@ -3,7 +3,7 @@ package core.backend.datahazard
 import chisel3._
 import common.Defines.{DOUBLE_WORD_LEN_WIDTH, REG_ADDR_WIDTH}
 
-class WithDecode extends Bundle {
+class ForwardWithDecode extends Bundle {
   val srcAddrA = Input(UInt(REG_ADDR_WIDTH))
   val srcAddrB = Input(UInt(REG_ADDR_WIDTH))
   val hazardAData = Output(UInt(DOUBLE_WORD_LEN_WIDTH))

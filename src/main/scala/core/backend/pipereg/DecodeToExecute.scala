@@ -6,12 +6,14 @@ import common.Defines._
 
 class DecodeToExecute extends Module {
   val io = IO(new Bundle() {
+    // branch
+    val jumpOrBranchFlag = Input(Bool())
+    val cur_pc = Input(UInt(DOUBLE_WORD_LEN_WIDTH))
+    val pcOut = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
     val controlSignal = Flipped(new ControlOutPort)
     val opSrc = Flipped(new SrcOutPort)
     val controlSignalPass = new ControlOutPort
     val srcPass = new SrcOutPort
-    // branch
-    val jumpOrBranchFlag = Input(Bool())
   })
 
   // I_ADDI     -> List(ALU_ADD, SRCA_REG, SRCB_IMM_I, MEM_X, REG_S, WB_ALU, CSR_X),
@@ -46,4 +48,7 @@ class DecodeToExecute extends Module {
   io.srcPass.aluSrc_b := srcB
   io.srcPass.regB_data := regBData
   io.srcPass.writeback_addr := writebackAddr
+
+  val progcnter = RegNext(0.U(DOUBLE_WORD_LEN_WIDTH), io.cur_pc)
+  io.pcOut := progcnter
 }
