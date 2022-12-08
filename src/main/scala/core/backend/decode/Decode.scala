@@ -13,7 +13,6 @@ class Decode extends Module {
     val stallFlag = Input(Bool())
     val inst = Input(UInt(WORD_LEN_WIDTH))
     val cur_pc = Input(UInt(DOUBLE_WORD_LEN_WIDTH))
-    val branchTarget = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
     val pcOut = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
     val decodeOut = new ControlOutPort
     val srcOut = new SrcOutPort
@@ -119,9 +118,7 @@ class Decode extends Module {
   ))
 
   val csr_addr = Mux(csrType === CSR_E, 0x342.U(CSR_TYPE_LEN), de_inst(31, 20))
-  val branch_target = io.cur_pc + imm_b_sext
-
-
+  io.srcOut.imm_b := imm_b_sext
 
   io.srcOut.aluSrc_a := srcAdata
   io.srcOut.aluSrc_b := srcBdata
@@ -135,6 +132,5 @@ class Decode extends Module {
   io.decodeOut.wbType := wbType
   io.decodeOut.CSRType := csrType
 
-  io.branchTarget := branch_target
 
 }

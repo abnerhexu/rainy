@@ -16,12 +16,12 @@ class Alu extends Module {
     val jumpFlag = Output(Bool())
     val branchFlag = Output(Bool())
     val linkedPC = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
+    val branchTarget = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
     val alu_in = new SrcOutPort
     val alu_out = new AluOutPort
     val controlPass = new AluConOut
     val controlSignal = Flipped(new ControlOutPort)
     val dataHazard = Flipped(new ForwardWithExecute)
-
   })
   val inv_one = Cat(Fill(DOUBLE_WORD_LEN-1, 1.U(1.W)), 0.U(1.U))
   val alu_out = MuxCase(0.U(DOUBLE_WORD_LEN_WIDTH), Seq(
@@ -67,6 +67,8 @@ class Alu extends Module {
   io.alu_out.regB_data := io.alu_in.regB_data
   val jump_flag = (io.controlSignal.wbType === WB_PC).asBool
   io.jumpFlag := jump_flag
+
+  val branchTarget = io.alu_in.imm_b + io.cur_pc
 
   // data hazard
   io.dataHazard.wbDataFromExe := alu_out
