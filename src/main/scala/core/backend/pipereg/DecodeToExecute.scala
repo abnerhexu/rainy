@@ -43,11 +43,13 @@ class DecodeToExecute extends Module {
   val regBData = RegNext(0.U(DOUBLE_WORD_LEN_WIDTH), io.opSrc.regB_data) // 不用做处理
   val writebackAddrMux = Mux(io.jumpOrBranchFlag, 0.U(REG_ADDR_WIDTH), io.opSrc.writeback_addr)
   val writebackAddr = RegNext(0.U(REG_ADDR_WIDTH), writebackAddrMux)
+  val imm_b = RegNext(0.U(DOUBLE_WORD_LEN_WIDTH), io.opSrc.imm_b)
 
   io.srcPass.aluSrc_a := srcA
   io.srcPass.aluSrc_b := srcB
   io.srcPass.regB_data := regBData
   io.srcPass.writeback_addr := writebackAddr
+  io.srcPass.imm_b := imm_b
 
   val progcnter = RegNext(0.U(DOUBLE_WORD_LEN_WIDTH), io.cur_pc)
   io.pcOut := progcnter

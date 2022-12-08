@@ -7,8 +7,8 @@ import rainy.shaheway.org.common.Defines.{CSR_ADDR_LEN_WIDTH, CSR_TYPE_LEN, DOUB
 
 class MemaToWB extends Module {
   val io = IO(new Bundle() {
-    val wbinfo = new MemaOutPort
-    val wbinfoPass = Flipped(new MemaOutPort)
+    val wbinfo = Flipped(new MemaOutPort)
+    val wbinfoPass = new MemaOutPort
   })
 
   val writeback_addr = RegNext(0.U(REG_ADDR_WIDTH), io.wbinfo.writeback_addr)

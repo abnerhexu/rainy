@@ -25,8 +25,12 @@ class Decode extends Module {
   // 取出register中的内容
   val rsA_addr = de_inst(19, 15)
   val rsB_addr = de_inst(24, 20)
+  // forward
   io.forward.srcAddrA := rsA_addr
   io.forward.srcAddrB := rsB_addr
+  // stall
+  io.stall.srcAddrA := rsA_addr
+  io.stall.srcAddrB := rsB_addr
   val regA_data = io.forward.hazardAData
   val regB_data = io.forward.hazardBData
 
@@ -117,7 +121,7 @@ class Decode extends Module {
     (srcBtype === SRCB_IMM_S) -> imm_s_sext
   ))
 
-  val csr_addr = Mux(csrType === CSR_E, 0x342.U(CSR_TYPE_LEN), de_inst(31, 20))
+  val csr_addr = Mux(csrType === CSR_E, 0x342.U(CSR_ADDR_LEN_WIDTH), de_inst(31, 20))
   io.srcOut.imm_b := imm_b_sext
 
   io.srcOut.aluSrc_a := srcAdata
@@ -132,5 +136,5 @@ class Decode extends Module {
   io.decodeOut.wbType := wbType
   io.decodeOut.CSRType := csrType
 
-
+  io.pcOut := io.cur_pc
 }

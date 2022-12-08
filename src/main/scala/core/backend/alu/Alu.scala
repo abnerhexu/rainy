@@ -17,7 +17,7 @@ class Alu extends Module {
     val branchFlag = Output(Bool())
     val linkedPC = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
     val branchTarget = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
-    val alu_in = new SrcOutPort
+    val alu_in = Flipped(new SrcOutPort)
     val alu_out = new AluOutPort
     val controlPass = new AluConOut
     val controlSignal = Flipped(new ControlOutPort)
@@ -74,4 +74,5 @@ class Alu extends Module {
   io.dataHazard.wbDataFromExe := alu_out
   io.dataHazard.wbAddrFromExecute := io.alu_in.writeback_addr
   io.dataHazard.regTypeFromExecute := io.controlSignal.regType
+  io.branchTarget := branchTarget
 }

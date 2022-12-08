@@ -34,7 +34,8 @@ class MemAccess extends Module {
   ))
 
   // 从主存中取数并完成计算
-  io.dataReadPort.read_addr_b := io.dataReadPort.read_addr_b
+  io.dataReadPort.read_addr_b := io.aluOut.alu_result
+  // io.dataReadPort.read_data_b := io.dataReadPort.read_addr_b
   val load_data = MuxCase(io.dataReadPort.read_data_b, Seq(
     (io.controlSignal.memType === MEM_LB) -> Cat(Fill(56, io.dataReadPort.read_data_b(7)), io.dataReadPort.read_data_b(7,0)),
     (io.controlSignal.memType === MEM_LBU) -> Cat(Fill(56, 0.U(1.W)), io.dataReadPort.read_data_b(7,0)),

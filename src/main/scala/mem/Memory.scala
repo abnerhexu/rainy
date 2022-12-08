@@ -11,7 +11,7 @@ class Memory extends Module {
   })
 
   val memory = SyncReadMem(4096, UInt(BYTE_LEN_WIDTH)) // 32KB Memory
-  io.instReadPort.read_data_a := memory.read(io.instReadPort.read_addr_a)
+  io.instReadPort.read_inst_a := memory.read(io.instReadPort.read_addr_a)
   io.dataReadPort.read_data_b := memory.read(io.dataReadPort.read_addr_b)
   when(io.writePort.write_enable) {
     memory.write(idx = io.writePort.write_addr, data = io.writePort.write_data)
