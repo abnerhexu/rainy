@@ -12,6 +12,7 @@ class Stall extends Module {
   val rsADatahazard = (io.withMema.regTypeFromMema === REG_S) && (io.withDecode.srcAddrA =/= 0.U) && (io.withDecode.srcAddrA === io.withMema.wbAddrFromMema)
   val rsBDatahazard = (io.withMema.regTypeFromMema === REG_S) && (io.withDecode.srcAddrB =/= 0.U) && (io.withDecode.srcAddrB === io.withMema.wbAddrFromMema)
   val stallFlag = rsADatahazard || rsBDatahazard
+  val stallFlagReg = RegNext(false.asBool, stallFlag)
 
-  io.stallFlag := stallFlag
+  io.stallFlag := stallFlagReg
 }

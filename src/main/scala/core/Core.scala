@@ -17,6 +17,7 @@ class Core extends Module {
     val instfetch_fetchMem = Flipped(new InstReadPort)
     val memoryAccess_dataReadPort = Flipped(new DataReadPort)
     val memoryAccess_dataWritePort = Flipped(new MemWritePort)
+    val probe = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
   })
   // inside core
   val instfetch = Module(new Instfetch)
@@ -120,4 +121,6 @@ class Core extends Module {
   // 数据冒险连线
   datahazard_forward.io.regReadPort <> regs.io.reg_read
 
+  // probe
+  io.probe := writeback.io.wbinfo.writeback_data
 }
