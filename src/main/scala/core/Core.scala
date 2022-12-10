@@ -17,7 +17,7 @@ class Core extends Module {
     val instfetch_fetchMem = Flipped(new InstReadPort)
     val memoryAccess_dataReadPort = Flipped(new DataReadPort)
     val memoryAccess_dataWritePort = Flipped(new MemWritePort)
-    val probe = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
+    val probe = new Probe
   })
   // inside core
   val instfetch = Module(new Instfetch)
@@ -65,11 +65,12 @@ class Core extends Module {
    */
 
   // 流水线连线
+  val jumpOrBranchFlag = (execute_to_mema.io.jumpFlag || execute_to_mema.io.branchFlag)
   // instfetch
-  instfetch.io.branchFlag := execute.io.branchFlag
-  instfetch.io.jumpFlag := execute.io.jumpFlag
+  instfetch.io.branchFlag := execute_to_mema.io.branchFlag
+  instfetch.io.jumpFlag := execute_to_mema.io.jumpFlag
   instfetch.io.stallFlag := datahazard_stall.io.stallFlag
-  instfetch.io.branchTarget := execute.io.branchTarget
+  instfetch.io.branchTarget := execute_to_mema.io.branchTarget
   instfetch.io.jumpTarget := execute.io.alu_out.alu_result
   instfetch.io.fetchMem <> io.instfetch_fetchMem
   instfetch.io.envRead <> csrs.io.envRead
@@ -77,26 +78,28 @@ class Core extends Module {
   instfetch_to_decode.io.stallFlag := datahazard_stall.io.stallFlag
   instfetch_to_decode.io.pcIn := instfetch.io.pcOut
   instfetch_to_decode.io.instIn := instfetch.io.instOut
-  instfetch_to_decode.io.jumpOrBranchFlag := (execute.io.jumpFlag || execute.io.branchFlag)
+  instfetch_to_decode.io.jumpOrBranchFlag := jumpOrBranchFlag
+  instfetch_to_decode.io.stall <> datahazard_stall.io.withDecode
   // decode
-  decode.io.branchFlag := execute.io.branchFlag
-  decode.io.jumpFlag := execute.io.jumpFlag
+  decode.io.branchFlag := execute_to_mema.io.branchFlag
+  decode.io.jumpFlag := execute_to_mema.io.jumpFlag
   decode.io.stallFlag := datahazard_stall.io.stallFlag
   decode.io.inst := instfetch_to_decode.io.instOut
   decode.io.cur_pc := instfetch_to_decode.io.pcOut
   decode.io.forward <> datahazard_forward.io.withDecode
-  decode.io.stall <> datahazard_stall.io.withDecode
+  decode.io.readReg <> regs.io.reg_read
   // decode_to_execute
   decode_to_execute.io.controlSignal <> decode.io.decodeOut
-  decode_to_execute.io.jumpOrBranchFlag := (execute.io.jumpFlag || execute.io.branchFlag)
+  decode_to_execute.io.jumpOrBranchFlag := jumpOrBranchFlag
   decode_to_execute.io.cur_pc := decode.io.pcOut
-  decode_to_execute.io.controlSignal <> decode.io.decodeOut
   decode_to_execute.io.opSrc <> decode.io.srcOut
+  // decode_to_execute.io.stallFlag := datahazard_stall.io.stallFlag
   // execute
   execute.io.cur_pc := decode_to_execute.io.pcOut
   execute.io.alu_in <> decode_to_execute.io.srcPass
   execute.io.controlSignal <> decode_to_execute.io.controlSignalPass
   execute.io.dataHazard <> datahazard_forward.io.withExecute
+  execute.io.stall <> datahazard_stall.io.withExe
   // execute_to_mema
   execute_to_mema.io.linkedPC := execute.io.linkedPC
   execute_to_mema.io.aluOut <> execute.io.alu_out
@@ -109,7 +112,6 @@ class Core extends Module {
   memoryAccess.io.dataWritePort <> io.memoryAccess_dataWritePort
   memoryAccess.io.csrRead <> csrs.io.csrRead
   memoryAccess.io.forward <> datahazard_forward.io.withMema
-  memoryAccess.io.stall <> datahazard_stall.io.withMema
   // memoryAccess_to_writeback
   mema_to_wb.io.wbinfo <> memoryAccess.io.memPass
   // writeback
@@ -118,9 +120,17 @@ class Core extends Module {
   csrs.io.csrWrite <> writeback.io.csrWrite
 
   // 控制冒险连线(这里没有)
-  // 数据冒险连线
-  datahazard_forward.io.regReadPort <> regs.io.reg_read
+
 
   // probe
-  io.probe := writeback.io.wbinfo.writeback_data
+  io.probe.progcnter := instfetch.io.pcOut
+  io.probe.inst := instfetch_to_decode.io.instOut
+  io.probe.forward_srcb := datahazard_forward.io.withExecute.hazardBData
+  io.probe.stall := datahazard_stall.io.stallFlag
+  io.probe.writeback_data := writeback.io.wbinfo.writeback_data
+  io.probe.srcA := execute.io.srcA
+  io.probe.srcB := execute.io.srcB
+  io.probe.alu_result := execute.io.alu_out.alu_result
+  io.probe.datahazardAType := datahazard_forward.io.probe_typeA
+  io.probe.inst_id := decode.io.inst_id
 }

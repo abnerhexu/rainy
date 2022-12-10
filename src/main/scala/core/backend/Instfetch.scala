@@ -2,7 +2,7 @@ package rainy.shaheway.org
 package core.backend
 
 import chisel3._
-import common.Defines.{CSR_ADDR_LEN_WIDTH, DOUBLE_WORD_LEN_WIDTH, START_ADDR}
+import common.Defines.{CSR_ADDR_LEN_WIDTH, DOUBLE_WORD_LEN_WIDTH, START_ADDR, WORD_LEN_WIDTH}
 
 import chisel3.util.MuxCase
 import mem.InstReadPort
@@ -20,7 +20,9 @@ class Instfetch extends Module {
     val fetchMem = Flipped(new InstReadPort)
     val envRead = Flipped(new CSRReadPort)
   })
+
   val progcnter = RegInit(START_ADDR)
+  io.fetchMem.read_addr_a := progcnter
   val ecallAddr = 0x305.U(CSR_ADDR_LEN_WIDTH)
   io.envRead.csr_read_addr := ecallAddr
   val pcIncrement = progcnter + 4.U(DOUBLE_WORD_LEN_WIDTH)
@@ -31,8 +33,8 @@ class Instfetch extends Module {
     (io.fetchMem.read_inst_a === ECALL) -> io.envRead.csr_read_data,
     io.stallFlag -> progcnter
   ))
+
   progcnter := pcNext
-  io.fetchMem.read_addr_a := progcnter
   io.instOut := io.fetchMem.read_inst_a
   io.pcOut := progcnter
 }

@@ -6,11 +6,12 @@ object Defines {
   val WORD_LEN_WIDTH                  = 32.W
   val DOUBLE_WORD_LEN                 = 64
   val DOUBLE_WORD_LEN_WIDTH           = 64.W
-  val START_ADDR                      = 0x10004000.U(DOUBLE_WORD_LEN_WIDTH)
+  // val START_ADDR                      = 0x10004000.U(DOUBLE_WORD_LEN_WIDTH)
+  val START_ADDR                      = 0.U(DOUBLE_WORD_LEN_WIDTH)
   val BYTE_LEN_WIDTH                  = 8.W
   val REG_ADDR_WIDTH                  = 5.W
   val CSR_ADDR_LEN_WIDTH               = 12.W
-  val BUBBLE = 0x13000000.U(WORD_LEN_WIDTH) // ADDI x0, x0, 0
+  val BUBBLE = 0x13.U(WORD_LEN_WIDTH) // ADDI x0, x0, 0
 
   val ALU_EXE_FUN_LEN = 5.W
   val ALU_X = 0.U(ALU_EXE_FUN_LEN)

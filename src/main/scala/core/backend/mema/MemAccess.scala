@@ -8,18 +8,17 @@ import mem.{DataReadPort, MemWritePort}
 
 import chisel3._
 import chisel3.util.{Cat, Fill, MuxCase}
-import core.backend.datahazard.{ForwardWithMema, StallWithMema}
+import core.backend.datahazard.{ForwardWithMema, StallWithExe}
 
 class MemAccess extends Module {
   val io = IO(new Bundle() {
     val linkedPC = Input(UInt(DOUBLE_WORD_LEN_WIDTH))
-    val aluOut = Flipped(new AluOutPort)
+    val aluOut = Flipped(new MemaExtend)
     val controlSignal = Flipped(new AluConOut)
     val dataReadPort = Flipped(new DataReadPort)
     val dataWritePort = Flipped(new MemWritePort)
     val csrRead = Flipped(new CSRReadPort)
     val forward = Flipped(new ForwardWithMema)
-    val stall = Flipped(new StallWithMema)
     val memPass = new MemaOutPort
   })
 
@@ -73,6 +72,4 @@ class MemAccess extends Module {
   io.forward.wbDataFromMema := writeback_data
   io.forward.wbAddrFromMema := io.aluOut.writeback_addr
   io.forward.regTypeFromMema := io.controlSignal.regType
-  io.stall.wbAddrFromMema := writeback_data
-  io.stall.regTypeFromMema := io.controlSignal.regType
 }

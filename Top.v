@@ -24,7 +24,7 @@ module Instfetch(
   assign io_fetchMem_read_addr_a = progcnter; // @[Instfetch.scala 35:27]
   always @(posedge clock) begin
     if (reset) begin // @[Instfetch.scala 23:26]
-      progcnter <= 64'h10004000; // @[Instfetch.scala 23:26]
+      progcnter <= 64'h0; // @[Instfetch.scala 23:26]
     end else if (io_branchFlag) begin // @[Mux.scala 101:16]
       progcnter <= io_branchTarget;
     end else if (io_jumpFlag) begin // @[Mux.scala 101:16]
@@ -101,7 +101,7 @@ module FetchToDecode(
   assign io_pcOut = progcnter; // @[FetchToDecode.scala 29:12]
   always @(posedge clock) begin
     if (reset) begin // @[FetchToDecode.scala 17:26]
-      progcnter <= 64'h10004000; // @[FetchToDecode.scala 17:26]
+      progcnter <= 64'h0; // @[FetchToDecode.scala 17:26]
     end else if (!(io_stallFlag)) begin // @[FetchToDecode.scala 25:18]
       progcnter <= io_pcIn;
     end
@@ -2207,10 +2207,8 @@ module Memory(
   input  [3:0]  io_writePort_write_lenth,
   input         io_writePort_write_enable
 );
-`ifdef RANDOMIZE_MEM_INIT
-  reg [31:0] _RAND_0;
-`endif // RANDOMIZE_MEM_INIT
 `ifdef RANDOMIZE_REG_INIT
+  reg [31:0] _RAND_0;
   reg [31:0] _RAND_1;
   reg [31:0] _RAND_2;
   reg [31:0] _RAND_3;
@@ -2234,105 +2232,104 @@ module Memory(
   reg [31:0] _RAND_21;
   reg [31:0] _RAND_22;
   reg [31:0] _RAND_23;
-  reg [31:0] _RAND_24;
 `endif // RANDOMIZE_REG_INIT
-  reg [7:0] memory [0:4095]; // @[Memory.scala 13:27]
-  wire  memory_io_instReadPort_read_inst_a_MPORT_en; // @[Memory.scala 13:27]
-  wire [11:0] memory_io_instReadPort_read_inst_a_MPORT_addr; // @[Memory.scala 13:27]
-  wire [7:0] memory_io_instReadPort_read_inst_a_MPORT_data; // @[Memory.scala 13:27]
-  wire  memory_io_instReadPort_read_inst_a_MPORT_1_en; // @[Memory.scala 13:27]
-  wire [11:0] memory_io_instReadPort_read_inst_a_MPORT_1_addr; // @[Memory.scala 13:27]
-  wire [7:0] memory_io_instReadPort_read_inst_a_MPORT_1_data; // @[Memory.scala 13:27]
-  wire  memory_io_instReadPort_read_inst_a_MPORT_2_en; // @[Memory.scala 13:27]
-  wire [11:0] memory_io_instReadPort_read_inst_a_MPORT_2_addr; // @[Memory.scala 13:27]
-  wire [7:0] memory_io_instReadPort_read_inst_a_MPORT_2_data; // @[Memory.scala 13:27]
-  wire  memory_io_instReadPort_read_inst_a_MPORT_3_en; // @[Memory.scala 13:27]
-  wire [11:0] memory_io_instReadPort_read_inst_a_MPORT_3_addr; // @[Memory.scala 13:27]
-  wire [7:0] memory_io_instReadPort_read_inst_a_MPORT_3_data; // @[Memory.scala 13:27]
-  wire  memory_io_dataReadPort_read_data_b_MPORT_en; // @[Memory.scala 13:27]
-  wire [11:0] memory_io_dataReadPort_read_data_b_MPORT_addr; // @[Memory.scala 13:27]
-  wire [7:0] memory_io_dataReadPort_read_data_b_MPORT_data; // @[Memory.scala 13:27]
-  wire  memory_io_dataReadPort_read_data_b_MPORT_1_en; // @[Memory.scala 13:27]
-  wire [11:0] memory_io_dataReadPort_read_data_b_MPORT_1_addr; // @[Memory.scala 13:27]
-  wire [7:0] memory_io_dataReadPort_read_data_b_MPORT_1_data; // @[Memory.scala 13:27]
-  wire  memory_io_dataReadPort_read_data_b_MPORT_2_en; // @[Memory.scala 13:27]
-  wire [11:0] memory_io_dataReadPort_read_data_b_MPORT_2_addr; // @[Memory.scala 13:27]
-  wire [7:0] memory_io_dataReadPort_read_data_b_MPORT_2_data; // @[Memory.scala 13:27]
-  wire  memory_io_dataReadPort_read_data_b_MPORT_3_en; // @[Memory.scala 13:27]
-  wire [11:0] memory_io_dataReadPort_read_data_b_MPORT_3_addr; // @[Memory.scala 13:27]
-  wire [7:0] memory_io_dataReadPort_read_data_b_MPORT_3_data; // @[Memory.scala 13:27]
-  wire  memory_io_dataReadPort_read_data_b_MPORT_4_en; // @[Memory.scala 13:27]
-  wire [11:0] memory_io_dataReadPort_read_data_b_MPORT_4_addr; // @[Memory.scala 13:27]
-  wire [7:0] memory_io_dataReadPort_read_data_b_MPORT_4_data; // @[Memory.scala 13:27]
-  wire  memory_io_dataReadPort_read_data_b_MPORT_5_en; // @[Memory.scala 13:27]
-  wire [11:0] memory_io_dataReadPort_read_data_b_MPORT_5_addr; // @[Memory.scala 13:27]
-  wire [7:0] memory_io_dataReadPort_read_data_b_MPORT_5_data; // @[Memory.scala 13:27]
-  wire  memory_io_dataReadPort_read_data_b_MPORT_6_en; // @[Memory.scala 13:27]
-  wire [11:0] memory_io_dataReadPort_read_data_b_MPORT_6_addr; // @[Memory.scala 13:27]
-  wire [7:0] memory_io_dataReadPort_read_data_b_MPORT_6_data; // @[Memory.scala 13:27]
-  wire  memory_io_dataReadPort_read_data_b_MPORT_7_en; // @[Memory.scala 13:27]
-  wire [11:0] memory_io_dataReadPort_read_data_b_MPORT_7_addr; // @[Memory.scala 13:27]
-  wire [7:0] memory_io_dataReadPort_read_data_b_MPORT_7_data; // @[Memory.scala 13:27]
-  wire [7:0] memory_MPORT_data; // @[Memory.scala 13:27]
-  wire [11:0] memory_MPORT_addr; // @[Memory.scala 13:27]
-  wire  memory_MPORT_mask; // @[Memory.scala 13:27]
-  wire  memory_MPORT_en; // @[Memory.scala 13:27]
-  wire [7:0] memory_MPORT_1_data; // @[Memory.scala 13:27]
-  wire [11:0] memory_MPORT_1_addr; // @[Memory.scala 13:27]
-  wire  memory_MPORT_1_mask; // @[Memory.scala 13:27]
-  wire  memory_MPORT_1_en; // @[Memory.scala 13:27]
-  wire [7:0] memory_MPORT_2_data; // @[Memory.scala 13:27]
-  wire [11:0] memory_MPORT_2_addr; // @[Memory.scala 13:27]
-  wire  memory_MPORT_2_mask; // @[Memory.scala 13:27]
-  wire  memory_MPORT_2_en; // @[Memory.scala 13:27]
-  wire [7:0] memory_MPORT_3_data; // @[Memory.scala 13:27]
-  wire [11:0] memory_MPORT_3_addr; // @[Memory.scala 13:27]
-  wire  memory_MPORT_3_mask; // @[Memory.scala 13:27]
-  wire  memory_MPORT_3_en; // @[Memory.scala 13:27]
-  wire [7:0] memory_MPORT_4_data; // @[Memory.scala 13:27]
-  wire [11:0] memory_MPORT_4_addr; // @[Memory.scala 13:27]
-  wire  memory_MPORT_4_mask; // @[Memory.scala 13:27]
-  wire  memory_MPORT_4_en; // @[Memory.scala 13:27]
-  wire [7:0] memory_MPORT_5_data; // @[Memory.scala 13:27]
-  wire [11:0] memory_MPORT_5_addr; // @[Memory.scala 13:27]
-  wire  memory_MPORT_5_mask; // @[Memory.scala 13:27]
-  wire  memory_MPORT_5_en; // @[Memory.scala 13:27]
-  wire [7:0] memory_MPORT_6_data; // @[Memory.scala 13:27]
-  wire [11:0] memory_MPORT_6_addr; // @[Memory.scala 13:27]
-  wire  memory_MPORT_6_mask; // @[Memory.scala 13:27]
-  wire  memory_MPORT_6_en; // @[Memory.scala 13:27]
-  wire [7:0] memory_MPORT_7_data; // @[Memory.scala 13:27]
-  wire [11:0] memory_MPORT_7_addr; // @[Memory.scala 13:27]
-  wire  memory_MPORT_7_mask; // @[Memory.scala 13:27]
-  wire  memory_MPORT_7_en; // @[Memory.scala 13:27]
-  wire [7:0] memory_MPORT_8_data; // @[Memory.scala 13:27]
-  wire [11:0] memory_MPORT_8_addr; // @[Memory.scala 13:27]
-  wire  memory_MPORT_8_mask; // @[Memory.scala 13:27]
-  wire  memory_MPORT_8_en; // @[Memory.scala 13:27]
-  wire [7:0] memory_MPORT_9_data; // @[Memory.scala 13:27]
-  wire [11:0] memory_MPORT_9_addr; // @[Memory.scala 13:27]
-  wire  memory_MPORT_9_mask; // @[Memory.scala 13:27]
-  wire  memory_MPORT_9_en; // @[Memory.scala 13:27]
-  wire [7:0] memory_MPORT_10_data; // @[Memory.scala 13:27]
-  wire [11:0] memory_MPORT_10_addr; // @[Memory.scala 13:27]
-  wire  memory_MPORT_10_mask; // @[Memory.scala 13:27]
-  wire  memory_MPORT_10_en; // @[Memory.scala 13:27]
-  wire [7:0] memory_MPORT_11_data; // @[Memory.scala 13:27]
-  wire [11:0] memory_MPORT_11_addr; // @[Memory.scala 13:27]
-  wire  memory_MPORT_11_mask; // @[Memory.scala 13:27]
-  wire  memory_MPORT_11_en; // @[Memory.scala 13:27]
-  wire [7:0] memory_MPORT_12_data; // @[Memory.scala 13:27]
-  wire [11:0] memory_MPORT_12_addr; // @[Memory.scala 13:27]
-  wire  memory_MPORT_12_mask; // @[Memory.scala 13:27]
-  wire  memory_MPORT_12_en; // @[Memory.scala 13:27]
-  wire [7:0] memory_MPORT_13_data; // @[Memory.scala 13:27]
-  wire [11:0] memory_MPORT_13_addr; // @[Memory.scala 13:27]
-  wire  memory_MPORT_13_mask; // @[Memory.scala 13:27]
-  wire  memory_MPORT_13_en; // @[Memory.scala 13:27]
-  wire [7:0] memory_MPORT_14_data; // @[Memory.scala 13:27]
-  wire [11:0] memory_MPORT_14_addr; // @[Memory.scala 13:27]
-  wire  memory_MPORT_14_mask; // @[Memory.scala 13:27]
-  wire  memory_MPORT_14_en; // @[Memory.scala 13:27]
+  reg [7:0] memory [0:4095]; // @[Memory.scala 15:27]
+  wire  memory_io_instReadPort_read_inst_a_MPORT_en; // @[Memory.scala 15:27]
+  wire [11:0] memory_io_instReadPort_read_inst_a_MPORT_addr; // @[Memory.scala 15:27]
+  wire [7:0] memory_io_instReadPort_read_inst_a_MPORT_data; // @[Memory.scala 15:27]
+  wire  memory_io_instReadPort_read_inst_a_MPORT_1_en; // @[Memory.scala 15:27]
+  wire [11:0] memory_io_instReadPort_read_inst_a_MPORT_1_addr; // @[Memory.scala 15:27]
+  wire [7:0] memory_io_instReadPort_read_inst_a_MPORT_1_data; // @[Memory.scala 15:27]
+  wire  memory_io_instReadPort_read_inst_a_MPORT_2_en; // @[Memory.scala 15:27]
+  wire [11:0] memory_io_instReadPort_read_inst_a_MPORT_2_addr; // @[Memory.scala 15:27]
+  wire [7:0] memory_io_instReadPort_read_inst_a_MPORT_2_data; // @[Memory.scala 15:27]
+  wire  memory_io_instReadPort_read_inst_a_MPORT_3_en; // @[Memory.scala 15:27]
+  wire [11:0] memory_io_instReadPort_read_inst_a_MPORT_3_addr; // @[Memory.scala 15:27]
+  wire [7:0] memory_io_instReadPort_read_inst_a_MPORT_3_data; // @[Memory.scala 15:27]
+  wire  memory_io_dataReadPort_read_data_b_MPORT_en; // @[Memory.scala 15:27]
+  wire [11:0] memory_io_dataReadPort_read_data_b_MPORT_addr; // @[Memory.scala 15:27]
+  wire [7:0] memory_io_dataReadPort_read_data_b_MPORT_data; // @[Memory.scala 15:27]
+  wire  memory_io_dataReadPort_read_data_b_MPORT_1_en; // @[Memory.scala 15:27]
+  wire [11:0] memory_io_dataReadPort_read_data_b_MPORT_1_addr; // @[Memory.scala 15:27]
+  wire [7:0] memory_io_dataReadPort_read_data_b_MPORT_1_data; // @[Memory.scala 15:27]
+  wire  memory_io_dataReadPort_read_data_b_MPORT_2_en; // @[Memory.scala 15:27]
+  wire [11:0] memory_io_dataReadPort_read_data_b_MPORT_2_addr; // @[Memory.scala 15:27]
+  wire [7:0] memory_io_dataReadPort_read_data_b_MPORT_2_data; // @[Memory.scala 15:27]
+  wire  memory_io_dataReadPort_read_data_b_MPORT_3_en; // @[Memory.scala 15:27]
+  wire [11:0] memory_io_dataReadPort_read_data_b_MPORT_3_addr; // @[Memory.scala 15:27]
+  wire [7:0] memory_io_dataReadPort_read_data_b_MPORT_3_data; // @[Memory.scala 15:27]
+  wire  memory_io_dataReadPort_read_data_b_MPORT_4_en; // @[Memory.scala 15:27]
+  wire [11:0] memory_io_dataReadPort_read_data_b_MPORT_4_addr; // @[Memory.scala 15:27]
+  wire [7:0] memory_io_dataReadPort_read_data_b_MPORT_4_data; // @[Memory.scala 15:27]
+  wire  memory_io_dataReadPort_read_data_b_MPORT_5_en; // @[Memory.scala 15:27]
+  wire [11:0] memory_io_dataReadPort_read_data_b_MPORT_5_addr; // @[Memory.scala 15:27]
+  wire [7:0] memory_io_dataReadPort_read_data_b_MPORT_5_data; // @[Memory.scala 15:27]
+  wire  memory_io_dataReadPort_read_data_b_MPORT_6_en; // @[Memory.scala 15:27]
+  wire [11:0] memory_io_dataReadPort_read_data_b_MPORT_6_addr; // @[Memory.scala 15:27]
+  wire [7:0] memory_io_dataReadPort_read_data_b_MPORT_6_data; // @[Memory.scala 15:27]
+  wire  memory_io_dataReadPort_read_data_b_MPORT_7_en; // @[Memory.scala 15:27]
+  wire [11:0] memory_io_dataReadPort_read_data_b_MPORT_7_addr; // @[Memory.scala 15:27]
+  wire [7:0] memory_io_dataReadPort_read_data_b_MPORT_7_data; // @[Memory.scala 15:27]
+  wire [7:0] memory_MPORT_data; // @[Memory.scala 15:27]
+  wire [11:0] memory_MPORT_addr; // @[Memory.scala 15:27]
+  wire  memory_MPORT_mask; // @[Memory.scala 15:27]
+  wire  memory_MPORT_en; // @[Memory.scala 15:27]
+  wire [7:0] memory_MPORT_1_data; // @[Memory.scala 15:27]
+  wire [11:0] memory_MPORT_1_addr; // @[Memory.scala 15:27]
+  wire  memory_MPORT_1_mask; // @[Memory.scala 15:27]
+  wire  memory_MPORT_1_en; // @[Memory.scala 15:27]
+  wire [7:0] memory_MPORT_2_data; // @[Memory.scala 15:27]
+  wire [11:0] memory_MPORT_2_addr; // @[Memory.scala 15:27]
+  wire  memory_MPORT_2_mask; // @[Memory.scala 15:27]
+  wire  memory_MPORT_2_en; // @[Memory.scala 15:27]
+  wire [7:0] memory_MPORT_3_data; // @[Memory.scala 15:27]
+  wire [11:0] memory_MPORT_3_addr; // @[Memory.scala 15:27]
+  wire  memory_MPORT_3_mask; // @[Memory.scala 15:27]
+  wire  memory_MPORT_3_en; // @[Memory.scala 15:27]
+  wire [7:0] memory_MPORT_4_data; // @[Memory.scala 15:27]
+  wire [11:0] memory_MPORT_4_addr; // @[Memory.scala 15:27]
+  wire  memory_MPORT_4_mask; // @[Memory.scala 15:27]
+  wire  memory_MPORT_4_en; // @[Memory.scala 15:27]
+  wire [7:0] memory_MPORT_5_data; // @[Memory.scala 15:27]
+  wire [11:0] memory_MPORT_5_addr; // @[Memory.scala 15:27]
+  wire  memory_MPORT_5_mask; // @[Memory.scala 15:27]
+  wire  memory_MPORT_5_en; // @[Memory.scala 15:27]
+  wire [7:0] memory_MPORT_6_data; // @[Memory.scala 15:27]
+  wire [11:0] memory_MPORT_6_addr; // @[Memory.scala 15:27]
+  wire  memory_MPORT_6_mask; // @[Memory.scala 15:27]
+  wire  memory_MPORT_6_en; // @[Memory.scala 15:27]
+  wire [7:0] memory_MPORT_7_data; // @[Memory.scala 15:27]
+  wire [11:0] memory_MPORT_7_addr; // @[Memory.scala 15:27]
+  wire  memory_MPORT_7_mask; // @[Memory.scala 15:27]
+  wire  memory_MPORT_7_en; // @[Memory.scala 15:27]
+  wire [7:0] memory_MPORT_8_data; // @[Memory.scala 15:27]
+  wire [11:0] memory_MPORT_8_addr; // @[Memory.scala 15:27]
+  wire  memory_MPORT_8_mask; // @[Memory.scala 15:27]
+  wire  memory_MPORT_8_en; // @[Memory.scala 15:27]
+  wire [7:0] memory_MPORT_9_data; // @[Memory.scala 15:27]
+  wire [11:0] memory_MPORT_9_addr; // @[Memory.scala 15:27]
+  wire  memory_MPORT_9_mask; // @[Memory.scala 15:27]
+  wire  memory_MPORT_9_en; // @[Memory.scala 15:27]
+  wire [7:0] memory_MPORT_10_data; // @[Memory.scala 15:27]
+  wire [11:0] memory_MPORT_10_addr; // @[Memory.scala 15:27]
+  wire  memory_MPORT_10_mask; // @[Memory.scala 15:27]
+  wire  memory_MPORT_10_en; // @[Memory.scala 15:27]
+  wire [7:0] memory_MPORT_11_data; // @[Memory.scala 15:27]
+  wire [11:0] memory_MPORT_11_addr; // @[Memory.scala 15:27]
+  wire  memory_MPORT_11_mask; // @[Memory.scala 15:27]
+  wire  memory_MPORT_11_en; // @[Memory.scala 15:27]
+  wire [7:0] memory_MPORT_12_data; // @[Memory.scala 15:27]
+  wire [11:0] memory_MPORT_12_addr; // @[Memory.scala 15:27]
+  wire  memory_MPORT_12_mask; // @[Memory.scala 15:27]
+  wire  memory_MPORT_12_en; // @[Memory.scala 15:27]
+  wire [7:0] memory_MPORT_13_data; // @[Memory.scala 15:27]
+  wire [11:0] memory_MPORT_13_addr; // @[Memory.scala 15:27]
+  wire  memory_MPORT_13_mask; // @[Memory.scala 15:27]
+  wire  memory_MPORT_13_en; // @[Memory.scala 15:27]
+  wire [7:0] memory_MPORT_14_data; // @[Memory.scala 15:27]
+  wire [11:0] memory_MPORT_14_addr; // @[Memory.scala 15:27]
+  wire  memory_MPORT_14_mask; // @[Memory.scala 15:27]
+  wire  memory_MPORT_14_en; // @[Memory.scala 15:27]
   reg  memory_io_instReadPort_read_inst_a_MPORT_en_pipe_0;
   reg [11:0] memory_io_instReadPort_read_inst_a_MPORT_addr_pipe_0;
   reg  memory_io_instReadPort_read_inst_a_MPORT_1_en_pipe_0;
@@ -2357,76 +2354,76 @@ module Memory(
   reg [11:0] memory_io_dataReadPort_read_data_b_MPORT_6_addr_pipe_0;
   reg  memory_io_dataReadPort_read_data_b_MPORT_7_en_pipe_0;
   reg [11:0] memory_io_dataReadPort_read_data_b_MPORT_7_addr_pipe_0;
-  wire [63:0] _io_instReadPort_read_inst_a_T_1 = io_instReadPort_read_addr_a + 64'h3; // @[Memory.scala 14:78]
-  wire [63:0] _io_instReadPort_read_inst_a_T_5 = io_instReadPort_read_addr_a + 64'h2; // @[Memory.scala 15:45]
-  wire [63:0] _io_instReadPort_read_inst_a_T_9 = io_instReadPort_read_addr_a + 64'h1; // @[Memory.scala 16:45]
+  wire [63:0] _io_instReadPort_read_inst_a_T_1 = io_instReadPort_read_addr_a + 64'h3; // @[Memory.scala 17:78]
+  wire [63:0] _io_instReadPort_read_inst_a_T_5 = io_instReadPort_read_addr_a + 64'h2; // @[Memory.scala 18:45]
+  wire [63:0] _io_instReadPort_read_inst_a_T_9 = io_instReadPort_read_addr_a + 64'h1; // @[Memory.scala 19:45]
   wire [15:0] io_instReadPort_read_inst_a_lo = {memory_io_instReadPort_read_inst_a_MPORT_2_data,
     memory_io_instReadPort_read_inst_a_MPORT_3_data}; // @[Cat.scala 31:58]
   wire [15:0] io_instReadPort_read_inst_a_hi = {memory_io_instReadPort_read_inst_a_MPORT_data,
     memory_io_instReadPort_read_inst_a_MPORT_1_data}; // @[Cat.scala 31:58]
-  wire [63:0] _io_dataReadPort_read_data_b_T_1 = io_instReadPort_read_addr_a + 64'h7; // @[Memory.scala 18:78]
-  wire [63:0] _io_dataReadPort_read_data_b_T_5 = io_instReadPort_read_addr_a + 64'h6; // @[Memory.scala 19:45]
-  wire [63:0] _io_dataReadPort_read_data_b_T_9 = io_instReadPort_read_addr_a + 64'h5; // @[Memory.scala 20:45]
-  wire [63:0] _io_dataReadPort_read_data_b_T_13 = io_instReadPort_read_addr_a + 64'h4; // @[Memory.scala 21:45]
+  wire [63:0] _io_dataReadPort_read_data_b_T_1 = io_instReadPort_read_addr_a + 64'h7; // @[Memory.scala 21:78]
+  wire [63:0] _io_dataReadPort_read_data_b_T_5 = io_instReadPort_read_addr_a + 64'h6; // @[Memory.scala 22:45]
+  wire [63:0] _io_dataReadPort_read_data_b_T_9 = io_instReadPort_read_addr_a + 64'h5; // @[Memory.scala 23:45]
+  wire [63:0] _io_dataReadPort_read_data_b_T_13 = io_instReadPort_read_addr_a + 64'h4; // @[Memory.scala 24:45]
   wire [31:0] io_dataReadPort_read_data_b_lo = {memory_io_dataReadPort_read_data_b_MPORT_4_data,
     memory_io_dataReadPort_read_data_b_MPORT_5_data,memory_io_dataReadPort_read_data_b_MPORT_6_data,
     memory_io_dataReadPort_read_data_b_MPORT_7_data}; // @[Cat.scala 31:58]
   wire [31:0] io_dataReadPort_read_data_b_hi = {memory_io_dataReadPort_read_data_b_MPORT_data,
     memory_io_dataReadPort_read_data_b_MPORT_1_data,memory_io_dataReadPort_read_data_b_MPORT_2_data,
     memory_io_dataReadPort_read_data_b_MPORT_3_data}; // @[Cat.scala 31:58]
-  wire  _T = io_writePort_write_lenth == 4'h4; // @[Memory.scala 27:35]
-  wire  _T_3 = io_writePort_write_lenth == 4'h7; // @[Memory.scala 29:41]
-  wire [63:0] _T_7 = io_writePort_write_addr + 64'h1; // @[Memory.scala 31:50]
-  wire [63:0] _T_11 = io_writePort_write_addr + 64'h2; // @[Memory.scala 32:50]
-  wire [63:0] _T_15 = io_writePort_write_addr + 64'h3; // @[Memory.scala 33:50]
-  wire [63:0] _T_19 = io_writePort_write_addr + 64'h4; // @[Memory.scala 34:50]
-  wire [63:0] _T_23 = io_writePort_write_addr + 64'h5; // @[Memory.scala 35:50]
-  wire [63:0] _T_27 = io_writePort_write_addr + 64'h6; // @[Memory.scala 36:50]
-  wire [63:0] _T_31 = io_writePort_write_addr + 64'h7; // @[Memory.scala 37:50]
-  wire  _T_34 = io_writePort_write_lenth == 4'h5; // @[Memory.scala 38:41]
-  wire  _T_41 = io_writePort_write_lenth == 4'h6; // @[Memory.scala 41:41]
-  wire  _GEN_45 = io_writePort_write_lenth == 4'h5 ? 1'h0 : _T_41; // @[Memory.scala 13:27 38:52]
-  wire  _GEN_75 = io_writePort_write_lenth == 4'h7 ? 1'h0 : _T_34; // @[Memory.scala 13:27 29:52]
-  wire  _GEN_82 = io_writePort_write_lenth == 4'h7 ? 1'h0 : _GEN_45; // @[Memory.scala 13:27 29:52]
-  wire  _GEN_98 = io_writePort_write_lenth == 4'h4 ? 1'h0 : _T_3; // @[Memory.scala 13:27 27:46]
-  wire  _GEN_117 = io_writePort_write_lenth == 4'h4 ? 1'h0 : _GEN_75; // @[Memory.scala 13:27 27:46]
-  wire  _GEN_124 = io_writePort_write_lenth == 4'h4 ? 1'h0 : _GEN_82; // @[Memory.scala 13:27 27:46]
+  wire  _T = io_writePort_write_lenth == 4'h4; // @[Memory.scala 30:35]
+  wire  _T_3 = io_writePort_write_lenth == 4'h5; // @[Memory.scala 32:41]
+  wire [63:0] _T_7 = io_writePort_write_addr + 64'h1; // @[Memory.scala 34:50]
+  wire  _T_10 = io_writePort_write_lenth == 4'h6; // @[Memory.scala 35:41]
+  wire [63:0] _T_18 = io_writePort_write_addr + 64'h2; // @[Memory.scala 38:50]
+  wire [63:0] _T_22 = io_writePort_write_addr + 64'h3; // @[Memory.scala 39:50]
+  wire  _T_25 = io_writePort_write_lenth == 4'h7; // @[Memory.scala 40:41]
+  wire [63:0] _T_41 = io_writePort_write_addr + 64'h4; // @[Memory.scala 45:50]
+  wire [63:0] _T_45 = io_writePort_write_addr + 64'h5; // @[Memory.scala 46:50]
+  wire [63:0] _T_49 = io_writePort_write_addr + 64'h6; // @[Memory.scala 47:50]
+  wire [63:0] _T_53 = io_writePort_write_addr + 64'h7; // @[Memory.scala 48:50]
+  wire  _GEN_57 = io_writePort_write_lenth == 4'h6 ? 1'h0 : _T_25; // @[Memory.scala 15:27 35:52]
+  wire  _GEN_83 = io_writePort_write_lenth == 4'h5 ? 1'h0 : _T_10; // @[Memory.scala 15:27 32:52]
+  wire  _GEN_94 = io_writePort_write_lenth == 4'h5 ? 1'h0 : _GEN_57; // @[Memory.scala 15:27 32:52]
+  wire  _GEN_118 = io_writePort_write_lenth == 4'h4 ? 1'h0 : _T_3; // @[Memory.scala 15:27 30:46]
+  wire  _GEN_125 = io_writePort_write_lenth == 4'h4 ? 1'h0 : _GEN_83; // @[Memory.scala 15:27 30:46]
+  wire  _GEN_136 = io_writePort_write_lenth == 4'h4 ? 1'h0 : _GEN_94; // @[Memory.scala 15:27 30:46]
   assign memory_io_instReadPort_read_inst_a_MPORT_en = memory_io_instReadPort_read_inst_a_MPORT_en_pipe_0;
   assign memory_io_instReadPort_read_inst_a_MPORT_addr = memory_io_instReadPort_read_inst_a_MPORT_addr_pipe_0;
-  assign memory_io_instReadPort_read_inst_a_MPORT_data = memory[memory_io_instReadPort_read_inst_a_MPORT_addr]; // @[Memory.scala 13:27]
+  assign memory_io_instReadPort_read_inst_a_MPORT_data = memory[memory_io_instReadPort_read_inst_a_MPORT_addr]; // @[Memory.scala 15:27]
   assign memory_io_instReadPort_read_inst_a_MPORT_1_en = memory_io_instReadPort_read_inst_a_MPORT_1_en_pipe_0;
   assign memory_io_instReadPort_read_inst_a_MPORT_1_addr = memory_io_instReadPort_read_inst_a_MPORT_1_addr_pipe_0;
-  assign memory_io_instReadPort_read_inst_a_MPORT_1_data = memory[memory_io_instReadPort_read_inst_a_MPORT_1_addr]; // @[Memory.scala 13:27]
+  assign memory_io_instReadPort_read_inst_a_MPORT_1_data = memory[memory_io_instReadPort_read_inst_a_MPORT_1_addr]; // @[Memory.scala 15:27]
   assign memory_io_instReadPort_read_inst_a_MPORT_2_en = memory_io_instReadPort_read_inst_a_MPORT_2_en_pipe_0;
   assign memory_io_instReadPort_read_inst_a_MPORT_2_addr = memory_io_instReadPort_read_inst_a_MPORT_2_addr_pipe_0;
-  assign memory_io_instReadPort_read_inst_a_MPORT_2_data = memory[memory_io_instReadPort_read_inst_a_MPORT_2_addr]; // @[Memory.scala 13:27]
+  assign memory_io_instReadPort_read_inst_a_MPORT_2_data = memory[memory_io_instReadPort_read_inst_a_MPORT_2_addr]; // @[Memory.scala 15:27]
   assign memory_io_instReadPort_read_inst_a_MPORT_3_en = memory_io_instReadPort_read_inst_a_MPORT_3_en_pipe_0;
   assign memory_io_instReadPort_read_inst_a_MPORT_3_addr = memory_io_instReadPort_read_inst_a_MPORT_3_addr_pipe_0;
-  assign memory_io_instReadPort_read_inst_a_MPORT_3_data = memory[memory_io_instReadPort_read_inst_a_MPORT_3_addr]; // @[Memory.scala 13:27]
+  assign memory_io_instReadPort_read_inst_a_MPORT_3_data = memory[memory_io_instReadPort_read_inst_a_MPORT_3_addr]; // @[Memory.scala 15:27]
   assign memory_io_dataReadPort_read_data_b_MPORT_en = memory_io_dataReadPort_read_data_b_MPORT_en_pipe_0;
   assign memory_io_dataReadPort_read_data_b_MPORT_addr = memory_io_dataReadPort_read_data_b_MPORT_addr_pipe_0;
-  assign memory_io_dataReadPort_read_data_b_MPORT_data = memory[memory_io_dataReadPort_read_data_b_MPORT_addr]; // @[Memory.scala 13:27]
+  assign memory_io_dataReadPort_read_data_b_MPORT_data = memory[memory_io_dataReadPort_read_data_b_MPORT_addr]; // @[Memory.scala 15:27]
   assign memory_io_dataReadPort_read_data_b_MPORT_1_en = memory_io_dataReadPort_read_data_b_MPORT_1_en_pipe_0;
   assign memory_io_dataReadPort_read_data_b_MPORT_1_addr = memory_io_dataReadPort_read_data_b_MPORT_1_addr_pipe_0;
-  assign memory_io_dataReadPort_read_data_b_MPORT_1_data = memory[memory_io_dataReadPort_read_data_b_MPORT_1_addr]; // @[Memory.scala 13:27]
+  assign memory_io_dataReadPort_read_data_b_MPORT_1_data = memory[memory_io_dataReadPort_read_data_b_MPORT_1_addr]; // @[Memory.scala 15:27]
   assign memory_io_dataReadPort_read_data_b_MPORT_2_en = memory_io_dataReadPort_read_data_b_MPORT_2_en_pipe_0;
   assign memory_io_dataReadPort_read_data_b_MPORT_2_addr = memory_io_dataReadPort_read_data_b_MPORT_2_addr_pipe_0;
-  assign memory_io_dataReadPort_read_data_b_MPORT_2_data = memory[memory_io_dataReadPort_read_data_b_MPORT_2_addr]; // @[Memory.scala 13:27]
+  assign memory_io_dataReadPort_read_data_b_MPORT_2_data = memory[memory_io_dataReadPort_read_data_b_MPORT_2_addr]; // @[Memory.scala 15:27]
   assign memory_io_dataReadPort_read_data_b_MPORT_3_en = memory_io_dataReadPort_read_data_b_MPORT_3_en_pipe_0;
   assign memory_io_dataReadPort_read_data_b_MPORT_3_addr = memory_io_dataReadPort_read_data_b_MPORT_3_addr_pipe_0;
-  assign memory_io_dataReadPort_read_data_b_MPORT_3_data = memory[memory_io_dataReadPort_read_data_b_MPORT_3_addr]; // @[Memory.scala 13:27]
+  assign memory_io_dataReadPort_read_data_b_MPORT_3_data = memory[memory_io_dataReadPort_read_data_b_MPORT_3_addr]; // @[Memory.scala 15:27]
   assign memory_io_dataReadPort_read_data_b_MPORT_4_en = memory_io_dataReadPort_read_data_b_MPORT_4_en_pipe_0;
   assign memory_io_dataReadPort_read_data_b_MPORT_4_addr = memory_io_dataReadPort_read_data_b_MPORT_4_addr_pipe_0;
-  assign memory_io_dataReadPort_read_data_b_MPORT_4_data = memory[memory_io_dataReadPort_read_data_b_MPORT_4_addr]; // @[Memory.scala 13:27]
+  assign memory_io_dataReadPort_read_data_b_MPORT_4_data = memory[memory_io_dataReadPort_read_data_b_MPORT_4_addr]; // @[Memory.scala 15:27]
   assign memory_io_dataReadPort_read_data_b_MPORT_5_en = memory_io_dataReadPort_read_data_b_MPORT_5_en_pipe_0;
   assign memory_io_dataReadPort_read_data_b_MPORT_5_addr = memory_io_dataReadPort_read_data_b_MPORT_5_addr_pipe_0;
-  assign memory_io_dataReadPort_read_data_b_MPORT_5_data = memory[memory_io_dataReadPort_read_data_b_MPORT_5_addr]; // @[Memory.scala 13:27]
+  assign memory_io_dataReadPort_read_data_b_MPORT_5_data = memory[memory_io_dataReadPort_read_data_b_MPORT_5_addr]; // @[Memory.scala 15:27]
   assign memory_io_dataReadPort_read_data_b_MPORT_6_en = memory_io_dataReadPort_read_data_b_MPORT_6_en_pipe_0;
   assign memory_io_dataReadPort_read_data_b_MPORT_6_addr = memory_io_dataReadPort_read_data_b_MPORT_6_addr_pipe_0;
-  assign memory_io_dataReadPort_read_data_b_MPORT_6_data = memory[memory_io_dataReadPort_read_data_b_MPORT_6_addr]; // @[Memory.scala 13:27]
+  assign memory_io_dataReadPort_read_data_b_MPORT_6_data = memory[memory_io_dataReadPort_read_data_b_MPORT_6_addr]; // @[Memory.scala 15:27]
   assign memory_io_dataReadPort_read_data_b_MPORT_7_en = memory_io_dataReadPort_read_data_b_MPORT_7_en_pipe_0;
   assign memory_io_dataReadPort_read_data_b_MPORT_7_addr = memory_io_dataReadPort_read_data_b_MPORT_7_addr_pipe_0;
-  assign memory_io_dataReadPort_read_data_b_MPORT_7_data = memory[memory_io_dataReadPort_read_data_b_MPORT_7_addr]; // @[Memory.scala 13:27]
+  assign memory_io_dataReadPort_read_data_b_MPORT_7_data = memory[memory_io_dataReadPort_read_data_b_MPORT_7_addr]; // @[Memory.scala 15:27]
   assign memory_MPORT_data = io_writePort_write_data[7:0];
   assign memory_MPORT_addr = io_writePort_write_addr[11:0];
   assign memory_MPORT_mask = 1'h1;
@@ -2434,106 +2431,106 @@ module Memory(
   assign memory_MPORT_1_data = io_writePort_write_data[7:0];
   assign memory_MPORT_1_addr = io_writePort_write_addr[11:0];
   assign memory_MPORT_1_mask = 1'h1;
-  assign memory_MPORT_1_en = io_writePort_write_enable & _GEN_98;
+  assign memory_MPORT_1_en = io_writePort_write_enable & _GEN_118;
   assign memory_MPORT_2_data = io_writePort_write_data[15:8];
   assign memory_MPORT_2_addr = _T_7[11:0];
   assign memory_MPORT_2_mask = 1'h1;
-  assign memory_MPORT_2_en = io_writePort_write_enable & _GEN_98;
-  assign memory_MPORT_3_data = io_writePort_write_data[23:16];
-  assign memory_MPORT_3_addr = _T_11[11:0];
+  assign memory_MPORT_2_en = io_writePort_write_enable & _GEN_118;
+  assign memory_MPORT_3_data = io_writePort_write_data[7:0];
+  assign memory_MPORT_3_addr = io_writePort_write_addr[11:0];
   assign memory_MPORT_3_mask = 1'h1;
-  assign memory_MPORT_3_en = io_writePort_write_enable & _GEN_98;
-  assign memory_MPORT_4_data = io_writePort_write_data[31:24];
-  assign memory_MPORT_4_addr = _T_15[11:0];
+  assign memory_MPORT_3_en = io_writePort_write_enable & _GEN_125;
+  assign memory_MPORT_4_data = io_writePort_write_data[15:8];
+  assign memory_MPORT_4_addr = _T_7[11:0];
   assign memory_MPORT_4_mask = 1'h1;
-  assign memory_MPORT_4_en = io_writePort_write_enable & _GEN_98;
-  assign memory_MPORT_5_data = io_writePort_write_data[39:32];
-  assign memory_MPORT_5_addr = _T_19[11:0];
+  assign memory_MPORT_4_en = io_writePort_write_enable & _GEN_125;
+  assign memory_MPORT_5_data = io_writePort_write_data[23:16];
+  assign memory_MPORT_5_addr = _T_18[11:0];
   assign memory_MPORT_5_mask = 1'h1;
-  assign memory_MPORT_5_en = io_writePort_write_enable & _GEN_98;
-  assign memory_MPORT_6_data = io_writePort_write_data[47:40];
-  assign memory_MPORT_6_addr = _T_23[11:0];
+  assign memory_MPORT_5_en = io_writePort_write_enable & _GEN_125;
+  assign memory_MPORT_6_data = io_writePort_write_data[31:24];
+  assign memory_MPORT_6_addr = _T_22[11:0];
   assign memory_MPORT_6_mask = 1'h1;
-  assign memory_MPORT_6_en = io_writePort_write_enable & _GEN_98;
-  assign memory_MPORT_7_data = io_writePort_write_data[55:48];
-  assign memory_MPORT_7_addr = _T_27[11:0];
+  assign memory_MPORT_6_en = io_writePort_write_enable & _GEN_125;
+  assign memory_MPORT_7_data = io_writePort_write_data[7:0];
+  assign memory_MPORT_7_addr = io_writePort_write_addr[11:0];
   assign memory_MPORT_7_mask = 1'h1;
-  assign memory_MPORT_7_en = io_writePort_write_enable & _GEN_98;
-  assign memory_MPORT_8_data = io_writePort_write_data[63:56];
-  assign memory_MPORT_8_addr = _T_31[11:0];
+  assign memory_MPORT_7_en = io_writePort_write_enable & _GEN_136;
+  assign memory_MPORT_8_data = io_writePort_write_data[15:8];
+  assign memory_MPORT_8_addr = _T_7[11:0];
   assign memory_MPORT_8_mask = 1'h1;
-  assign memory_MPORT_8_en = io_writePort_write_enable & _GEN_98;
-  assign memory_MPORT_9_data = io_writePort_write_data[7:0];
-  assign memory_MPORT_9_addr = io_writePort_write_addr[11:0];
+  assign memory_MPORT_8_en = io_writePort_write_enable & _GEN_136;
+  assign memory_MPORT_9_data = io_writePort_write_data[23:16];
+  assign memory_MPORT_9_addr = _T_18[11:0];
   assign memory_MPORT_9_mask = 1'h1;
-  assign memory_MPORT_9_en = io_writePort_write_enable & _GEN_117;
-  assign memory_MPORT_10_data = io_writePort_write_data[15:8];
-  assign memory_MPORT_10_addr = _T_7[11:0];
+  assign memory_MPORT_9_en = io_writePort_write_enable & _GEN_136;
+  assign memory_MPORT_10_data = io_writePort_write_data[31:24];
+  assign memory_MPORT_10_addr = _T_22[11:0];
   assign memory_MPORT_10_mask = 1'h1;
-  assign memory_MPORT_10_en = io_writePort_write_enable & _GEN_117;
-  assign memory_MPORT_11_data = io_writePort_write_data[7:0];
-  assign memory_MPORT_11_addr = io_writePort_write_addr[11:0];
+  assign memory_MPORT_10_en = io_writePort_write_enable & _GEN_136;
+  assign memory_MPORT_11_data = io_writePort_write_data[39:32];
+  assign memory_MPORT_11_addr = _T_41[11:0];
   assign memory_MPORT_11_mask = 1'h1;
-  assign memory_MPORT_11_en = io_writePort_write_enable & _GEN_124;
-  assign memory_MPORT_12_data = io_writePort_write_data[15:8];
-  assign memory_MPORT_12_addr = _T_7[11:0];
+  assign memory_MPORT_11_en = io_writePort_write_enable & _GEN_136;
+  assign memory_MPORT_12_data = io_writePort_write_data[47:40];
+  assign memory_MPORT_12_addr = _T_45[11:0];
   assign memory_MPORT_12_mask = 1'h1;
-  assign memory_MPORT_12_en = io_writePort_write_enable & _GEN_124;
-  assign memory_MPORT_13_data = io_writePort_write_data[23:16];
-  assign memory_MPORT_13_addr = _T_11[11:0];
+  assign memory_MPORT_12_en = io_writePort_write_enable & _GEN_136;
+  assign memory_MPORT_13_data = io_writePort_write_data[55:48];
+  assign memory_MPORT_13_addr = _T_49[11:0];
   assign memory_MPORT_13_mask = 1'h1;
-  assign memory_MPORT_13_en = io_writePort_write_enable & _GEN_124;
-  assign memory_MPORT_14_data = io_writePort_write_data[31:24];
-  assign memory_MPORT_14_addr = _T_15[11:0];
+  assign memory_MPORT_13_en = io_writePort_write_enable & _GEN_136;
+  assign memory_MPORT_14_data = io_writePort_write_data[63:56];
+  assign memory_MPORT_14_addr = _T_53[11:0];
   assign memory_MPORT_14_mask = 1'h1;
-  assign memory_MPORT_14_en = io_writePort_write_enable & _GEN_124;
+  assign memory_MPORT_14_en = io_writePort_write_enable & _GEN_136;
   assign io_instReadPort_read_inst_a = {io_instReadPort_read_inst_a_hi,io_instReadPort_read_inst_a_lo}; // @[Cat.scala 31:58]
   assign io_dataReadPort_read_data_b = {io_dataReadPort_read_data_b_hi,io_dataReadPort_read_data_b_lo}; // @[Cat.scala 31:58]
   always @(posedge clock) begin
     if (memory_MPORT_en & memory_MPORT_mask) begin
-      memory[memory_MPORT_addr] <= memory_MPORT_data; // @[Memory.scala 13:27]
+      memory[memory_MPORT_addr] <= memory_MPORT_data; // @[Memory.scala 15:27]
     end
     if (memory_MPORT_1_en & memory_MPORT_1_mask) begin
-      memory[memory_MPORT_1_addr] <= memory_MPORT_1_data; // @[Memory.scala 13:27]
+      memory[memory_MPORT_1_addr] <= memory_MPORT_1_data; // @[Memory.scala 15:27]
     end
     if (memory_MPORT_2_en & memory_MPORT_2_mask) begin
-      memory[memory_MPORT_2_addr] <= memory_MPORT_2_data; // @[Memory.scala 13:27]
+      memory[memory_MPORT_2_addr] <= memory_MPORT_2_data; // @[Memory.scala 15:27]
     end
     if (memory_MPORT_3_en & memory_MPORT_3_mask) begin
-      memory[memory_MPORT_3_addr] <= memory_MPORT_3_data; // @[Memory.scala 13:27]
+      memory[memory_MPORT_3_addr] <= memory_MPORT_3_data; // @[Memory.scala 15:27]
     end
     if (memory_MPORT_4_en & memory_MPORT_4_mask) begin
-      memory[memory_MPORT_4_addr] <= memory_MPORT_4_data; // @[Memory.scala 13:27]
+      memory[memory_MPORT_4_addr] <= memory_MPORT_4_data; // @[Memory.scala 15:27]
     end
     if (memory_MPORT_5_en & memory_MPORT_5_mask) begin
-      memory[memory_MPORT_5_addr] <= memory_MPORT_5_data; // @[Memory.scala 13:27]
+      memory[memory_MPORT_5_addr] <= memory_MPORT_5_data; // @[Memory.scala 15:27]
     end
     if (memory_MPORT_6_en & memory_MPORT_6_mask) begin
-      memory[memory_MPORT_6_addr] <= memory_MPORT_6_data; // @[Memory.scala 13:27]
+      memory[memory_MPORT_6_addr] <= memory_MPORT_6_data; // @[Memory.scala 15:27]
     end
     if (memory_MPORT_7_en & memory_MPORT_7_mask) begin
-      memory[memory_MPORT_7_addr] <= memory_MPORT_7_data; // @[Memory.scala 13:27]
+      memory[memory_MPORT_7_addr] <= memory_MPORT_7_data; // @[Memory.scala 15:27]
     end
     if (memory_MPORT_8_en & memory_MPORT_8_mask) begin
-      memory[memory_MPORT_8_addr] <= memory_MPORT_8_data; // @[Memory.scala 13:27]
+      memory[memory_MPORT_8_addr] <= memory_MPORT_8_data; // @[Memory.scala 15:27]
     end
     if (memory_MPORT_9_en & memory_MPORT_9_mask) begin
-      memory[memory_MPORT_9_addr] <= memory_MPORT_9_data; // @[Memory.scala 13:27]
+      memory[memory_MPORT_9_addr] <= memory_MPORT_9_data; // @[Memory.scala 15:27]
     end
     if (memory_MPORT_10_en & memory_MPORT_10_mask) begin
-      memory[memory_MPORT_10_addr] <= memory_MPORT_10_data; // @[Memory.scala 13:27]
+      memory[memory_MPORT_10_addr] <= memory_MPORT_10_data; // @[Memory.scala 15:27]
     end
     if (memory_MPORT_11_en & memory_MPORT_11_mask) begin
-      memory[memory_MPORT_11_addr] <= memory_MPORT_11_data; // @[Memory.scala 13:27]
+      memory[memory_MPORT_11_addr] <= memory_MPORT_11_data; // @[Memory.scala 15:27]
     end
     if (memory_MPORT_12_en & memory_MPORT_12_mask) begin
-      memory[memory_MPORT_12_addr] <= memory_MPORT_12_data; // @[Memory.scala 13:27]
+      memory[memory_MPORT_12_addr] <= memory_MPORT_12_data; // @[Memory.scala 15:27]
     end
     if (memory_MPORT_13_en & memory_MPORT_13_mask) begin
-      memory[memory_MPORT_13_addr] <= memory_MPORT_13_data; // @[Memory.scala 13:27]
+      memory[memory_MPORT_13_addr] <= memory_MPORT_13_data; // @[Memory.scala 15:27]
     end
     if (memory_MPORT_14_en & memory_MPORT_14_mask) begin
-      memory[memory_MPORT_14_addr] <= memory_MPORT_14_data; // @[Memory.scala 13:27]
+      memory[memory_MPORT_14_addr] <= memory_MPORT_14_data; // @[Memory.scala 15:27]
     end
     memory_io_instReadPort_read_inst_a_MPORT_en_pipe_0 <= 1'h1;
     if (1'h1) begin
@@ -2600,9 +2597,7 @@ module Memory(
 `ifndef RANDOM
 `define RANDOM $random
 `endif
-`ifdef RANDOMIZE_MEM_INIT
   integer initvar;
-`endif
 `ifndef SYNTHESIS
 `ifdef FIRRTL_BEFORE_INITIAL
 `FIRRTL_BEFORE_INITIAL
@@ -2619,62 +2614,58 @@ initial begin
         #0.002 begin end
       `endif
     `endif
-`ifdef RANDOMIZE_MEM_INIT
-  _RAND_0 = {1{`RANDOM}};
-  for (initvar = 0; initvar < 4096; initvar = initvar+1)
-    memory[initvar] = _RAND_0[7:0];
-`endif // RANDOMIZE_MEM_INIT
 `ifdef RANDOMIZE_REG_INIT
+  _RAND_0 = {1{`RANDOM}};
+  memory_io_instReadPort_read_inst_a_MPORT_en_pipe_0 = _RAND_0[0:0];
   _RAND_1 = {1{`RANDOM}};
-  memory_io_instReadPort_read_inst_a_MPORT_en_pipe_0 = _RAND_1[0:0];
+  memory_io_instReadPort_read_inst_a_MPORT_addr_pipe_0 = _RAND_1[11:0];
   _RAND_2 = {1{`RANDOM}};
-  memory_io_instReadPort_read_inst_a_MPORT_addr_pipe_0 = _RAND_2[11:0];
+  memory_io_instReadPort_read_inst_a_MPORT_1_en_pipe_0 = _RAND_2[0:0];
   _RAND_3 = {1{`RANDOM}};
-  memory_io_instReadPort_read_inst_a_MPORT_1_en_pipe_0 = _RAND_3[0:0];
+  memory_io_instReadPort_read_inst_a_MPORT_1_addr_pipe_0 = _RAND_3[11:0];
   _RAND_4 = {1{`RANDOM}};
-  memory_io_instReadPort_read_inst_a_MPORT_1_addr_pipe_0 = _RAND_4[11:0];
+  memory_io_instReadPort_read_inst_a_MPORT_2_en_pipe_0 = _RAND_4[0:0];
   _RAND_5 = {1{`RANDOM}};
-  memory_io_instReadPort_read_inst_a_MPORT_2_en_pipe_0 = _RAND_5[0:0];
+  memory_io_instReadPort_read_inst_a_MPORT_2_addr_pipe_0 = _RAND_5[11:0];
   _RAND_6 = {1{`RANDOM}};
-  memory_io_instReadPort_read_inst_a_MPORT_2_addr_pipe_0 = _RAND_6[11:0];
+  memory_io_instReadPort_read_inst_a_MPORT_3_en_pipe_0 = _RAND_6[0:0];
   _RAND_7 = {1{`RANDOM}};
-  memory_io_instReadPort_read_inst_a_MPORT_3_en_pipe_0 = _RAND_7[0:0];
+  memory_io_instReadPort_read_inst_a_MPORT_3_addr_pipe_0 = _RAND_7[11:0];
   _RAND_8 = {1{`RANDOM}};
-  memory_io_instReadPort_read_inst_a_MPORT_3_addr_pipe_0 = _RAND_8[11:0];
+  memory_io_dataReadPort_read_data_b_MPORT_en_pipe_0 = _RAND_8[0:0];
   _RAND_9 = {1{`RANDOM}};
-  memory_io_dataReadPort_read_data_b_MPORT_en_pipe_0 = _RAND_9[0:0];
+  memory_io_dataReadPort_read_data_b_MPORT_addr_pipe_0 = _RAND_9[11:0];
   _RAND_10 = {1{`RANDOM}};
-  memory_io_dataReadPort_read_data_b_MPORT_addr_pipe_0 = _RAND_10[11:0];
+  memory_io_dataReadPort_read_data_b_MPORT_1_en_pipe_0 = _RAND_10[0:0];
   _RAND_11 = {1{`RANDOM}};
-  memory_io_dataReadPort_read_data_b_MPORT_1_en_pipe_0 = _RAND_11[0:0];
+  memory_io_dataReadPort_read_data_b_MPORT_1_addr_pipe_0 = _RAND_11[11:0];
   _RAND_12 = {1{`RANDOM}};
-  memory_io_dataReadPort_read_data_b_MPORT_1_addr_pipe_0 = _RAND_12[11:0];
+  memory_io_dataReadPort_read_data_b_MPORT_2_en_pipe_0 = _RAND_12[0:0];
   _RAND_13 = {1{`RANDOM}};
-  memory_io_dataReadPort_read_data_b_MPORT_2_en_pipe_0 = _RAND_13[0:0];
+  memory_io_dataReadPort_read_data_b_MPORT_2_addr_pipe_0 = _RAND_13[11:0];
   _RAND_14 = {1{`RANDOM}};
-  memory_io_dataReadPort_read_data_b_MPORT_2_addr_pipe_0 = _RAND_14[11:0];
+  memory_io_dataReadPort_read_data_b_MPORT_3_en_pipe_0 = _RAND_14[0:0];
   _RAND_15 = {1{`RANDOM}};
-  memory_io_dataReadPort_read_data_b_MPORT_3_en_pipe_0 = _RAND_15[0:0];
+  memory_io_dataReadPort_read_data_b_MPORT_3_addr_pipe_0 = _RAND_15[11:0];
   _RAND_16 = {1{`RANDOM}};
-  memory_io_dataReadPort_read_data_b_MPORT_3_addr_pipe_0 = _RAND_16[11:0];
+  memory_io_dataReadPort_read_data_b_MPORT_4_en_pipe_0 = _RAND_16[0:0];
   _RAND_17 = {1{`RANDOM}};
-  memory_io_dataReadPort_read_data_b_MPORT_4_en_pipe_0 = _RAND_17[0:0];
+  memory_io_dataReadPort_read_data_b_MPORT_4_addr_pipe_0 = _RAND_17[11:0];
   _RAND_18 = {1{`RANDOM}};
-  memory_io_dataReadPort_read_data_b_MPORT_4_addr_pipe_0 = _RAND_18[11:0];
+  memory_io_dataReadPort_read_data_b_MPORT_5_en_pipe_0 = _RAND_18[0:0];
   _RAND_19 = {1{`RANDOM}};
-  memory_io_dataReadPort_read_data_b_MPORT_5_en_pipe_0 = _RAND_19[0:0];
+  memory_io_dataReadPort_read_data_b_MPORT_5_addr_pipe_0 = _RAND_19[11:0];
   _RAND_20 = {1{`RANDOM}};
-  memory_io_dataReadPort_read_data_b_MPORT_5_addr_pipe_0 = _RAND_20[11:0];
+  memory_io_dataReadPort_read_data_b_MPORT_6_en_pipe_0 = _RAND_20[0:0];
   _RAND_21 = {1{`RANDOM}};
-  memory_io_dataReadPort_read_data_b_MPORT_6_en_pipe_0 = _RAND_21[0:0];
+  memory_io_dataReadPort_read_data_b_MPORT_6_addr_pipe_0 = _RAND_21[11:0];
   _RAND_22 = {1{`RANDOM}};
-  memory_io_dataReadPort_read_data_b_MPORT_6_addr_pipe_0 = _RAND_22[11:0];
+  memory_io_dataReadPort_read_data_b_MPORT_7_en_pipe_0 = _RAND_22[0:0];
   _RAND_23 = {1{`RANDOM}};
-  memory_io_dataReadPort_read_data_b_MPORT_7_en_pipe_0 = _RAND_23[0:0];
-  _RAND_24 = {1{`RANDOM}};
-  memory_io_dataReadPort_read_data_b_MPORT_7_addr_pipe_0 = _RAND_24[11:0];
+  memory_io_dataReadPort_read_data_b_MPORT_7_addr_pipe_0 = _RAND_23[11:0];
 `endif // RANDOMIZE_REG_INIT
   `endif // RANDOMIZE
+  $readmemh("memoryFile.hex", memory);
 end // initial
 `ifdef FIRRTL_AFTER_INITIAL
 `FIRRTL_AFTER_INITIAL

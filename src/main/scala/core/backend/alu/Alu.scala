@@ -7,36 +7,38 @@ import common.Defines._
 
 import chisel3.util.MuxCase
 import core.backend.decode.{ControlOutPort, SrcOutPort}
-
-import core.backend.datahazard.ForwardWithExecute
+import core.backend.datahazard.{ForwardWithExecute, StallWithExe}
 
 class Alu extends Module {
   val io = IO(new Bundle() {
     val cur_pc = Input(UInt(DOUBLE_WORD_LEN_WIDTH))
-    val jumpFlag = Output(Bool())
-    val branchFlag = Output(Bool())
     val linkedPC = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
-    val branchTarget = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
     val alu_in = Flipped(new SrcOutPort)
     val alu_out = new AluOutPort
     val controlPass = new AluConOut
     val controlSignal = Flipped(new ControlOutPort)
     val dataHazard = Flipped(new ForwardWithExecute)
+    val stall = Flipped(new StallWithExe)
+    // probe
+    val srcA = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
+    val srcB = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
   })
   val inv_one = Cat(Fill(DOUBLE_WORD_LEN-1, 1.U(1.W)), 0.U(1.U))
+  val aluSrc_a = Mux(io.dataHazard.AhazardFlag, io.dataHazard.hazardAData, io.alu_in.aluSrc_a)
+  val aluSrc_b = Mux(io.dataHazard.BhazardFlag, io.dataHazard.hazardBData, io.alu_in.aluSrc_b)
   val alu_out = MuxCase(0.U(DOUBLE_WORD_LEN_WIDTH), Seq(
-    (io.controlSignal.alu_exe_fun === ALU_ADD) -> (io.alu_in.aluSrc_a+io.alu_in.aluSrc_b),
-    (io.controlSignal.alu_exe_fun === ALU_SUB) -> (io.alu_in.aluSrc_a-io.alu_in.aluSrc_b),
-    (io.controlSignal.alu_exe_fun === ALU_AND) -> (io.alu_in.aluSrc_a & io.alu_in.aluSrc_b),
-    (io.controlSignal.alu_exe_fun === ALU_OR)  -> (io.alu_in.aluSrc_a | io.alu_in.aluSrc_b),
-    (io.controlSignal.alu_exe_fun === ALU_XOR) -> (io.alu_in.aluSrc_a ^ io.alu_in.aluSrc_b),
-    (io.controlSignal.alu_exe_fun === ALU_SLL) -> (io.alu_in.aluSrc_a << io.alu_in.aluSrc_b(4, 0)).asUInt,
-    (io.controlSignal.alu_exe_fun === ALU_SRL) -> (io.alu_in.aluSrc_a >> io.alu_in.aluSrc_b(4, 0)).asUInt,
-    (io.controlSignal.alu_exe_fun === ALU_SRA) -> (io.alu_in.aluSrc_a.asSInt >> io.alu_in.aluSrc_b(4, 0)).asUInt,
-    (io.controlSignal.alu_exe_fun === ALU_SLT) -> (io.alu_in.aluSrc_a.asSInt < io.alu_in.aluSrc_b.asSInt).asUInt,
-    (io.controlSignal.alu_exe_fun === ALU_SLTU) -> (io.alu_in.aluSrc_a.asUInt < io.alu_in.aluSrc_b.asUInt).asUInt,
-    (io.controlSignal.alu_exe_fun === ALU_JALR) -> ((io.alu_in.aluSrc_a+io.alu_in.aluSrc_b) & inv_one),
-    (io.controlSignal.alu_exe_fun === ALU_NOP_CSR) -> (io.alu_in.aluSrc_a)
+    (io.controlSignal.alu_exe_fun === ALU_ADD) -> (aluSrc_a+aluSrc_b),
+    (io.controlSignal.alu_exe_fun === ALU_SUB) -> (aluSrc_a-aluSrc_b),
+    (io.controlSignal.alu_exe_fun === ALU_AND) -> (aluSrc_a & aluSrc_b),
+    (io.controlSignal.alu_exe_fun === ALU_OR)  -> (aluSrc_a | aluSrc_b),
+    (io.controlSignal.alu_exe_fun === ALU_XOR) -> (aluSrc_a ^ aluSrc_b),
+    (io.controlSignal.alu_exe_fun === ALU_SLL) -> (aluSrc_a << aluSrc_b(4, 0)).asUInt,
+    (io.controlSignal.alu_exe_fun === ALU_SRL) -> (aluSrc_a >> aluSrc_b(4, 0)).asUInt,
+    (io.controlSignal.alu_exe_fun === ALU_SRA) -> (aluSrc_a.asSInt >> aluSrc_b(4, 0)).asUInt,
+    (io.controlSignal.alu_exe_fun === ALU_SLT) -> (aluSrc_a.asSInt < aluSrc_b.asSInt).asUInt,
+    (io.controlSignal.alu_exe_fun === ALU_SLTU) -> (aluSrc_a.asUInt < aluSrc_b.asUInt).asUInt,
+    (io.controlSignal.alu_exe_fun === ALU_JALR) -> ((aluSrc_a+aluSrc_b) & inv_one),
+    (io.controlSignal.alu_exe_fun === ALU_NOP_CSR) -> (aluSrc_a)
   ))
   /*
   val is_zero = (alu_out & Cat(Fill(DOUBLE_WORD_LEN, 1.U(1.W)))).asBool
@@ -45,15 +47,15 @@ class Alu extends Module {
    */
 
   val branch_flag = MuxCase(false.asBool, Seq(
-    (io.controlSignal.alu_exe_fun === BR_BEQ) -> (io.alu_in.aluSrc_a === io.alu_in.aluSrc_b).asBool,
-    (io.controlSignal.alu_exe_fun === BR_BNE) -> (io.alu_in.aluSrc_a =/= io.alu_in.aluSrc_b).asBool,
-    (io.controlSignal.alu_exe_fun === BR_BLTU) -> (io.alu_in.aluSrc_a < io.alu_in.aluSrc_b).asBool,
-    (io.controlSignal.alu_exe_fun === BR_BLT) -> (io.alu_in.aluSrc_a.asSInt < io.alu_in.aluSrc_b.asSInt).asBool,
-    (io.controlSignal.alu_exe_fun === BR_BGEU) -> (io.alu_in.aluSrc_a >= io.alu_in.aluSrc_b).asBool,
-    (io.controlSignal.alu_exe_fun === BR_BGE) -> (io.alu_in.aluSrc_a.asSInt >= io.alu_in.aluSrc_b.asSInt).asBool
+    (io.controlSignal.alu_exe_fun === BR_BEQ) -> (aluSrc_a === aluSrc_b).asBool,
+    (io.controlSignal.alu_exe_fun === BR_BNE) -> (aluSrc_a =/= aluSrc_b).asBool,
+    (io.controlSignal.alu_exe_fun === BR_BLTU) -> (aluSrc_a < aluSrc_b).asBool,
+    (io.controlSignal.alu_exe_fun === BR_BLT) -> (aluSrc_a.asSInt < aluSrc_b.asSInt).asBool,
+    (io.controlSignal.alu_exe_fun === BR_BGEU) -> (aluSrc_a >= aluSrc_b).asBool,
+    (io.controlSignal.alu_exe_fun === BR_BGE) -> (aluSrc_a.asSInt >= aluSrc_b.asSInt).asBool
   ))
 
-  io.branchFlag := branch_flag
+  io.alu_out.branchFlag := branch_flag
   io.controlPass.regType := io.controlSignal.regType
   io.controlPass.wbType := io.controlSignal.wbType
   io.controlPass.CSRType := io.controlSignal.CSRType
@@ -66,13 +68,19 @@ class Alu extends Module {
   io.alu_out.writeback_addr := io.alu_in.writeback_addr
   io.alu_out.regB_data := io.alu_in.regB_data
   val jump_flag = (io.controlSignal.wbType === WB_PC).asBool
-  io.jumpFlag := jump_flag
-
+  io.alu_out.jumpFlag := jump_flag
+  io.alu_out.jumpTarget := alu_out
   val branchTarget = io.alu_in.imm_b + io.cur_pc
 
   // data hazard
   io.dataHazard.wbDataFromExe := alu_out
   io.dataHazard.wbAddrFromExecute := io.alu_in.writeback_addr
   io.dataHazard.regTypeFromExecute := io.controlSignal.regType
-  io.branchTarget := branchTarget
+  io.alu_out.branchTarget := branchTarget
+
+  io.stall.wbSrcFromEx := io.controlSignal.wbType
+  io.stall.wbAddrFromEx := io.alu_in.writeback_addr
+  // probe
+  io.srcA := aluSrc_a
+  io.srcB := aluSrc_b
 }

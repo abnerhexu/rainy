@@ -5,7 +5,9 @@ import chisel3._
 import chisel3.util._
 import common.Defines._
 import common.Instructions._
-import core.backend.datahazard.{ForwardWithDecode, StallWithDecode}
+import core.backend.datahazard.ForwardWithDecode
+
+import core.backend.regfile.RegReadPort
 class Decode extends Module {
   val io = IO(new Bundle() {
     val branchFlag = Input(Bool())
@@ -17,22 +19,24 @@ class Decode extends Module {
     val decodeOut = new ControlOutPort
     val srcOut = new SrcOutPort
     val forward = Flipped(new ForwardWithDecode)
-    val stall = Flipped(new StallWithDecode)
+    val readReg = Flipped(new RegReadPort)
+    // probe
+    val inst_id = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
   })
 
-  // 判断是否有需要暂停流水线的数据依赖
+  // 正常情况
   val de_inst = Mux(io.stallFlag || io.branchFlag || io.jumpFlag, BUBBLE, io.inst)
-  // 取出register中的内容
+  io.inst_id := de_inst
   val rsA_addr = de_inst(19, 15)
   val rsB_addr = de_inst(24, 20)
   // forward
   io.forward.srcAddrA := rsA_addr
   io.forward.srcAddrB := rsB_addr
-  // stall
-  io.stall.srcAddrA := rsA_addr
-  io.stall.srcAddrB := rsB_addr
-  val regA_data = io.forward.hazardAData
-  val regB_data = io.forward.hazardBData
+  // 取数
+  io.readReg.read_addr_a := rsA_addr
+  io.readReg.read_addr_b := rsB_addr
+  val regA_data = io.readReg.read_data_a
+  val regB_data = io.readReg.read_data_b
 
   // 写回地址
   val write_back_reg_addr = de_inst(11, 7)

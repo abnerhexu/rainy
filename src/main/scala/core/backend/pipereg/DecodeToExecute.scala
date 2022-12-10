@@ -8,6 +8,7 @@ class DecodeToExecute extends Module {
   val io = IO(new Bundle() {
     // branch
     val jumpOrBranchFlag = Input(Bool())
+    // val stallFlag = Input(Bool())
     val cur_pc = Input(UInt(DOUBLE_WORD_LEN_WIDTH))
     val pcOut = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
     val controlSignal = Flipped(new ControlOutPort)
@@ -18,16 +19,22 @@ class DecodeToExecute extends Module {
 
   // I_ADDI     -> List(ALU_ADD, SRCA_REG, SRCB_IMM_I, MEM_X, REG_S, WB_ALU, CSR_X),
   val funMux = Mux(io.jumpOrBranchFlag, ALU_ADD, io.controlSignal.alu_exe_fun)
-  val alu_exe_fun = RegNext(0.U(ALU_EXE_FUN_LEN), funMux)
+  val alu_exe_fun = RegInit(0.U(ALU_EXE_FUN_LEN))
+  alu_exe_fun := funMux
   val memTypeMux = Mux(io.jumpOrBranchFlag, MEM_X, io.controlSignal.memType)
-  val memType = RegNext(0.U(MEM_TYPE_LEN), memTypeMux)
+  val memType = RegInit(0.U(MEM_TYPE_LEN))
+  memType := memTypeMux
   val regTypeMux = Mux(io.jumpOrBranchFlag, REG_S, io.controlSignal.regType)
-  val regType = RegNext(0.U(REG_TYPE_LEN), regTypeMux)
+  val regType = RegInit(0.U(REG_TYPE_LEN))
+  regType := regTypeMux
   val wbTypeMux = Mux(io.jumpOrBranchFlag, WB_ALU, io.controlSignal.wbType)
-  val wbType = RegNext(0.U(WB_TYPE_LEN), wbTypeMux)
+  val wbType = RegInit(0.U(WB_TYPE_LEN))
+  wbType := wbTypeMux
   val CSRTypeMux = Mux(io.jumpOrBranchFlag, CSR_X, io.controlSignal.CSRType)
-  val CSRType = RegNext(0.U(CSR_TYPE_LEN), CSRTypeMux)
-  val csrAddr = RegNext(0.U(CSR_ADDR_LEN_WIDTH), io.controlSignal.csrAddr) // 不用做处理
+  val CSRType = RegInit(0.U(CSR_TYPE_LEN))
+  CSRType := CSRTypeMux
+  val csrAddr = RegInit(0.U(CSR_ADDR_LEN_WIDTH)) // 不用做处理
+  csrAddr := io.controlSignal.csrAddr
 
   io.controlSignalPass.alu_exe_fun := alu_exe_fun
   io.controlSignalPass.memType := memType
@@ -37,13 +44,18 @@ class DecodeToExecute extends Module {
   io.controlSignalPass.csrAddr := csrAddr
 
   val srcAMux = Mux(io.jumpOrBranchFlag, 0.U(DOUBLE_WORD_LEN_WIDTH), io.opSrc.aluSrc_a)
-  val srcA = RegNext(0.U(DOUBLE_WORD_LEN_WIDTH), srcAMux)
+  val srcA = RegInit(0.U(DOUBLE_WORD_LEN_WIDTH))
+  srcA := srcAMux
   val srcBMux = Mux(io.jumpOrBranchFlag, 0.U(DOUBLE_WORD_LEN_WIDTH), io.opSrc.aluSrc_b)
-  val srcB = RegNext(0.U(DOUBLE_WORD_LEN_WIDTH), srcBMux)
-  val regBData = RegNext(0.U(DOUBLE_WORD_LEN_WIDTH), io.opSrc.regB_data) // 不用做处理
+  val srcB = RegInit(0.U(DOUBLE_WORD_LEN_WIDTH))
+  srcB := srcBMux
+  val regBData = RegInit(0.U(DOUBLE_WORD_LEN_WIDTH)) // 不用做处理
+  regBData := io.opSrc.regB_data
   val writebackAddrMux = Mux(io.jumpOrBranchFlag, 0.U(REG_ADDR_WIDTH), io.opSrc.writeback_addr)
-  val writebackAddr = RegNext(0.U(REG_ADDR_WIDTH), writebackAddrMux)
-  val imm_b = RegNext(0.U(DOUBLE_WORD_LEN_WIDTH), io.opSrc.imm_b)
+  val writebackAddr = RegInit(0.U(REG_ADDR_WIDTH))
+  writebackAddr := writebackAddrMux
+  val imm_b = RegInit(0.U(DOUBLE_WORD_LEN_WIDTH))
+  imm_b := io.opSrc.imm_b
 
   io.srcPass.aluSrc_a := srcA
   io.srcPass.aluSrc_b := srcB
@@ -51,6 +63,7 @@ class DecodeToExecute extends Module {
   io.srcPass.writeback_addr := writebackAddr
   io.srcPass.imm_b := imm_b
 
-  val progcnter = RegNext(0.U(DOUBLE_WORD_LEN_WIDTH), io.cur_pc)
+  val progcnter = RegInit(0.U(DOUBLE_WORD_LEN_WIDTH))
+  progcnter := io.cur_pc
   io.pcOut := progcnter
 }

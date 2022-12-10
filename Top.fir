@@ -5,7 +5,7 @@ circuit Top :
     output io : { flip branchFlag : UInt<1>, flip jumpFlag : UInt<1>, flip stallFlag : UInt<1>, flip branchTarget : UInt<64>, flip jumpTarget : UInt<64>, instOut : UInt<64>, pcOut : UInt<64>, flip fetchMem : { flip read_addr_a : UInt<64>, read_inst_a : UInt<32>}, flip envRead : { flip csr_read_addr : UInt<12>, csr_read_data : UInt<64>}}
 
     reg progcnter : UInt<64>, clock with :
-      reset => (reset, UInt<64>("h10004000")) @[Instfetch.scala 23:26]
+      reset => (reset, UInt<64>("h0")) @[Instfetch.scala 23:26]
     io.envRead.csr_read_addr <= UInt<12>("h305") @[Instfetch.scala 25:28]
     node _pcIncrement_T = add(progcnter, UInt<64>("h4")) @[Instfetch.scala 26:31]
     node pcIncrement = tail(_pcIncrement_T, 1) @[Instfetch.scala 26:31]
@@ -26,7 +26,7 @@ circuit Top :
     output io : { flip stallFlag : UInt<1>, flip pcIn : UInt<64>, flip instIn : UInt<32>, flip jumpOrBranchFlag : UInt<1>, instOut : UInt<32>, pcOut : UInt<64>}
 
     reg progcnter : UInt<64>, clock with :
-      reset => (reset, UInt<64>("h10004000")) @[FetchToDecode.scala 17:26]
+      reset => (reset, UInt<64>("h0")) @[FetchToDecode.scala 17:26]
     reg instReg : UInt<32>, clock with :
       reset => (reset, UInt<32>("h0")) @[FetchToDecode.scala 18:24]
     node _instUpdate_T = mux(io.stallFlag, instReg, io.instIn) @[Mux.scala 101:16]
@@ -1138,115 +1138,115 @@ circuit Top :
     input reset : Reset
     output io : { instReadPort : { flip read_addr_a : UInt<64>, read_inst_a : UInt<32>}, dataReadPort : { flip read_addr_b : UInt<64>, read_data_b : UInt<64>}, writePort : { flip write_addr : UInt<64>, flip write_data : UInt<64>, flip write_lenth : UInt<4>, flip write_enable : UInt<1>}}
 
-    smem memory : UInt<8> [4096] @[Memory.scala 13:27]
-    node _io_instReadPort_read_inst_a_T = add(io.instReadPort.read_addr_a, UInt<64>("h3")) @[Memory.scala 14:78]
-    node _io_instReadPort_read_inst_a_T_1 = tail(_io_instReadPort_read_inst_a_T, 1) @[Memory.scala 14:78]
-    wire _io_instReadPort_read_inst_a_WIRE : UInt @[Memory.scala 14:49]
-    _io_instReadPort_read_inst_a_WIRE is invalid @[Memory.scala 14:49]
-    when UInt<1>("h1") : @[Memory.scala 14:49]
-      _io_instReadPort_read_inst_a_WIRE <= _io_instReadPort_read_inst_a_T_1 @[Memory.scala 14:49]
-      node _io_instReadPort_read_inst_a_T_2 = or(_io_instReadPort_read_inst_a_WIRE, UInt<12>("h0")) @[Memory.scala 14:49]
-      node _io_instReadPort_read_inst_a_T_3 = bits(_io_instReadPort_read_inst_a_T_2, 11, 0) @[Memory.scala 14:49]
-      read mport io_instReadPort_read_inst_a_MPORT = memory[_io_instReadPort_read_inst_a_T_3], clock @[Memory.scala 14:49]
-    node _io_instReadPort_read_inst_a_T_4 = add(io.instReadPort.read_addr_a, UInt<64>("h2")) @[Memory.scala 15:45]
-    node _io_instReadPort_read_inst_a_T_5 = tail(_io_instReadPort_read_inst_a_T_4, 1) @[Memory.scala 15:45]
-    wire _io_instReadPort_read_inst_a_WIRE_1 : UInt @[Memory.scala 15:16]
-    _io_instReadPort_read_inst_a_WIRE_1 is invalid @[Memory.scala 15:16]
-    when UInt<1>("h1") : @[Memory.scala 15:16]
-      _io_instReadPort_read_inst_a_WIRE_1 <= _io_instReadPort_read_inst_a_T_5 @[Memory.scala 15:16]
-      node _io_instReadPort_read_inst_a_T_6 = or(_io_instReadPort_read_inst_a_WIRE_1, UInt<12>("h0")) @[Memory.scala 15:16]
-      node _io_instReadPort_read_inst_a_T_7 = bits(_io_instReadPort_read_inst_a_T_6, 11, 0) @[Memory.scala 15:16]
-      read mport io_instReadPort_read_inst_a_MPORT_1 = memory[_io_instReadPort_read_inst_a_T_7], clock @[Memory.scala 15:16]
-    node _io_instReadPort_read_inst_a_T_8 = add(io.instReadPort.read_addr_a, UInt<64>("h1")) @[Memory.scala 16:45]
-    node _io_instReadPort_read_inst_a_T_9 = tail(_io_instReadPort_read_inst_a_T_8, 1) @[Memory.scala 16:45]
-    wire _io_instReadPort_read_inst_a_WIRE_2 : UInt @[Memory.scala 16:16]
-    _io_instReadPort_read_inst_a_WIRE_2 is invalid @[Memory.scala 16:16]
-    when UInt<1>("h1") : @[Memory.scala 16:16]
-      _io_instReadPort_read_inst_a_WIRE_2 <= _io_instReadPort_read_inst_a_T_9 @[Memory.scala 16:16]
-      node _io_instReadPort_read_inst_a_T_10 = or(_io_instReadPort_read_inst_a_WIRE_2, UInt<12>("h0")) @[Memory.scala 16:16]
-      node _io_instReadPort_read_inst_a_T_11 = bits(_io_instReadPort_read_inst_a_T_10, 11, 0) @[Memory.scala 16:16]
-      read mport io_instReadPort_read_inst_a_MPORT_2 = memory[_io_instReadPort_read_inst_a_T_11], clock @[Memory.scala 16:16]
-    wire _io_instReadPort_read_inst_a_WIRE_3 : UInt @[Memory.scala 17:16]
-    _io_instReadPort_read_inst_a_WIRE_3 is invalid @[Memory.scala 17:16]
-    when UInt<1>("h1") : @[Memory.scala 17:16]
-      _io_instReadPort_read_inst_a_WIRE_3 <= io.instReadPort.read_addr_a @[Memory.scala 17:16]
-      node _io_instReadPort_read_inst_a_T_12 = or(_io_instReadPort_read_inst_a_WIRE_3, UInt<12>("h0")) @[Memory.scala 17:16]
-      node _io_instReadPort_read_inst_a_T_13 = bits(_io_instReadPort_read_inst_a_T_12, 11, 0) @[Memory.scala 17:16]
-      read mport io_instReadPort_read_inst_a_MPORT_3 = memory[_io_instReadPort_read_inst_a_T_13], clock @[Memory.scala 17:16]
+    smem memory : UInt<8> [4096] @[Memory.scala 15:27]
+    node _io_instReadPort_read_inst_a_T = add(io.instReadPort.read_addr_a, UInt<64>("h3")) @[Memory.scala 17:78]
+    node _io_instReadPort_read_inst_a_T_1 = tail(_io_instReadPort_read_inst_a_T, 1) @[Memory.scala 17:78]
+    wire _io_instReadPort_read_inst_a_WIRE : UInt @[Memory.scala 17:49]
+    _io_instReadPort_read_inst_a_WIRE is invalid @[Memory.scala 17:49]
+    when UInt<1>("h1") : @[Memory.scala 17:49]
+      _io_instReadPort_read_inst_a_WIRE <= _io_instReadPort_read_inst_a_T_1 @[Memory.scala 17:49]
+      node _io_instReadPort_read_inst_a_T_2 = or(_io_instReadPort_read_inst_a_WIRE, UInt<12>("h0")) @[Memory.scala 17:49]
+      node _io_instReadPort_read_inst_a_T_3 = bits(_io_instReadPort_read_inst_a_T_2, 11, 0) @[Memory.scala 17:49]
+      read mport io_instReadPort_read_inst_a_MPORT = memory[_io_instReadPort_read_inst_a_T_3], clock @[Memory.scala 17:49]
+    node _io_instReadPort_read_inst_a_T_4 = add(io.instReadPort.read_addr_a, UInt<64>("h2")) @[Memory.scala 18:45]
+    node _io_instReadPort_read_inst_a_T_5 = tail(_io_instReadPort_read_inst_a_T_4, 1) @[Memory.scala 18:45]
+    wire _io_instReadPort_read_inst_a_WIRE_1 : UInt @[Memory.scala 18:16]
+    _io_instReadPort_read_inst_a_WIRE_1 is invalid @[Memory.scala 18:16]
+    when UInt<1>("h1") : @[Memory.scala 18:16]
+      _io_instReadPort_read_inst_a_WIRE_1 <= _io_instReadPort_read_inst_a_T_5 @[Memory.scala 18:16]
+      node _io_instReadPort_read_inst_a_T_6 = or(_io_instReadPort_read_inst_a_WIRE_1, UInt<12>("h0")) @[Memory.scala 18:16]
+      node _io_instReadPort_read_inst_a_T_7 = bits(_io_instReadPort_read_inst_a_T_6, 11, 0) @[Memory.scala 18:16]
+      read mport io_instReadPort_read_inst_a_MPORT_1 = memory[_io_instReadPort_read_inst_a_T_7], clock @[Memory.scala 18:16]
+    node _io_instReadPort_read_inst_a_T_8 = add(io.instReadPort.read_addr_a, UInt<64>("h1")) @[Memory.scala 19:45]
+    node _io_instReadPort_read_inst_a_T_9 = tail(_io_instReadPort_read_inst_a_T_8, 1) @[Memory.scala 19:45]
+    wire _io_instReadPort_read_inst_a_WIRE_2 : UInt @[Memory.scala 19:16]
+    _io_instReadPort_read_inst_a_WIRE_2 is invalid @[Memory.scala 19:16]
+    when UInt<1>("h1") : @[Memory.scala 19:16]
+      _io_instReadPort_read_inst_a_WIRE_2 <= _io_instReadPort_read_inst_a_T_9 @[Memory.scala 19:16]
+      node _io_instReadPort_read_inst_a_T_10 = or(_io_instReadPort_read_inst_a_WIRE_2, UInt<12>("h0")) @[Memory.scala 19:16]
+      node _io_instReadPort_read_inst_a_T_11 = bits(_io_instReadPort_read_inst_a_T_10, 11, 0) @[Memory.scala 19:16]
+      read mport io_instReadPort_read_inst_a_MPORT_2 = memory[_io_instReadPort_read_inst_a_T_11], clock @[Memory.scala 19:16]
+    wire _io_instReadPort_read_inst_a_WIRE_3 : UInt @[Memory.scala 20:16]
+    _io_instReadPort_read_inst_a_WIRE_3 is invalid @[Memory.scala 20:16]
+    when UInt<1>("h1") : @[Memory.scala 20:16]
+      _io_instReadPort_read_inst_a_WIRE_3 <= io.instReadPort.read_addr_a @[Memory.scala 20:16]
+      node _io_instReadPort_read_inst_a_T_12 = or(_io_instReadPort_read_inst_a_WIRE_3, UInt<12>("h0")) @[Memory.scala 20:16]
+      node _io_instReadPort_read_inst_a_T_13 = bits(_io_instReadPort_read_inst_a_T_12, 11, 0) @[Memory.scala 20:16]
+      read mport io_instReadPort_read_inst_a_MPORT_3 = memory[_io_instReadPort_read_inst_a_T_13], clock @[Memory.scala 20:16]
     node io_instReadPort_read_inst_a_lo = cat(io_instReadPort_read_inst_a_MPORT_2, io_instReadPort_read_inst_a_MPORT_3) @[Cat.scala 31:58]
     node io_instReadPort_read_inst_a_hi = cat(io_instReadPort_read_inst_a_MPORT, io_instReadPort_read_inst_a_MPORT_1) @[Cat.scala 31:58]
     node _io_instReadPort_read_inst_a_T_14 = cat(io_instReadPort_read_inst_a_hi, io_instReadPort_read_inst_a_lo) @[Cat.scala 31:58]
-    io.instReadPort.read_inst_a <= _io_instReadPort_read_inst_a_T_14 @[Memory.scala 14:31]
-    node _io_dataReadPort_read_data_b_T = add(io.instReadPort.read_addr_a, UInt<64>("h7")) @[Memory.scala 18:78]
-    node _io_dataReadPort_read_data_b_T_1 = tail(_io_dataReadPort_read_data_b_T, 1) @[Memory.scala 18:78]
-    wire _io_dataReadPort_read_data_b_WIRE : UInt @[Memory.scala 18:49]
-    _io_dataReadPort_read_data_b_WIRE is invalid @[Memory.scala 18:49]
-    when UInt<1>("h1") : @[Memory.scala 18:49]
-      _io_dataReadPort_read_data_b_WIRE <= _io_dataReadPort_read_data_b_T_1 @[Memory.scala 18:49]
-      node _io_dataReadPort_read_data_b_T_2 = or(_io_dataReadPort_read_data_b_WIRE, UInt<12>("h0")) @[Memory.scala 18:49]
-      node _io_dataReadPort_read_data_b_T_3 = bits(_io_dataReadPort_read_data_b_T_2, 11, 0) @[Memory.scala 18:49]
-      read mport io_dataReadPort_read_data_b_MPORT = memory[_io_dataReadPort_read_data_b_T_3], clock @[Memory.scala 18:49]
-    node _io_dataReadPort_read_data_b_T_4 = add(io.instReadPort.read_addr_a, UInt<64>("h6")) @[Memory.scala 19:45]
-    node _io_dataReadPort_read_data_b_T_5 = tail(_io_dataReadPort_read_data_b_T_4, 1) @[Memory.scala 19:45]
-    wire _io_dataReadPort_read_data_b_WIRE_1 : UInt @[Memory.scala 19:16]
-    _io_dataReadPort_read_data_b_WIRE_1 is invalid @[Memory.scala 19:16]
-    when UInt<1>("h1") : @[Memory.scala 19:16]
-      _io_dataReadPort_read_data_b_WIRE_1 <= _io_dataReadPort_read_data_b_T_5 @[Memory.scala 19:16]
-      node _io_dataReadPort_read_data_b_T_6 = or(_io_dataReadPort_read_data_b_WIRE_1, UInt<12>("h0")) @[Memory.scala 19:16]
-      node _io_dataReadPort_read_data_b_T_7 = bits(_io_dataReadPort_read_data_b_T_6, 11, 0) @[Memory.scala 19:16]
-      read mport io_dataReadPort_read_data_b_MPORT_1 = memory[_io_dataReadPort_read_data_b_T_7], clock @[Memory.scala 19:16]
-    node _io_dataReadPort_read_data_b_T_8 = add(io.instReadPort.read_addr_a, UInt<64>("h5")) @[Memory.scala 20:45]
-    node _io_dataReadPort_read_data_b_T_9 = tail(_io_dataReadPort_read_data_b_T_8, 1) @[Memory.scala 20:45]
-    wire _io_dataReadPort_read_data_b_WIRE_2 : UInt @[Memory.scala 20:16]
-    _io_dataReadPort_read_data_b_WIRE_2 is invalid @[Memory.scala 20:16]
-    when UInt<1>("h1") : @[Memory.scala 20:16]
-      _io_dataReadPort_read_data_b_WIRE_2 <= _io_dataReadPort_read_data_b_T_9 @[Memory.scala 20:16]
-      node _io_dataReadPort_read_data_b_T_10 = or(_io_dataReadPort_read_data_b_WIRE_2, UInt<12>("h0")) @[Memory.scala 20:16]
-      node _io_dataReadPort_read_data_b_T_11 = bits(_io_dataReadPort_read_data_b_T_10, 11, 0) @[Memory.scala 20:16]
-      read mport io_dataReadPort_read_data_b_MPORT_2 = memory[_io_dataReadPort_read_data_b_T_11], clock @[Memory.scala 20:16]
-    node _io_dataReadPort_read_data_b_T_12 = add(io.instReadPort.read_addr_a, UInt<64>("h4")) @[Memory.scala 21:45]
-    node _io_dataReadPort_read_data_b_T_13 = tail(_io_dataReadPort_read_data_b_T_12, 1) @[Memory.scala 21:45]
-    wire _io_dataReadPort_read_data_b_WIRE_3 : UInt @[Memory.scala 21:16]
-    _io_dataReadPort_read_data_b_WIRE_3 is invalid @[Memory.scala 21:16]
-    when UInt<1>("h1") : @[Memory.scala 21:16]
-      _io_dataReadPort_read_data_b_WIRE_3 <= _io_dataReadPort_read_data_b_T_13 @[Memory.scala 21:16]
-      node _io_dataReadPort_read_data_b_T_14 = or(_io_dataReadPort_read_data_b_WIRE_3, UInt<12>("h0")) @[Memory.scala 21:16]
-      node _io_dataReadPort_read_data_b_T_15 = bits(_io_dataReadPort_read_data_b_T_14, 11, 0) @[Memory.scala 21:16]
-      read mport io_dataReadPort_read_data_b_MPORT_3 = memory[_io_dataReadPort_read_data_b_T_15], clock @[Memory.scala 21:16]
-    node _io_dataReadPort_read_data_b_T_16 = add(io.instReadPort.read_addr_a, UInt<64>("h3")) @[Memory.scala 22:45]
-    node _io_dataReadPort_read_data_b_T_17 = tail(_io_dataReadPort_read_data_b_T_16, 1) @[Memory.scala 22:45]
-    wire _io_dataReadPort_read_data_b_WIRE_4 : UInt @[Memory.scala 22:16]
-    _io_dataReadPort_read_data_b_WIRE_4 is invalid @[Memory.scala 22:16]
+    io.instReadPort.read_inst_a <= _io_instReadPort_read_inst_a_T_14 @[Memory.scala 17:31]
+    node _io_dataReadPort_read_data_b_T = add(io.instReadPort.read_addr_a, UInt<64>("h7")) @[Memory.scala 21:78]
+    node _io_dataReadPort_read_data_b_T_1 = tail(_io_dataReadPort_read_data_b_T, 1) @[Memory.scala 21:78]
+    wire _io_dataReadPort_read_data_b_WIRE : UInt @[Memory.scala 21:49]
+    _io_dataReadPort_read_data_b_WIRE is invalid @[Memory.scala 21:49]
+    when UInt<1>("h1") : @[Memory.scala 21:49]
+      _io_dataReadPort_read_data_b_WIRE <= _io_dataReadPort_read_data_b_T_1 @[Memory.scala 21:49]
+      node _io_dataReadPort_read_data_b_T_2 = or(_io_dataReadPort_read_data_b_WIRE, UInt<12>("h0")) @[Memory.scala 21:49]
+      node _io_dataReadPort_read_data_b_T_3 = bits(_io_dataReadPort_read_data_b_T_2, 11, 0) @[Memory.scala 21:49]
+      read mport io_dataReadPort_read_data_b_MPORT = memory[_io_dataReadPort_read_data_b_T_3], clock @[Memory.scala 21:49]
+    node _io_dataReadPort_read_data_b_T_4 = add(io.instReadPort.read_addr_a, UInt<64>("h6")) @[Memory.scala 22:45]
+    node _io_dataReadPort_read_data_b_T_5 = tail(_io_dataReadPort_read_data_b_T_4, 1) @[Memory.scala 22:45]
+    wire _io_dataReadPort_read_data_b_WIRE_1 : UInt @[Memory.scala 22:16]
+    _io_dataReadPort_read_data_b_WIRE_1 is invalid @[Memory.scala 22:16]
     when UInt<1>("h1") : @[Memory.scala 22:16]
-      _io_dataReadPort_read_data_b_WIRE_4 <= _io_dataReadPort_read_data_b_T_17 @[Memory.scala 22:16]
-      node _io_dataReadPort_read_data_b_T_18 = or(_io_dataReadPort_read_data_b_WIRE_4, UInt<12>("h0")) @[Memory.scala 22:16]
-      node _io_dataReadPort_read_data_b_T_19 = bits(_io_dataReadPort_read_data_b_T_18, 11, 0) @[Memory.scala 22:16]
-      read mport io_dataReadPort_read_data_b_MPORT_4 = memory[_io_dataReadPort_read_data_b_T_19], clock @[Memory.scala 22:16]
-    node _io_dataReadPort_read_data_b_T_20 = add(io.instReadPort.read_addr_a, UInt<64>("h2")) @[Memory.scala 23:45]
-    node _io_dataReadPort_read_data_b_T_21 = tail(_io_dataReadPort_read_data_b_T_20, 1) @[Memory.scala 23:45]
-    wire _io_dataReadPort_read_data_b_WIRE_5 : UInt @[Memory.scala 23:16]
-    _io_dataReadPort_read_data_b_WIRE_5 is invalid @[Memory.scala 23:16]
+      _io_dataReadPort_read_data_b_WIRE_1 <= _io_dataReadPort_read_data_b_T_5 @[Memory.scala 22:16]
+      node _io_dataReadPort_read_data_b_T_6 = or(_io_dataReadPort_read_data_b_WIRE_1, UInt<12>("h0")) @[Memory.scala 22:16]
+      node _io_dataReadPort_read_data_b_T_7 = bits(_io_dataReadPort_read_data_b_T_6, 11, 0) @[Memory.scala 22:16]
+      read mport io_dataReadPort_read_data_b_MPORT_1 = memory[_io_dataReadPort_read_data_b_T_7], clock @[Memory.scala 22:16]
+    node _io_dataReadPort_read_data_b_T_8 = add(io.instReadPort.read_addr_a, UInt<64>("h5")) @[Memory.scala 23:45]
+    node _io_dataReadPort_read_data_b_T_9 = tail(_io_dataReadPort_read_data_b_T_8, 1) @[Memory.scala 23:45]
+    wire _io_dataReadPort_read_data_b_WIRE_2 : UInt @[Memory.scala 23:16]
+    _io_dataReadPort_read_data_b_WIRE_2 is invalid @[Memory.scala 23:16]
     when UInt<1>("h1") : @[Memory.scala 23:16]
-      _io_dataReadPort_read_data_b_WIRE_5 <= _io_dataReadPort_read_data_b_T_21 @[Memory.scala 23:16]
-      node _io_dataReadPort_read_data_b_T_22 = or(_io_dataReadPort_read_data_b_WIRE_5, UInt<12>("h0")) @[Memory.scala 23:16]
-      node _io_dataReadPort_read_data_b_T_23 = bits(_io_dataReadPort_read_data_b_T_22, 11, 0) @[Memory.scala 23:16]
-      read mport io_dataReadPort_read_data_b_MPORT_5 = memory[_io_dataReadPort_read_data_b_T_23], clock @[Memory.scala 23:16]
-    node _io_dataReadPort_read_data_b_T_24 = add(io.instReadPort.read_addr_a, UInt<64>("h1")) @[Memory.scala 24:45]
-    node _io_dataReadPort_read_data_b_T_25 = tail(_io_dataReadPort_read_data_b_T_24, 1) @[Memory.scala 24:45]
-    wire _io_dataReadPort_read_data_b_WIRE_6 : UInt @[Memory.scala 24:16]
-    _io_dataReadPort_read_data_b_WIRE_6 is invalid @[Memory.scala 24:16]
+      _io_dataReadPort_read_data_b_WIRE_2 <= _io_dataReadPort_read_data_b_T_9 @[Memory.scala 23:16]
+      node _io_dataReadPort_read_data_b_T_10 = or(_io_dataReadPort_read_data_b_WIRE_2, UInt<12>("h0")) @[Memory.scala 23:16]
+      node _io_dataReadPort_read_data_b_T_11 = bits(_io_dataReadPort_read_data_b_T_10, 11, 0) @[Memory.scala 23:16]
+      read mport io_dataReadPort_read_data_b_MPORT_2 = memory[_io_dataReadPort_read_data_b_T_11], clock @[Memory.scala 23:16]
+    node _io_dataReadPort_read_data_b_T_12 = add(io.instReadPort.read_addr_a, UInt<64>("h4")) @[Memory.scala 24:45]
+    node _io_dataReadPort_read_data_b_T_13 = tail(_io_dataReadPort_read_data_b_T_12, 1) @[Memory.scala 24:45]
+    wire _io_dataReadPort_read_data_b_WIRE_3 : UInt @[Memory.scala 24:16]
+    _io_dataReadPort_read_data_b_WIRE_3 is invalid @[Memory.scala 24:16]
     when UInt<1>("h1") : @[Memory.scala 24:16]
-      _io_dataReadPort_read_data_b_WIRE_6 <= _io_dataReadPort_read_data_b_T_25 @[Memory.scala 24:16]
-      node _io_dataReadPort_read_data_b_T_26 = or(_io_dataReadPort_read_data_b_WIRE_6, UInt<12>("h0")) @[Memory.scala 24:16]
-      node _io_dataReadPort_read_data_b_T_27 = bits(_io_dataReadPort_read_data_b_T_26, 11, 0) @[Memory.scala 24:16]
-      read mport io_dataReadPort_read_data_b_MPORT_6 = memory[_io_dataReadPort_read_data_b_T_27], clock @[Memory.scala 24:16]
-    wire _io_dataReadPort_read_data_b_WIRE_7 : UInt @[Memory.scala 25:16]
-    _io_dataReadPort_read_data_b_WIRE_7 is invalid @[Memory.scala 25:16]
+      _io_dataReadPort_read_data_b_WIRE_3 <= _io_dataReadPort_read_data_b_T_13 @[Memory.scala 24:16]
+      node _io_dataReadPort_read_data_b_T_14 = or(_io_dataReadPort_read_data_b_WIRE_3, UInt<12>("h0")) @[Memory.scala 24:16]
+      node _io_dataReadPort_read_data_b_T_15 = bits(_io_dataReadPort_read_data_b_T_14, 11, 0) @[Memory.scala 24:16]
+      read mport io_dataReadPort_read_data_b_MPORT_3 = memory[_io_dataReadPort_read_data_b_T_15], clock @[Memory.scala 24:16]
+    node _io_dataReadPort_read_data_b_T_16 = add(io.instReadPort.read_addr_a, UInt<64>("h3")) @[Memory.scala 25:45]
+    node _io_dataReadPort_read_data_b_T_17 = tail(_io_dataReadPort_read_data_b_T_16, 1) @[Memory.scala 25:45]
+    wire _io_dataReadPort_read_data_b_WIRE_4 : UInt @[Memory.scala 25:16]
+    _io_dataReadPort_read_data_b_WIRE_4 is invalid @[Memory.scala 25:16]
     when UInt<1>("h1") : @[Memory.scala 25:16]
-      _io_dataReadPort_read_data_b_WIRE_7 <= io.instReadPort.read_addr_a @[Memory.scala 25:16]
-      node _io_dataReadPort_read_data_b_T_28 = or(_io_dataReadPort_read_data_b_WIRE_7, UInt<12>("h0")) @[Memory.scala 25:16]
-      node _io_dataReadPort_read_data_b_T_29 = bits(_io_dataReadPort_read_data_b_T_28, 11, 0) @[Memory.scala 25:16]
-      read mport io_dataReadPort_read_data_b_MPORT_7 = memory[_io_dataReadPort_read_data_b_T_29], clock @[Memory.scala 25:16]
+      _io_dataReadPort_read_data_b_WIRE_4 <= _io_dataReadPort_read_data_b_T_17 @[Memory.scala 25:16]
+      node _io_dataReadPort_read_data_b_T_18 = or(_io_dataReadPort_read_data_b_WIRE_4, UInt<12>("h0")) @[Memory.scala 25:16]
+      node _io_dataReadPort_read_data_b_T_19 = bits(_io_dataReadPort_read_data_b_T_18, 11, 0) @[Memory.scala 25:16]
+      read mport io_dataReadPort_read_data_b_MPORT_4 = memory[_io_dataReadPort_read_data_b_T_19], clock @[Memory.scala 25:16]
+    node _io_dataReadPort_read_data_b_T_20 = add(io.instReadPort.read_addr_a, UInt<64>("h2")) @[Memory.scala 26:45]
+    node _io_dataReadPort_read_data_b_T_21 = tail(_io_dataReadPort_read_data_b_T_20, 1) @[Memory.scala 26:45]
+    wire _io_dataReadPort_read_data_b_WIRE_5 : UInt @[Memory.scala 26:16]
+    _io_dataReadPort_read_data_b_WIRE_5 is invalid @[Memory.scala 26:16]
+    when UInt<1>("h1") : @[Memory.scala 26:16]
+      _io_dataReadPort_read_data_b_WIRE_5 <= _io_dataReadPort_read_data_b_T_21 @[Memory.scala 26:16]
+      node _io_dataReadPort_read_data_b_T_22 = or(_io_dataReadPort_read_data_b_WIRE_5, UInt<12>("h0")) @[Memory.scala 26:16]
+      node _io_dataReadPort_read_data_b_T_23 = bits(_io_dataReadPort_read_data_b_T_22, 11, 0) @[Memory.scala 26:16]
+      read mport io_dataReadPort_read_data_b_MPORT_5 = memory[_io_dataReadPort_read_data_b_T_23], clock @[Memory.scala 26:16]
+    node _io_dataReadPort_read_data_b_T_24 = add(io.instReadPort.read_addr_a, UInt<64>("h1")) @[Memory.scala 27:45]
+    node _io_dataReadPort_read_data_b_T_25 = tail(_io_dataReadPort_read_data_b_T_24, 1) @[Memory.scala 27:45]
+    wire _io_dataReadPort_read_data_b_WIRE_6 : UInt @[Memory.scala 27:16]
+    _io_dataReadPort_read_data_b_WIRE_6 is invalid @[Memory.scala 27:16]
+    when UInt<1>("h1") : @[Memory.scala 27:16]
+      _io_dataReadPort_read_data_b_WIRE_6 <= _io_dataReadPort_read_data_b_T_25 @[Memory.scala 27:16]
+      node _io_dataReadPort_read_data_b_T_26 = or(_io_dataReadPort_read_data_b_WIRE_6, UInt<12>("h0")) @[Memory.scala 27:16]
+      node _io_dataReadPort_read_data_b_T_27 = bits(_io_dataReadPort_read_data_b_T_26, 11, 0) @[Memory.scala 27:16]
+      read mport io_dataReadPort_read_data_b_MPORT_6 = memory[_io_dataReadPort_read_data_b_T_27], clock @[Memory.scala 27:16]
+    wire _io_dataReadPort_read_data_b_WIRE_7 : UInt @[Memory.scala 28:16]
+    _io_dataReadPort_read_data_b_WIRE_7 is invalid @[Memory.scala 28:16]
+    when UInt<1>("h1") : @[Memory.scala 28:16]
+      _io_dataReadPort_read_data_b_WIRE_7 <= io.instReadPort.read_addr_a @[Memory.scala 28:16]
+      node _io_dataReadPort_read_data_b_T_28 = or(_io_dataReadPort_read_data_b_WIRE_7, UInt<12>("h0")) @[Memory.scala 28:16]
+      node _io_dataReadPort_read_data_b_T_29 = bits(_io_dataReadPort_read_data_b_T_28, 11, 0) @[Memory.scala 28:16]
+      read mport io_dataReadPort_read_data_b_MPORT_7 = memory[_io_dataReadPort_read_data_b_T_29], clock @[Memory.scala 28:16]
     node io_dataReadPort_read_data_b_lo_lo = cat(io_dataReadPort_read_data_b_MPORT_6, io_dataReadPort_read_data_b_MPORT_7) @[Cat.scala 31:58]
     node io_dataReadPort_read_data_b_lo_hi = cat(io_dataReadPort_read_data_b_MPORT_4, io_dataReadPort_read_data_b_MPORT_5) @[Cat.scala 31:58]
     node io_dataReadPort_read_data_b_lo = cat(io_dataReadPort_read_data_b_lo_hi, io_dataReadPort_read_data_b_lo_lo) @[Cat.scala 31:58]
@@ -1254,98 +1254,98 @@ circuit Top :
     node io_dataReadPort_read_data_b_hi_hi = cat(io_dataReadPort_read_data_b_MPORT, io_dataReadPort_read_data_b_MPORT_1) @[Cat.scala 31:58]
     node io_dataReadPort_read_data_b_hi = cat(io_dataReadPort_read_data_b_hi_hi, io_dataReadPort_read_data_b_hi_lo) @[Cat.scala 31:58]
     node _io_dataReadPort_read_data_b_T_30 = cat(io_dataReadPort_read_data_b_hi, io_dataReadPort_read_data_b_lo) @[Cat.scala 31:58]
-    io.dataReadPort.read_data_b <= _io_dataReadPort_read_data_b_T_30 @[Memory.scala 18:31]
-    when io.writePort.write_enable : @[Memory.scala 26:35]
-      node _T = eq(io.writePort.write_lenth, UInt<4>("h4")) @[Memory.scala 27:35]
-      when _T : @[Memory.scala 27:46]
-        node _T_1 = bits(io.writePort.write_data, 7, 0) @[Memory.scala 28:81]
+    io.dataReadPort.read_data_b <= _io_dataReadPort_read_data_b_T_30 @[Memory.scala 21:31]
+    when io.writePort.write_enable : @[Memory.scala 29:35]
+      node _T = eq(io.writePort.write_lenth, UInt<4>("h4")) @[Memory.scala 30:35]
+      when _T : @[Memory.scala 30:46]
+        node _T_1 = bits(io.writePort.write_data, 7, 0) @[Memory.scala 31:81]
         node _T_2 = bits(io.writePort.write_addr, 11, 0)
         write mport MPORT = memory[_T_2], clock
         MPORT <= _T_1
       else :
-        node _T_3 = eq(io.writePort.write_lenth, UInt<4>("h7")) @[Memory.scala 29:41]
-        when _T_3 : @[Memory.scala 29:52]
-          node _T_4 = bits(io.writePort.write_data, 7, 0) @[Memory.scala 30:81]
+        node _T_3 = eq(io.writePort.write_lenth, UInt<4>("h5")) @[Memory.scala 32:41]
+        when _T_3 : @[Memory.scala 32:52]
+          node _T_4 = bits(io.writePort.write_data, 7, 0) @[Memory.scala 33:81]
           node _T_5 = bits(io.writePort.write_addr, 11, 0)
           write mport MPORT_1 = memory[_T_5], clock
           MPORT_1 <= _T_4
-          node _T_6 = add(io.writePort.write_addr, UInt<64>("h1")) @[Memory.scala 31:50]
-          node _T_7 = tail(_T_6, 1) @[Memory.scala 31:50]
-          node _T_8 = bits(io.writePort.write_data, 15, 8) @[Memory.scala 31:110]
+          node _T_6 = add(io.writePort.write_addr, UInt<64>("h1")) @[Memory.scala 34:50]
+          node _T_7 = tail(_T_6, 1) @[Memory.scala 34:50]
+          node _T_8 = bits(io.writePort.write_data, 15, 8) @[Memory.scala 34:110]
           node _T_9 = bits(_T_7, 11, 0)
           write mport MPORT_2 = memory[_T_9], clock
           MPORT_2 <= _T_8
-          node _T_10 = add(io.writePort.write_addr, UInt<64>("h2")) @[Memory.scala 32:50]
-          node _T_11 = tail(_T_10, 1) @[Memory.scala 32:50]
-          node _T_12 = bits(io.writePort.write_data, 23, 16) @[Memory.scala 32:110]
-          node _T_13 = bits(_T_11, 11, 0)
-          write mport MPORT_3 = memory[_T_13], clock
-          MPORT_3 <= _T_12
-          node _T_14 = add(io.writePort.write_addr, UInt<64>("h3")) @[Memory.scala 33:50]
-          node _T_15 = tail(_T_14, 1) @[Memory.scala 33:50]
-          node _T_16 = bits(io.writePort.write_data, 31, 24) @[Memory.scala 33:110]
-          node _T_17 = bits(_T_15, 11, 0)
-          write mport MPORT_4 = memory[_T_17], clock
-          MPORT_4 <= _T_16
-          node _T_18 = add(io.writePort.write_addr, UInt<64>("h4")) @[Memory.scala 34:50]
-          node _T_19 = tail(_T_18, 1) @[Memory.scala 34:50]
-          node _T_20 = bits(io.writePort.write_data, 39, 32) @[Memory.scala 34:110]
-          node _T_21 = bits(_T_19, 11, 0)
-          write mport MPORT_5 = memory[_T_21], clock
-          MPORT_5 <= _T_20
-          node _T_22 = add(io.writePort.write_addr, UInt<64>("h5")) @[Memory.scala 35:50]
-          node _T_23 = tail(_T_22, 1) @[Memory.scala 35:50]
-          node _T_24 = bits(io.writePort.write_data, 47, 40) @[Memory.scala 35:110]
-          node _T_25 = bits(_T_23, 11, 0)
-          write mport MPORT_6 = memory[_T_25], clock
-          MPORT_6 <= _T_24
-          node _T_26 = add(io.writePort.write_addr, UInt<64>("h6")) @[Memory.scala 36:50]
-          node _T_27 = tail(_T_26, 1) @[Memory.scala 36:50]
-          node _T_28 = bits(io.writePort.write_data, 55, 48) @[Memory.scala 36:110]
-          node _T_29 = bits(_T_27, 11, 0)
-          write mport MPORT_7 = memory[_T_29], clock
-          MPORT_7 <= _T_28
-          node _T_30 = add(io.writePort.write_addr, UInt<64>("h7")) @[Memory.scala 37:50]
-          node _T_31 = tail(_T_30, 1) @[Memory.scala 37:50]
-          node _T_32 = bits(io.writePort.write_data, 63, 56) @[Memory.scala 37:110]
-          node _T_33 = bits(_T_31, 11, 0)
-          write mport MPORT_8 = memory[_T_33], clock
-          MPORT_8 <= _T_32
         else :
-          node _T_34 = eq(io.writePort.write_lenth, UInt<4>("h5")) @[Memory.scala 38:41]
-          when _T_34 : @[Memory.scala 38:52]
-            node _T_35 = bits(io.writePort.write_data, 7, 0) @[Memory.scala 39:81]
-            node _T_36 = bits(io.writePort.write_addr, 11, 0)
-            write mport MPORT_9 = memory[_T_36], clock
-            MPORT_9 <= _T_35
-            node _T_37 = add(io.writePort.write_addr, UInt<64>("h1")) @[Memory.scala 40:50]
-            node _T_38 = tail(_T_37, 1) @[Memory.scala 40:50]
-            node _T_39 = bits(io.writePort.write_data, 15, 8) @[Memory.scala 40:110]
-            node _T_40 = bits(_T_38, 11, 0)
-            write mport MPORT_10 = memory[_T_40], clock
-            MPORT_10 <= _T_39
+          node _T_10 = eq(io.writePort.write_lenth, UInt<4>("h6")) @[Memory.scala 35:41]
+          when _T_10 : @[Memory.scala 35:52]
+            node _T_11 = bits(io.writePort.write_data, 7, 0) @[Memory.scala 36:81]
+            node _T_12 = bits(io.writePort.write_addr, 11, 0)
+            write mport MPORT_3 = memory[_T_12], clock
+            MPORT_3 <= _T_11
+            node _T_13 = add(io.writePort.write_addr, UInt<64>("h1")) @[Memory.scala 37:50]
+            node _T_14 = tail(_T_13, 1) @[Memory.scala 37:50]
+            node _T_15 = bits(io.writePort.write_data, 15, 8) @[Memory.scala 37:110]
+            node _T_16 = bits(_T_14, 11, 0)
+            write mport MPORT_4 = memory[_T_16], clock
+            MPORT_4 <= _T_15
+            node _T_17 = add(io.writePort.write_addr, UInt<64>("h2")) @[Memory.scala 38:50]
+            node _T_18 = tail(_T_17, 1) @[Memory.scala 38:50]
+            node _T_19 = bits(io.writePort.write_data, 23, 16) @[Memory.scala 38:110]
+            node _T_20 = bits(_T_18, 11, 0)
+            write mport MPORT_5 = memory[_T_20], clock
+            MPORT_5 <= _T_19
+            node _T_21 = add(io.writePort.write_addr, UInt<64>("h3")) @[Memory.scala 39:50]
+            node _T_22 = tail(_T_21, 1) @[Memory.scala 39:50]
+            node _T_23 = bits(io.writePort.write_data, 31, 24) @[Memory.scala 39:110]
+            node _T_24 = bits(_T_22, 11, 0)
+            write mport MPORT_6 = memory[_T_24], clock
+            MPORT_6 <= _T_23
           else :
-            node _T_41 = eq(io.writePort.write_lenth, UInt<4>("h6")) @[Memory.scala 41:41]
-            when _T_41 : @[Memory.scala 41:52]
-              node _T_42 = bits(io.writePort.write_data, 7, 0) @[Memory.scala 42:81]
-              node _T_43 = bits(io.writePort.write_addr, 11, 0)
+            node _T_25 = eq(io.writePort.write_lenth, UInt<4>("h7")) @[Memory.scala 40:41]
+            when _T_25 : @[Memory.scala 40:53]
+              node _T_26 = bits(io.writePort.write_data, 7, 0) @[Memory.scala 41:81]
+              node _T_27 = bits(io.writePort.write_addr, 11, 0)
+              write mport MPORT_7 = memory[_T_27], clock
+              MPORT_7 <= _T_26
+              node _T_28 = add(io.writePort.write_addr, UInt<64>("h1")) @[Memory.scala 42:50]
+              node _T_29 = tail(_T_28, 1) @[Memory.scala 42:50]
+              node _T_30 = bits(io.writePort.write_data, 15, 8) @[Memory.scala 42:110]
+              node _T_31 = bits(_T_29, 11, 0)
+              write mport MPORT_8 = memory[_T_31], clock
+              MPORT_8 <= _T_30
+              node _T_32 = add(io.writePort.write_addr, UInt<64>("h2")) @[Memory.scala 43:50]
+              node _T_33 = tail(_T_32, 1) @[Memory.scala 43:50]
+              node _T_34 = bits(io.writePort.write_data, 23, 16) @[Memory.scala 43:110]
+              node _T_35 = bits(_T_33, 11, 0)
+              write mport MPORT_9 = memory[_T_35], clock
+              MPORT_9 <= _T_34
+              node _T_36 = add(io.writePort.write_addr, UInt<64>("h3")) @[Memory.scala 44:50]
+              node _T_37 = tail(_T_36, 1) @[Memory.scala 44:50]
+              node _T_38 = bits(io.writePort.write_data, 31, 24) @[Memory.scala 44:110]
+              node _T_39 = bits(_T_37, 11, 0)
+              write mport MPORT_10 = memory[_T_39], clock
+              MPORT_10 <= _T_38
+              node _T_40 = add(io.writePort.write_addr, UInt<64>("h4")) @[Memory.scala 45:50]
+              node _T_41 = tail(_T_40, 1) @[Memory.scala 45:50]
+              node _T_42 = bits(io.writePort.write_data, 39, 32) @[Memory.scala 45:110]
+              node _T_43 = bits(_T_41, 11, 0)
               write mport MPORT_11 = memory[_T_43], clock
               MPORT_11 <= _T_42
-              node _T_44 = add(io.writePort.write_addr, UInt<64>("h1")) @[Memory.scala 43:50]
-              node _T_45 = tail(_T_44, 1) @[Memory.scala 43:50]
-              node _T_46 = bits(io.writePort.write_data, 15, 8) @[Memory.scala 43:110]
+              node _T_44 = add(io.writePort.write_addr, UInt<64>("h5")) @[Memory.scala 46:50]
+              node _T_45 = tail(_T_44, 1) @[Memory.scala 46:50]
+              node _T_46 = bits(io.writePort.write_data, 47, 40) @[Memory.scala 46:110]
               node _T_47 = bits(_T_45, 11, 0)
               write mport MPORT_12 = memory[_T_47], clock
               MPORT_12 <= _T_46
-              node _T_48 = add(io.writePort.write_addr, UInt<64>("h2")) @[Memory.scala 44:50]
-              node _T_49 = tail(_T_48, 1) @[Memory.scala 44:50]
-              node _T_50 = bits(io.writePort.write_data, 23, 16) @[Memory.scala 44:110]
+              node _T_48 = add(io.writePort.write_addr, UInt<64>("h6")) @[Memory.scala 47:50]
+              node _T_49 = tail(_T_48, 1) @[Memory.scala 47:50]
+              node _T_50 = bits(io.writePort.write_data, 55, 48) @[Memory.scala 47:110]
               node _T_51 = bits(_T_49, 11, 0)
               write mport MPORT_13 = memory[_T_51], clock
               MPORT_13 <= _T_50
-              node _T_52 = add(io.writePort.write_addr, UInt<64>("h3")) @[Memory.scala 45:50]
-              node _T_53 = tail(_T_52, 1) @[Memory.scala 45:50]
-              node _T_54 = bits(io.writePort.write_data, 31, 24) @[Memory.scala 45:110]
+              node _T_52 = add(io.writePort.write_addr, UInt<64>("h7")) @[Memory.scala 48:50]
+              node _T_53 = tail(_T_52, 1) @[Memory.scala 48:50]
+              node _T_54 = bits(io.writePort.write_data, 63, 56) @[Memory.scala 48:110]
               node _T_55 = bits(_T_53, 11, 0)
               write mport MPORT_14 = memory[_T_55], clock
               MPORT_14 <= _T_54
