@@ -26,6 +26,7 @@ class Check extends Module {
   printf(p"Aforwardtype         : 0x${Hexadecimal(io.probe.forwardAtype)}\n")
   printf(p"Bforwardtype         : 0x${Hexadecimal(io.probe.forwardBtype)}\n")
   printf(p"wb data(wb)          : 0x${Hexadecimal(io.probe.writeback_data)}\n")
+  printf(p"stall flag           : 0x${Hexadecimal(io.probe.stallFlag)}\n")
   // printf(p"mem read addr        : 0x${Hexadecimal(io.probe.mem_read_addr)}\n")
   printf("---------\n")
 }

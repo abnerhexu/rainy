@@ -7,7 +7,7 @@ import common.Defines._
 
 import chisel3.util.MuxCase
 import core.backend.decode.{ControlOutPort, SrcOutPort}
-import core.backend.datahazard.{ForwardWithExecute, StallWithIDEX}
+import core.backend.datahazard.{ForwardWithExecute, StallWithEX}
 
 class Alu extends Module {
   val io = IO(new Bundle() {
@@ -18,7 +18,7 @@ class Alu extends Module {
     val controlPass = new AluConOut
     val controlSignal = Flipped(new ControlOutPort)
     val forward = Flipped(new ForwardWithExecute)
-    // val stall = Flipped(new StallWithExe)
+    val stall = Flipped(new StallWithEX)
     // probe
     val srcA = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
     val srcB = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
@@ -46,16 +46,8 @@ class Alu extends Module {
   io.alu_out.is_zero := is_zero
    */
 
-  val branch_flag = MuxCase(false.asBool, Seq(
-    (io.controlSignal.alu_exe_fun === BR_BEQ) -> (aluSrc_a === aluSrc_b).asBool,
-    (io.controlSignal.alu_exe_fun === BR_BNE) -> (aluSrc_a =/= aluSrc_b).asBool,
-    (io.controlSignal.alu_exe_fun === BR_BLTU) -> (aluSrc_a < aluSrc_b).asBool,
-    (io.controlSignal.alu_exe_fun === BR_BLT) -> (aluSrc_a.asSInt < aluSrc_b.asSInt).asBool,
-    (io.controlSignal.alu_exe_fun === BR_BGEU) -> (aluSrc_a >= aluSrc_b).asBool,
-    (io.controlSignal.alu_exe_fun === BR_BGE) -> (aluSrc_a.asSInt >= aluSrc_b.asSInt).asBool
-  ))
 
-  io.alu_out.branchFlag := branch_flag
+
   io.controlPass.regType := io.controlSignal.regType
   io.controlPass.wbType := io.controlSignal.wbType
   io.controlPass.CSRType := io.controlSignal.CSRType
@@ -70,16 +62,16 @@ class Alu extends Module {
   val jump_flag = (io.controlSignal.wbType === WB_PC).asBool
   io.alu_out.jumpFlag := jump_flag
   io.alu_out.jumpTarget := alu_out
-  val branchTarget = io.alu_in.imm_b + io.cur_pc
 
   // data hazard
   io.forward.wbDataFromExe := alu_out
   io.forward.wbAddrFromExecute := io.alu_in.writeback_addr
   io.forward.regTypeFromExecute := io.controlSignal.regType
-  io.alu_out.branchTarget := branchTarget
 
 //  io.stall.wbSrcFromEx := io.controlSignal.wbType
 //  io.stall.wbAddrFromEx := io.alu_in.writeback_addr
+  io.stall.wbAddrFromEx := io.alu_in.writeback_addr
+  io.stall.wbSrcFromEx := io.controlSignal.wbType
   // probe
   io.srcA := aluSrc_a
   io.srcB := aluSrc_b

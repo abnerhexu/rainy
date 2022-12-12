@@ -4,6 +4,8 @@ import chisel3._
 import core.backend.decode.{ControlOutPort, SrcOutPort}
 import common.Defines._
 
+import rainy.shaheway.org.core.backend.datahazard.StallWithEX
+
 class DecodeToExecute extends Module {
   val io = IO(new Bundle() {
     // branch
@@ -54,15 +56,16 @@ class DecodeToExecute extends Module {
   val writebackAddr = RegInit(0.U(REG_ADDR_WIDTH))
   writebackAddr := writebackAddrMux
   val imm_b = RegInit(0.U(DOUBLE_WORD_LEN_WIDTH))
-  imm_b := io.opSrc.imm_b
 
   io.srcPass.aluSrc_a := srcA
   io.srcPass.aluSrc_b := srcB
   io.srcPass.regB_data := regBData
   io.srcPass.writeback_addr := writebackAddr
-  io.srcPass.imm_b := imm_b
 
   val progcnter = RegInit(0.U(DOUBLE_WORD_LEN_WIDTH))
   progcnter := io.cur_pc
   io.pcOut := progcnter
+
+  // stall
+
 }

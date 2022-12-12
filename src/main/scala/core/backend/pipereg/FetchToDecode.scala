@@ -25,8 +25,8 @@ class FetchToDecode extends Module {
   instReg := instUpdate
 
   // 判断是否有需要暂停流水线的数据依赖
-  val rsA_addr = instUpdate(19, 15)
-  val rsB_addr = instUpdate(24, 20)
+  val rsA_addr = instReg(19, 15)
+  val rsB_addr = instReg(24, 20)
   io.stall.srcAddrA := rsA_addr
   io.stall.srcAddrB := rsB_addr
 

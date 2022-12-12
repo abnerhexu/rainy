@@ -81,7 +81,7 @@ class Core extends Module {
   instfetch_to_decode.io.pcIn := instfetch.io.pcOut
   instfetch_to_decode.io.instIn := instfetch.io.instOut
   instfetch_to_decode.io.jumpOrBranchFlag := jumpOrBranchFlag
-  // instfetch_to_decode.io.stall <> datahazard_stall.io.withDecode
+  instfetch_to_decode.io.stall <> datahazard_stall.io.withIDDE
   // decode
   decode.io.branchFlag := execute_to_mema.io.branchFlag
   decode.io.jumpFlag := execute_to_mema.io.jumpFlag
@@ -95,13 +95,13 @@ class Core extends Module {
   decode_to_execute.io.jumpOrBranchFlag := jumpOrBranchFlag
   decode_to_execute.io.cur_pc := decode.io.pcOut
   decode_to_execute.io.opSrc <> decode.io.srcOut
-  // decode_to_execute.io.stallFlag := datahazard_stall.io.stallFlag
+  // decode_to_execute.io.stall <> datahazard_stall.io.withIDEX
   // execute
   execute.io.cur_pc := decode_to_execute.io.pcOut
   execute.io.alu_in <> decode_to_execute.io.srcPass
   execute.io.controlSignal <> decode_to_execute.io.controlSignalPass
   execute.io.forward <> datahazard_forward.io.withExecute
-  // execute.io.stall <> datahazard_stall.io.withExe
+  execute.io.stall <> datahazard_stall.io.withEX
   // execute_to_mema
   execute_to_mema.io.linkedPC := execute.io.linkedPC
   execute_to_mema.io.aluOut <> execute.io.alu_out
@@ -134,4 +134,5 @@ class Core extends Module {
   io.probe.mem_read_addr := memoryAccess.io.dataReadPort.read_addr_b
   io.probe.forwardAtype := datahazard_forward.io.probe_typeA
   io.probe.forwardBtype := datahazard_forward.io.probe_typeB
+  io.probe.stallFlag := datahazard_stall.io.stallFlag
 }

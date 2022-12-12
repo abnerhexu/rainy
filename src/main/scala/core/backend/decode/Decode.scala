@@ -20,13 +20,14 @@ class Decode extends Module {
     val srcOut = new SrcOutPort
     val forward = Flipped(new ForwardWithDecode)
     val readReg = Flipped(new RegReadPort)
+    val branch = new Branch
     // probe
     val inst_id = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
   })
 
   // 正常情况
-  val de_inst = Mux(io.stallFlag || io.branchFlag || io.jumpFlag, BUBBLE, io.inst)
-  io.inst_id := de_inst
+  val de_inst = Mux(io.branchFlag || io.jumpFlag || io.stallFlag, BUBBLE, io.inst)
+  io.inst_id := de_inst // probe
   val rsA_addr = de_inst(19, 15)
   val rsB_addr = de_inst(24, 20)
   // forward
@@ -126,7 +127,6 @@ class Decode extends Module {
   ))
 
   val csr_addr = Mux(csrType === CSR_E, 0x342.U(CSR_ADDR_LEN_WIDTH), de_inst(31, 20))
-  io.srcOut.imm_b := imm_b_sext
 
   io.srcOut.aluSrc_a := srcAdata
   io.srcOut.aluSrc_b := srcBdata
@@ -141,4 +141,17 @@ class Decode extends Module {
   io.decodeOut.CSRType := csrType
 
   io.pcOut := io.cur_pc
+
+  // branch
+  val branch_flag = MuxCase(false.asBool, Seq(
+    (alu_exe_fun === BR_BEQ) -> (srcAdata === srcBdata).asBool,
+    (alu_exe_fun === BR_BNE) -> (srcAdata =/= srcBdata).asBool,
+    (alu_exe_fun === BR_BLTU) -> (srcAdata < srcBdata).asBool,
+    (alu_exe_fun === BR_BLT) -> (srcAdata.asSInt < srcBdata.asSInt).asBool,
+    (alu_exe_fun === BR_BGEU) -> (srcAdata >= srcBdata).asBool,
+    (alu_exe_fun === BR_BGE) -> (srcAdata.asSInt >= srcBdata.asSInt).asBool
+  ))
+  val branchTarget = imm_b_sext + io.cur_pc
+  io.branch.branchFlag := branch_flag
+  io.branch.branchTarget := branchTarget
 }

@@ -13,4 +13,5 @@ class Probe extends Bundle{
   val mem_read_addr = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
   val forwardAtype = Output(UInt(DATAHAZARD_LEN))
   val forwardBtype = Output(UInt(DATAHAZARD_LEN))
+  val stallFlag = Output(Bool())
 }
