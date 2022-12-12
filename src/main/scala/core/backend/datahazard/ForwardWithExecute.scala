@@ -6,8 +6,5 @@ class ForwardWithExecute extends Bundle {
   val wbAddrFromExecute = Input(UInt(REG_ADDR_WIDTH))
   val regTypeFromExecute = Input(UInt(REG_TYPE_LEN))
   val wbDataFromExe = Input(UInt(DOUBLE_WORD_LEN_WIDTH))
-  val hazardAData = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
-  val hazardBData = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
-  val AhazardFlag = Output(Bool())
-  val BhazardFlag = Output(Bool())
+
 }

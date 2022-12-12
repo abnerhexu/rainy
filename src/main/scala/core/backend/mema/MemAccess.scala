@@ -8,7 +8,7 @@ import mem.{DataReadPort, MemWritePort}
 
 import chisel3._
 import chisel3.util.{Cat, Fill, MuxCase}
-import core.backend.datahazard.{ForwardWithMema, StallWithExe}
+import core.backend.datahazard.{ForwardWithMema, StallWithIDEX}
 
 class MemAccess extends Module {
   val io = IO(new Bundle() {

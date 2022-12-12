@@ -1,14 +1,16 @@
 package rainy.shaheway.org
 package core
 import chisel3._
-import common.Defines.{DOUBLE_WORD_LEN_WIDTH, MEM_TYPE_LEN}
+import common.Defines.{DOUBLE_WORD_LEN_WIDTH, MEM_TYPE_LEN, REG_S}
 import core.backend.Instfetch
 import core.backend.decode.Decode
 import core.backend.alu.Alu
 import core.backend.mema.MemAccess
 import core.backend.writeback.WriteBack
 import core.backend.pipereg.{DecodeToExecute, ExecuteToMema, FetchToDecode, MemaToWB}
-import core.backend.datahazard.{Forward, Stall}
+
+import rainy.shaheway.org.core.backend.datahazard.{Forward, Stall}
+// import core.backend.datahazard.{Forward, Stall}
 import core.backend.regfile.{CSRfile, RegFile}
 import mem.{DataReadPort, InstReadPort, MemWritePort}
 class Core extends Module {
@@ -79,7 +81,7 @@ class Core extends Module {
   instfetch_to_decode.io.pcIn := instfetch.io.pcOut
   instfetch_to_decode.io.instIn := instfetch.io.instOut
   instfetch_to_decode.io.jumpOrBranchFlag := jumpOrBranchFlag
-  instfetch_to_decode.io.stall <> datahazard_stall.io.withDecode
+  // instfetch_to_decode.io.stall <> datahazard_stall.io.withDecode
   // decode
   decode.io.branchFlag := execute_to_mema.io.branchFlag
   decode.io.jumpFlag := execute_to_mema.io.jumpFlag
@@ -98,12 +100,13 @@ class Core extends Module {
   execute.io.cur_pc := decode_to_execute.io.pcOut
   execute.io.alu_in <> decode_to_execute.io.srcPass
   execute.io.controlSignal <> decode_to_execute.io.controlSignalPass
-  execute.io.dataHazard <> datahazard_forward.io.withExecute
-  execute.io.stall <> datahazard_stall.io.withExe
+  execute.io.forward <> datahazard_forward.io.withExecute
+  // execute.io.stall <> datahazard_stall.io.withExe
   // execute_to_mema
   execute_to_mema.io.linkedPC := execute.io.linkedPC
   execute_to_mema.io.aluOut <> execute.io.alu_out
   execute_to_mema.io.controlSignal <> execute.io.controlPass
+  // execute_to_mema.io.stallFlag := datahazard_stall.io.stallFlag
   // memory access
   memoryAccess.io.linkedPC := execute_to_mema.io.linkedPCPass
   memoryAccess.io.aluOut := execute_to_mema.io.aluOutPass
@@ -121,16 +124,14 @@ class Core extends Module {
 
   // 控制冒险连线(这里没有)
 
-
   // probe
   io.probe.progcnter := instfetch.io.pcOut
   io.probe.inst := instfetch_to_decode.io.instOut
-  io.probe.forward_srcb := datahazard_forward.io.withExecute.hazardBData
-  io.probe.stall := datahazard_stall.io.stallFlag
-  io.probe.writeback_data := writeback.io.wbinfo.writeback_data
   io.probe.srcA := execute.io.srcA
   io.probe.srcB := execute.io.srcB
   io.probe.alu_result := execute.io.alu_out.alu_result
-  io.probe.datahazardAType := datahazard_forward.io.probe_typeA
-  io.probe.inst_id := decode.io.inst_id
+  io.probe.writeback_data := Mux(mema_to_wb.io.wbinfoPass.regwrite_enable === REG_S, mema_to_wb.io.wbinfoPass.writeback_data, 0.U(DOUBLE_WORD_LEN_WIDTH))
+  io.probe.mem_read_addr := memoryAccess.io.dataReadPort.read_addr_b
+  io.probe.forwardAtype := datahazard_forward.io.probe_typeA
+  io.probe.forwardBtype := datahazard_forward.io.probe_typeB
 }

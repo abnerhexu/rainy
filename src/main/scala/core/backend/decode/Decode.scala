@@ -35,8 +35,8 @@ class Decode extends Module {
   // 取数
   io.readReg.read_addr_a := rsA_addr
   io.readReg.read_addr_b := rsB_addr
-  val regA_data = io.readReg.read_data_a
-  val regB_data = io.readReg.read_data_b
+  val regA_data = Mux(io.forward.AhazardFlag, io.forward.hazardAData, io.readReg.read_data_a)
+  val regB_data = Mux(io.forward.BhazardFlag, io.forward.hazardBData, io.readReg.read_data_b)
 
   // 写回地址
   val write_back_reg_addr = de_inst(11, 7)

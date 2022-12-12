@@ -19,7 +19,6 @@ class ExecuteToMema extends Module {
     val jumpTarget = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
     val branchFlag = Output(Bool())
     val branchTarget = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
-    val
   })
 
   val alu_result = RegInit(0.U(DOUBLE_WORD_LEN_WIDTH))

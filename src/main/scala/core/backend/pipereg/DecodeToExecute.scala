@@ -8,7 +8,6 @@ class DecodeToExecute extends Module {
   val io = IO(new Bundle() {
     // branch
     val jumpOrBranchFlag = Input(Bool())
-    // val stallFlag = Input(Bool())
     val cur_pc = Input(UInt(DOUBLE_WORD_LEN_WIDTH))
     val pcOut = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
     val controlSignal = Flipped(new ControlOutPort)

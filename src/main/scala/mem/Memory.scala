@@ -12,20 +12,20 @@ class Memory extends Module {
     val writePort = new MemWritePort
   })
 
-  val memory = Mem(4096, UInt(BYTE_LEN_WIDTH)) // 32KB Memory
+  val memory = Mem(16384, UInt(BYTE_LEN_WIDTH)) // 32KB Memory
   loadMemoryFromFileInline(memory, "memoryFile.hex")
-  io.instReadPort.read_inst_a := Cat(memory.read(io.instReadPort.read_addr_a + 3.U(DOUBLE_WORD_LEN_WIDTH)),
-    memory.read(io.instReadPort.read_addr_a + 2.U(DOUBLE_WORD_LEN_WIDTH)),
-    memory.read(io.instReadPort.read_addr_a + 1.U(DOUBLE_WORD_LEN_WIDTH)),
-    memory.read(io.instReadPort.read_addr_a))
-  io.dataReadPort.read_data_b := Cat(memory.read(io.instReadPort.read_addr_a + 7.U(DOUBLE_WORD_LEN_WIDTH)),
-    memory.read(io.instReadPort.read_addr_a + 6.U(DOUBLE_WORD_LEN_WIDTH)),
-    memory.read(io.instReadPort.read_addr_a + 5.U(DOUBLE_WORD_LEN_WIDTH)),
-    memory.read(io.instReadPort.read_addr_a + 4.U(DOUBLE_WORD_LEN_WIDTH)),
-    memory.read(io.instReadPort.read_addr_a + 3.U(DOUBLE_WORD_LEN_WIDTH)),
-    memory.read(io.instReadPort.read_addr_a + 2.U(DOUBLE_WORD_LEN_WIDTH)),
-    memory.read(io.instReadPort.read_addr_a + 1.U(DOUBLE_WORD_LEN_WIDTH)),
-    memory.read(io.instReadPort.read_addr_a))
+  io.instReadPort.read_inst_a := Cat(memory(io.instReadPort.read_addr_a + 3.U(BYTE_LEN_WIDTH)),
+    memory(io.instReadPort.read_addr_a + 2.U(BYTE_LEN_WIDTH)),
+    memory(io.instReadPort.read_addr_a + 1.U(BYTE_LEN_WIDTH)),
+    memory(io.instReadPort.read_addr_a))
+  io.dataReadPort.read_data_b := Cat(memory(io.dataReadPort.read_addr_b + 7.U(BYTE_LEN_WIDTH)),
+    memory(io.dataReadPort.read_addr_b + 6.U(BYTE_LEN_WIDTH)),
+    memory(io.dataReadPort.read_addr_b + 5.U(BYTE_LEN_WIDTH)),
+    memory(io.dataReadPort.read_addr_b + 4.U(BYTE_LEN_WIDTH)),
+    memory(io.dataReadPort.read_addr_b + 3.U(BYTE_LEN_WIDTH)),
+    memory(io.dataReadPort.read_addr_b + 2.U(BYTE_LEN_WIDTH)),
+    memory(io.dataReadPort.read_addr_b + 1.U(BYTE_LEN_WIDTH)),
+    memory(io.dataReadPort.read_addr_b))
   when(io.writePort.write_enable) {
     when(io.writePort.write_lenth === MEM_SB){
       memory.write(idx = io.writePort.write_addr, data = io.writePort.write_data(7, 0))

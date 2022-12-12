@@ -7,7 +7,7 @@ import common.Defines._
 
 import chisel3.util.MuxCase
 import core.backend.decode.{ControlOutPort, SrcOutPort}
-import core.backend.datahazard.{ForwardWithExecute, StallWithExe}
+import core.backend.datahazard.{ForwardWithExecute, StallWithIDEX}
 
 class Alu extends Module {
   val io = IO(new Bundle() {
@@ -17,15 +17,15 @@ class Alu extends Module {
     val alu_out = new AluOutPort
     val controlPass = new AluConOut
     val controlSignal = Flipped(new ControlOutPort)
-    val dataHazard = Flipped(new ForwardWithExecute)
-    val stall = Flipped(new StallWithExe)
+    val forward = Flipped(new ForwardWithExecute)
+    // val stall = Flipped(new StallWithExe)
     // probe
     val srcA = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
     val srcB = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
   })
   val inv_one = Cat(Fill(DOUBLE_WORD_LEN-1, 1.U(1.W)), 0.U(1.U))
-  val aluSrc_a = Mux(io.dataHazard.AhazardFlag, io.dataHazard.hazardAData, io.alu_in.aluSrc_a)
-  val aluSrc_b = Mux(io.dataHazard.BhazardFlag, io.dataHazard.hazardBData, io.alu_in.aluSrc_b)
+  val aluSrc_a = io.alu_in.aluSrc_a
+  val aluSrc_b = io.alu_in.aluSrc_b
   val alu_out = MuxCase(0.U(DOUBLE_WORD_LEN_WIDTH), Seq(
     (io.controlSignal.alu_exe_fun === ALU_ADD) -> (aluSrc_a+aluSrc_b),
     (io.controlSignal.alu_exe_fun === ALU_SUB) -> (aluSrc_a-aluSrc_b),
@@ -73,13 +73,13 @@ class Alu extends Module {
   val branchTarget = io.alu_in.imm_b + io.cur_pc
 
   // data hazard
-  io.dataHazard.wbDataFromExe := alu_out
-  io.dataHazard.wbAddrFromExecute := io.alu_in.writeback_addr
-  io.dataHazard.regTypeFromExecute := io.controlSignal.regType
+  io.forward.wbDataFromExe := alu_out
+  io.forward.wbAddrFromExecute := io.alu_in.writeback_addr
+  io.forward.regTypeFromExecute := io.controlSignal.regType
   io.alu_out.branchTarget := branchTarget
 
-  io.stall.wbSrcFromEx := io.controlSignal.wbType
-  io.stall.wbAddrFromEx := io.alu_in.writeback_addr
+//  io.stall.wbSrcFromEx := io.controlSignal.wbType
+//  io.stall.wbAddrFromEx := io.alu_in.writeback_addr
   // probe
   io.srcA := aluSrc_a
   io.srcB := aluSrc_b
