@@ -18,6 +18,7 @@ class Check extends Module {
   core.io.memoryAccess_dataWritePort <> memory.io.writePort
 
   io.probe := core.io.probe
+  printf(p"Cycle: ${Decimal(io.probe.cycleTime)}\n")
   printf(p"Progcounter(if)      : 0x${Hexadecimal(io.probe.progcnter)}\n")
   printf(p"inst(if_id)          : 0x${Hexadecimal(io.probe.inst)}\n")
   printf(p"srcA(exe)            : 0x${Hexadecimal(io.probe.srcA)}\n")
@@ -27,6 +28,8 @@ class Check extends Module {
   printf(p"Bforwardtype         : 0x${Hexadecimal(io.probe.forwardBtype)}\n")
   printf(p"wb data(wb)          : 0x${Hexadecimal(io.probe.writeback_data)}\n")
   printf(p"stall flag           : 0x${Hexadecimal(io.probe.stallFlag)}\n")
+  printf(p"branch flag          : 0x${Hexadecimal(io.probe.branchFlag)}\n")
+  printf(p"branchTarget         : 0x${Hexadecimal(io.probe.branchTarget)}\n")
   // printf(p"mem read addr        : 0x${Hexadecimal(io.probe.mem_read_addr)}\n")
   printf("---------\n")
 }
@@ -34,7 +37,7 @@ class Check extends Module {
 class Test extends FlatSpec with ChiselScalatestTester {
   "mycpu" should "work through hex" in {
     test(new Check) { c =>
-      for (i <- 1 to 8) {
+      for (i <- 1 to 12) {
         c.clock.step(1)
       }
     }

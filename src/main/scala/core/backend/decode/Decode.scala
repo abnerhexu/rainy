@@ -10,7 +10,6 @@ import core.backend.datahazard.ForwardWithDecode
 import core.backend.regfile.RegReadPort
 class Decode extends Module {
   val io = IO(new Bundle() {
-    val branchFlag = Input(Bool())
     val jumpFlag = Input(Bool())
     val stallFlag = Input(Bool())
     val inst = Input(UInt(WORD_LEN_WIDTH))
@@ -26,8 +25,8 @@ class Decode extends Module {
   })
 
   // 正常情况
-  val de_inst = Mux(io.branchFlag || io.jumpFlag || io.stallFlag, BUBBLE, io.inst)
-  io.inst_id := de_inst // probe
+  val de_inst = Mux(io.jumpFlag || io.stallFlag, BUBBLE, io.inst)
+
   val rsA_addr = de_inst(19, 15)
   val rsB_addr = de_inst(24, 20)
   // forward
@@ -55,6 +54,9 @@ class Decode extends Module {
   val imm_u_shifted = Cat(imm_u, Fill(12, 0.U))
   val imm_z = de_inst(19, 15)
   val imm_z_uext = Cat(Fill(59, 0.U), imm_z)
+
+  io.inst_id := de_inst // probe
+
   val controlSignals = ListLookup(de_inst, List(ALU_X, SRCA_X, SRCB_X, MEM_X, REG_X, WB_X, CSR_X), Array(
     R_ADD      -> List(ALU_ADD, SRCA_REG, SRCB_REG, MEM_X, REG_S, WB_ALU, CSR_X),
     R_ADDW     -> List(ALU_ADD, SRCA_REG, SRCB_REG, MEM_X, REG_S, WB_ALU, CSR_X),

@@ -2,7 +2,7 @@ package rainy.shaheway.org
 package core.backend
 
 import chisel3._
-import common.Defines.{CSR_ADDR_LEN_WIDTH, DOUBLE_WORD_LEN_WIDTH, START_ADDR, WORD_LEN_WIDTH}
+import common.Defines.{BUBBLE, CSR_ADDR_LEN_WIDTH, DOUBLE_WORD_LEN_WIDTH, START_ADDR}
 
 import chisel3.util.MuxCase
 import mem.InstReadPort
@@ -35,6 +35,6 @@ class Instfetch extends Module {
   ))
 
   progcnter := pcNext
-  io.instOut := io.fetchMem.read_inst_a
+  io.instOut := Mux(io.branchFlag, BUBBLE, io.fetchMem.read_inst_a)
   io.pcOut := progcnter
 }

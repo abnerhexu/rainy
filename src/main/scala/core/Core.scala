@@ -67,7 +67,7 @@ class Core extends Module {
    */
 
   // 流水线连线
-  val jumpOrBranchFlag = (execute_to_mema.io.jumpFlag || decode_to_execute.io.branchout.branchFlag)
+  // val  = (execute_to_mema.io.jumpFlag || decode_to_execute.io.branchout.branchFlag)
   // instfetch
   instfetch.io.branchFlag := decode_to_execute.io.branchout.branchFlag
   instfetch.io.jumpFlag := execute_to_mema.io.jumpFlag
@@ -80,10 +80,11 @@ class Core extends Module {
   instfetch_to_decode.io.stallFlag := datahazard_stall.io.stallFlag
   instfetch_to_decode.io.pcIn := instfetch.io.pcOut
   instfetch_to_decode.io.instIn := instfetch.io.instOut
-  instfetch_to_decode.io.jumpOrBranchFlag := jumpOrBranchFlag
+  instfetch_to_decode.io.branchFlag := decode_to_execute.io.branchout.branchFlag
+  instfetch_to_decode.io.jumpFlag := execute_to_mema.io.jumpFlag
   instfetch_to_decode.io.stall <> datahazard_stall.io.withIDDE
   // decode
-  decode.io.branchFlag := decode_to_execute.io.branchout.branchFlag
+  // decode.io.jumpFlag := decode_to_execute.io.branchout.branchFlag
   decode.io.jumpFlag := execute_to_mema.io.jumpFlag
   decode.io.stallFlag := datahazard_stall.io.stallFlag
   decode.io.inst := instfetch_to_decode.io.instOut
@@ -93,7 +94,7 @@ class Core extends Module {
   // decode_to_execute
   decode_to_execute.io.branchextend <> decode.io.branch
   decode_to_execute.io.controlSignal <> decode.io.decodeOut
-  decode_to_execute.io.jumpOrBranchFlag := jumpOrBranchFlag
+  decode_to_execute.io.jumpFlag := execute_to_mema.io.jumpFlag
   decode_to_execute.io.cur_pc := decode.io.pcOut
   decode_to_execute.io.opSrc <> decode.io.srcOut
   // decode_to_execute.io.stall <> datahazard_stall.io.withIDEX
@@ -126,6 +127,10 @@ class Core extends Module {
   // 控制冒险连线(这里没有)
 
   // probe
+  val counter = RegInit(0.U(12.W))
+  counter := counter + 1.U(12.W)
+  io.probe.cycleTime := counter
+
   io.probe.progcnter := instfetch.io.pcOut
   io.probe.inst := instfetch_to_decode.io.instOut
   io.probe.srcA := execute.io.srcA
@@ -136,4 +141,6 @@ class Core extends Module {
   io.probe.forwardAtype := datahazard_forward.io.probe_typeA
   io.probe.forwardBtype := datahazard_forward.io.probe_typeB
   io.probe.stallFlag := datahazard_stall.io.stallFlag
+  io.probe.branchFlag := decode.io.branch.branchFlag
+  io.probe.branchTarget := decode_to_execute.io.branchout.branchTarget
 }

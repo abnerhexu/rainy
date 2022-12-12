@@ -12,7 +12,7 @@ class Memory extends Module {
     val writePort = new MemWritePort
   })
 
-  val memory = Mem(16384, UInt(BYTE_LEN_WIDTH)) // 32KB Memory
+  val memory = Mem(1024, UInt(BYTE_LEN_WIDTH)) // 32KB Memory
   loadMemoryFromFileInline(memory, "memoryFile.hex")
   io.instReadPort.read_inst_a := Cat(memory(io.instReadPort.read_addr_a + 3.U(BYTE_LEN_WIDTH)),
     memory(io.instReadPort.read_addr_a + 2.U(BYTE_LEN_WIDTH)),

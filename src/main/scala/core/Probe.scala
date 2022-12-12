@@ -14,4 +14,7 @@ class Probe extends Bundle{
   val forwardAtype = Output(UInt(DATAHAZARD_LEN))
   val forwardBtype = Output(UInt(DATAHAZARD_LEN))
   val stallFlag = Output(Bool())
+  val branchFlag = Output(Bool())
+  val cycleTime = Output(UInt(12.W))
+  val branchTarget = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
 }

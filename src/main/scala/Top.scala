@@ -1,12 +1,13 @@
 package rainy.shaheway.org
 import chisel3._
-import core.Core
+import core.{Core, Probe}
 import mem.Memory
 import common.Defines.DOUBLE_WORD_LEN_WIDTH
+
 import chisel3.stage.ChiselStage
 class Top extends Module {
   val io = IO(new Bundle() {
-    val probe = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
+    val probe = new Probe
   })
   val core = Module(new Core)
   val memory = Module(new Memory)
