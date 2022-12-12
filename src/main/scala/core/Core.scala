@@ -67,12 +67,12 @@ class Core extends Module {
    */
 
   // 流水线连线
-  val jumpOrBranchFlag = (execute_to_mema.io.jumpFlag || execute_to_mema.io.branchFlag)
+  val jumpOrBranchFlag = (execute_to_mema.io.jumpFlag || decode_to_execute.io.branchout.branchFlag)
   // instfetch
-  instfetch.io.branchFlag := execute_to_mema.io.branchFlag
+  instfetch.io.branchFlag := decode_to_execute.io.branchout.branchFlag
   instfetch.io.jumpFlag := execute_to_mema.io.jumpFlag
   instfetch.io.stallFlag := datahazard_stall.io.stallFlag
-  instfetch.io.branchTarget := execute_to_mema.io.branchTarget
+  instfetch.io.branchTarget := decode_to_execute.io.branchout.branchTarget
   instfetch.io.jumpTarget := execute.io.alu_out.alu_result
   instfetch.io.fetchMem <> io.instfetch_fetchMem
   instfetch.io.envRead <> csrs.io.envRead
@@ -83,7 +83,7 @@ class Core extends Module {
   instfetch_to_decode.io.jumpOrBranchFlag := jumpOrBranchFlag
   instfetch_to_decode.io.stall <> datahazard_stall.io.withIDDE
   // decode
-  decode.io.branchFlag := execute_to_mema.io.branchFlag
+  decode.io.branchFlag := decode_to_execute.io.branchout.branchFlag
   decode.io.jumpFlag := execute_to_mema.io.jumpFlag
   decode.io.stallFlag := datahazard_stall.io.stallFlag
   decode.io.inst := instfetch_to_decode.io.instOut
@@ -91,6 +91,7 @@ class Core extends Module {
   decode.io.forward <> datahazard_forward.io.withDecode
   decode.io.readReg <> regs.io.reg_read
   // decode_to_execute
+  decode_to_execute.io.branchextend <> decode.io.branch
   decode_to_execute.io.controlSignal <> decode.io.decodeOut
   decode_to_execute.io.jumpOrBranchFlag := jumpOrBranchFlag
   decode_to_execute.io.cur_pc := decode.io.pcOut

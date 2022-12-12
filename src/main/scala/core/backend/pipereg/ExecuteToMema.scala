@@ -17,8 +17,6 @@ class ExecuteToMema extends Module {
     val controlSignalPass = new AluConOut
     val jumpFlag = Output(Bool())
     val jumpTarget = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
-    val branchFlag = Output(Bool())
-    val branchTarget = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
   })
 
   val alu_result = RegInit(0.U(DOUBLE_WORD_LEN_WIDTH))
@@ -60,10 +58,4 @@ class ExecuteToMema extends Module {
   val jumpTarget = RegInit(0.U(DOUBLE_WORD_LEN_WIDTH))
   jumpTarget := io.aluOut.jumpTarget
   io.jumpTarget := jumpTarget
-  val branchFlag = RegInit(false.asBool)
-  branchFlag := io.aluOut.branchFlag
-  io.branchFlag := branchFlag
-  val branchTarget = RegInit(0.U(DOUBLE_WORD_LEN_WIDTH))
-  branchTarget := io.aluOut.branchTarget
-  io.branchTarget := branchTarget
 }

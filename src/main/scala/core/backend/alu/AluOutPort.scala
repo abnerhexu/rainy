@@ -10,6 +10,5 @@ class AluOutPort extends Bundle {
   val regB_data = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
   val jumpFlag = Output(Bool())
   val jumpTarget = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
-
 }
 

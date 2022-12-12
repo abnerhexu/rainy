@@ -1,7 +1,7 @@
 package rainy.shaheway.org
 package core.backend.pipereg
 import chisel3._
-import core.backend.decode.{ControlOutPort, SrcOutPort}
+import core.backend.decode.{Branch, ControlOutPort, SrcOutPort}
 import common.Defines._
 
 import rainy.shaheway.org.core.backend.datahazard.StallWithEX
@@ -16,6 +16,8 @@ class DecodeToExecute extends Module {
     val opSrc = Flipped(new SrcOutPort)
     val controlSignalPass = new ControlOutPort
     val srcPass = new SrcOutPort
+    val branchextend = Flipped(new Branch)
+    val branchout = new Branch
   })
 
   // I_ADDI     -> List(ALU_ADD, SRCA_REG, SRCB_IMM_I, MEM_X, REG_S, WB_ALU, CSR_X),
@@ -66,6 +68,12 @@ class DecodeToExecute extends Module {
   progcnter := io.cur_pc
   io.pcOut := progcnter
 
-  // stall
+  // branch
+  val branchFlag = RegInit(false.asBool)
+  branchFlag := io.branchextend.branchFlag
+  io.branchout.branchFlag := branchFlag
+  val branchTarget = RegInit(0.U(DOUBLE_WORD_LEN_WIDTH))
+  branchTarget := io.branchextend.branchTarget
+  io.branchout.branchTarget := branchTarget
 
 }
