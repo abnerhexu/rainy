@@ -1435,8 +1435,10 @@ module RegFile(
   assign registers_MPORT_addr = io_reg_write_write_addr;
   assign registers_MPORT_mask = 1'h1;
   assign registers_MPORT_en = io_reg_write_write_enable;
-  assign io_reg_read_read_data_a = registers_io_reg_read_read_data_a_MPORT_data; // @[RegFile.scala 13:27]
-  assign io_reg_read_read_data_b = registers_io_reg_read_read_data_b_MPORT_data; // @[RegFile.scala 14:27]
+  assign io_reg_read_read_data_a = io_reg_read_read_addr_a == 5'h0 ? 64'h0 :
+    registers_io_reg_read_read_data_a_MPORT_data; // @[RegFile.scala 13:33]
+  assign io_reg_read_read_data_b = io_reg_read_read_addr_b == 5'h0 ? 64'h0 :
+    registers_io_reg_read_read_data_b_MPORT_data; // @[RegFile.scala 14:33]
   always @(posedge clock) begin
     if (registers_MPORT_en & registers_MPORT_mask) begin
       registers[registers_MPORT_addr] <= registers_MPORT_data; // @[RegFile.scala 12:22]

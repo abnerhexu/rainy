@@ -1022,10 +1022,14 @@ circuit Check :
     output io : { reg_read : { flip read_addr_a : UInt<5>, flip read_addr_b : UInt<5>, read_data_a : UInt<64>, read_data_b : UInt<64>}, reg_write : { flip write_addr : UInt<5>, flip write_data : UInt<64>, flip write_enable : UInt<1>}}
 
     cmem registers : UInt<64> [32] @[RegFile.scala 12:22]
-    read mport io_reg_read_read_data_a_MPORT = registers[io.reg_read.read_addr_a], clock @[RegFile.scala 13:44]
-    io.reg_read.read_data_a <= io_reg_read_read_data_a_MPORT @[RegFile.scala 13:27]
-    read mport io_reg_read_read_data_b_MPORT = registers[io.reg_read.read_addr_b], clock @[RegFile.scala 14:44]
-    io.reg_read.read_data_b <= io_reg_read_read_data_b_MPORT @[RegFile.scala 14:27]
+    node _io_reg_read_read_data_a_T = eq(io.reg_read.read_addr_a, UInt<5>("h0")) @[RegFile.scala 13:58]
+    read mport io_reg_read_read_data_a_MPORT = registers[io.reg_read.read_addr_a], clock @[RegFile.scala 13:125]
+    node _io_reg_read_read_data_a_T_1 = mux(_io_reg_read_read_data_a_T, UInt<64>("h0"), io_reg_read_read_data_a_MPORT) @[RegFile.scala 13:33]
+    io.reg_read.read_data_a <= _io_reg_read_read_data_a_T_1 @[RegFile.scala 13:27]
+    node _io_reg_read_read_data_b_T = eq(io.reg_read.read_addr_b, UInt<5>("h0")) @[RegFile.scala 14:58]
+    read mport io_reg_read_read_data_b_MPORT = registers[io.reg_read.read_addr_b], clock @[RegFile.scala 14:125]
+    node _io_reg_read_read_data_b_T_1 = mux(_io_reg_read_read_data_b_T, UInt<64>("h0"), io_reg_read_read_data_b_MPORT) @[RegFile.scala 14:33]
+    io.reg_read.read_data_b <= _io_reg_read_read_data_b_T_1 @[RegFile.scala 14:27]
     when io.reg_write.write_enable : @[RegFile.scala 15:34]
       write mport MPORT = registers[io.reg_write.write_addr], clock
       MPORT <= io.reg_write.write_data

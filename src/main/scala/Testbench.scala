@@ -35,7 +35,7 @@ class Check extends Module {
   printf("---------\n")
 }
 
-class Testbench extends FlatSpec with ChiselScalatestTester {
+class Test extends FlatSpec with ChiselScalatestTester {
   "mycpu" should "work through hex" in {
     test(new Check) { c =>
       for (i <- 1 to 12) {
