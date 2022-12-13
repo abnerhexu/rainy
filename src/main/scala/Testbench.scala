@@ -3,6 +3,7 @@ import chisel3._
 import core.{Core, Probe}
 import mem.Memory
 
+import chisel3.stage.ChiselStage
 import chiseltest._
 import org.scalatest._
 
@@ -34,7 +35,7 @@ class Check extends Module {
   printf("---------\n")
 }
 
-class Test extends FlatSpec with ChiselScalatestTester {
+class Testbench extends FlatSpec with ChiselScalatestTester {
   "mycpu" should "work through hex" in {
     test(new Check) { c =>
       for (i <- 1 to 12) {
@@ -42,4 +43,8 @@ class Test extends FlatSpec with ChiselScalatestTester {
       }
     }
   }
+}
+
+object Testbench extends App {
+  (new ChiselStage).emitVerilog(new Check())
 }
