@@ -120,6 +120,7 @@ class Core extends Module {
   // memoryAccess_to_writeback
   mema_to_wb.io.wbinfo <> memoryAccess.io.memPass
   // writeback
+  writeback.io.forward <> datahazard_forward.io.withWriteback
   writeback.io.wbinfo <> mema_to_wb.io.wbinfoPass
   regs.io.reg_write <> writeback.io.regWrite
   csrs.io.csrWrite <> writeback.io.csrWrite

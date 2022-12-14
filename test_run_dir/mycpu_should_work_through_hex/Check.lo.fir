@@ -1106,17 +1106,23 @@ circuit Check :
     output io_csrWrite_csr_write_addr : UInt<12>
     output io_csrWrite_csr_write_data : UInt<64>
     output io_csrWrite_csr_write_enable : UInt<1>
+    output io_forward_wbAddrFromWB : UInt<5>
+    output io_forward_regTypeFromWB : UInt<2>
+    output io_forward_wbDataFromWB : UInt<64>
 
-    node _T = eq(io_wbinfo_regwrite_enable, UInt<2>("h1")) @[WriteBack.scala 18:34]
-    node _GEN_0 = mux(_T, UInt<1>("h1"), UInt<1>("h0")) @[WriteBack.scala 18:44 19:30 21:30]
-    node _T_1 = gt(io_wbinfo_CSRType, UInt<3>("h0")) @[WriteBack.scala 26:26]
-    node _GEN_1 = mux(_T_1, UInt<1>("h1"), UInt<1>("h0")) @[WriteBack.scala 26:46 27:34 29:34]
-    io_regWrite_write_addr <= io_wbinfo_writeback_addr @[WriteBack.scala 15:26]
-    io_regWrite_write_data <= io_wbinfo_writeback_data @[WriteBack.scala 16:26]
+    node _T = eq(io_wbinfo_regwrite_enable, UInt<2>("h1")) @[WriteBack.scala 27:34]
+    node _GEN_0 = mux(_T, UInt<1>("h1"), UInt<1>("h0")) @[WriteBack.scala 27:44 28:30 30:30]
+    node _T_1 = gt(io_wbinfo_CSRType, UInt<3>("h0")) @[WriteBack.scala 35:26]
+    node _GEN_1 = mux(_T_1, UInt<1>("h1"), UInt<1>("h0")) @[WriteBack.scala 35:46 36:34 38:34]
+    io_regWrite_write_addr <= io_wbinfo_writeback_addr @[WriteBack.scala 24:26]
+    io_regWrite_write_data <= io_wbinfo_writeback_data @[WriteBack.scala 25:26]
     io_regWrite_write_enable <= _GEN_0
-    io_csrWrite_csr_write_addr <= io_wbinfo_csrwrite_addr @[WriteBack.scala 24:30]
-    io_csrWrite_csr_write_data <= io_wbinfo_csrwrite_data @[WriteBack.scala 25:30]
+    io_csrWrite_csr_write_addr <= io_wbinfo_csrwrite_addr @[WriteBack.scala 33:30]
+    io_csrWrite_csr_write_data <= io_wbinfo_csrwrite_data @[WriteBack.scala 34:30]
     io_csrWrite_csr_write_enable <= _GEN_1
+    io_forward_wbAddrFromWB <= io_wbinfo_writeback_addr @[WriteBack.scala 19:27]
+    io_forward_regTypeFromWB <= io_wbinfo_regwrite_enable @[WriteBack.scala 20:28]
+    io_forward_wbDataFromWB <= io_wbinfo_writeback_data @[WriteBack.scala 21:27]
 
   module Forward :
     input clock : Clock
@@ -1133,45 +1139,64 @@ circuit Check :
     input io_withMema_wbAddrFromMema : UInt<5>
     input io_withMema_regTypeFromMema : UInt<2>
     input io_withMema_wbDataFromMema : UInt<64>
-    output io_probe_typeA : UInt<2>
-    output io_probe_typeB : UInt<2>
+    input io_withWriteback_wbAddrFromWB : UInt<5>
+    input io_withWriteback_regTypeFromWB : UInt<2>
+    input io_withWriteback_wbDataFromWB : UInt<64>
+    output io_probe_typeA : UInt<3>
+    output io_probe_typeB : UInt<3>
 
-    node _hazardAType_T = eq(io_withDecode_srcAddrA, io_withExecute_wbAddrFromExecute) @[Forward.scala 18:30]
-    node _hazardAType_T_1 = eq(io_withExecute_regTypeFromExecute, UInt<2>("h1")) @[Forward.scala 18:106]
-    node _hazardAType_T_2 = and(_hazardAType_T, _hazardAType_T_1) @[Forward.scala 18:68]
-    node _hazardAType_T_3 = eq(io_withDecode_srcAddrA, io_withMema_wbAddrFromMema) @[Forward.scala 19:30]
-    node _hazardAType_T_4 = eq(io_withMema_regTypeFromMema, UInt<2>("h1")) @[Forward.scala 19:94]
-    node _hazardAType_T_5 = and(_hazardAType_T_3, _hazardAType_T_4) @[Forward.scala 19:62]
-    node _hazardAType_T_6 = mux(_hazardAType_T_5, UInt<2>("h2"), UInt<2>("h0")) @[Mux.scala 101:16]
-    node hazardAType = mux(_hazardAType_T_2, UInt<2>("h1"), _hazardAType_T_6) @[Mux.scala 101:16]
-    node _hazardBType_T = eq(io_withDecode_srcAddrB, io_withExecute_wbAddrFromExecute) @[Forward.scala 22:30]
-    node _hazardBType_T_1 = eq(io_withExecute_regTypeFromExecute, UInt<2>("h1")) @[Forward.scala 22:106]
-    node _hazardBType_T_2 = and(_hazardBType_T, _hazardBType_T_1) @[Forward.scala 22:68]
-    node _hazardBType_T_3 = eq(io_withDecode_srcAddrB, io_withMema_wbAddrFromMema) @[Forward.scala 23:30]
-    node _hazardBType_T_4 = eq(io_withMema_regTypeFromMema, UInt<2>("h1")) @[Forward.scala 23:94]
-    node _hazardBType_T_5 = and(_hazardBType_T_3, _hazardBType_T_4) @[Forward.scala 23:62]
-    node _hazardBType_T_6 = mux(_hazardBType_T_5, UInt<2>("h2"), UInt<2>("h0")) @[Mux.scala 101:16]
-    node hazardBType = mux(_hazardBType_T_2, UInt<2>("h1"), _hazardBType_T_6) @[Mux.scala 101:16]
-    node _hazardADataMux_T = eq(hazardAType, UInt<2>("h1")) @[Forward.scala 28:18]
-    node _hazardADataMux_T_1 = eq(hazardAType, UInt<2>("h2")) @[Forward.scala 29:18]
-    node _hazardADataMux_T_2 = mux(_hazardADataMux_T_1, io_withMema_wbDataFromMema, UInt<64>("h0")) @[Mux.scala 101:16]
-    node hazardADataMux = mux(_hazardADataMux_T, io_withExecute_wbDataFromExe, _hazardADataMux_T_2) @[Mux.scala 101:16]
-    node _hazardBDataMux_T = eq(hazardBType, UInt<2>("h1")) @[Forward.scala 36:18]
-    node _hazardBDataMux_T_1 = eq(hazardBType, UInt<2>("h2")) @[Forward.scala 37:18]
-    node _hazardBDataMux_T_2 = mux(_hazardBDataMux_T_1, io_withMema_wbDataFromMema, UInt<64>("h0")) @[Mux.scala 101:16]
-    node hazardBDataMux = mux(_hazardBDataMux_T, io_withExecute_wbDataFromExe, _hazardBDataMux_T_2) @[Mux.scala 101:16]
-    node _AhazardFlag_T = eq(hazardAType, UInt<2>("h1")) @[Forward.scala 44:34]
-    node _AhazardFlag_T_1 = eq(hazardAType, UInt<2>("h2")) @[Forward.scala 44:67]
-    node AhazardFlag = or(_AhazardFlag_T, _AhazardFlag_T_1) @[Forward.scala 44:52]
-    node _BhazardFlag_T = eq(hazardBType, UInt<2>("h1")) @[Forward.scala 47:34]
-    node _BhazardFlag_T_1 = eq(hazardBType, UInt<2>("h2")) @[Forward.scala 47:67]
-    node BhazardFlag = or(_BhazardFlag_T, _BhazardFlag_T_1) @[Forward.scala 47:52]
-    io_withDecode_AhazardFlag <= AhazardFlag @[Forward.scala 45:29]
-    io_withDecode_BhazardFlag <= AhazardFlag @[Forward.scala 48:29]
-    io_withDecode_hazardAData <= hazardADataMux @[Forward.scala 33:29]
-    io_withDecode_hazardBData <= hazardBDataMux @[Forward.scala 41:29]
-    io_probe_typeA <= hazardAType @[Forward.scala 51:18]
-    io_probe_typeB <= hazardBType @[Forward.scala 52:18]
+    node _hazardAType_T = eq(io_withDecode_srcAddrA, io_withExecute_wbAddrFromExecute) @[Forward.scala 19:29]
+    node _hazardAType_T_1 = eq(io_withExecute_regTypeFromExecute, UInt<2>("h1")) @[Forward.scala 19:105]
+    node _hazardAType_T_2 = and(_hazardAType_T, _hazardAType_T_1) @[Forward.scala 19:67]
+    node _hazardAType_T_3 = eq(io_withDecode_srcAddrA, io_withMema_wbAddrFromMema) @[Forward.scala 20:31]
+    node _hazardAType_T_4 = eq(io_withMema_regTypeFromMema, UInt<2>("h1")) @[Forward.scala 20:95]
+    node _hazardAType_T_5 = and(_hazardAType_T_3, _hazardAType_T_4) @[Forward.scala 20:63]
+    node _hazardAType_T_6 = eq(io_withDecode_srcAddrA, io_withWriteback_wbAddrFromWB) @[Forward.scala 21:33]
+    node _hazardAType_T_7 = eq(io_withWriteback_regTypeFromWB, UInt<2>("h1")) @[Forward.scala 21:103]
+    node _hazardAType_T_8 = and(_hazardAType_T_6, _hazardAType_T_7) @[Forward.scala 21:68]
+    node _hazardAType_T_9 = mux(_hazardAType_T_8, UInt<3>("h3"), UInt<3>("h0")) @[Forward.scala 20:125]
+    node _hazardAType_T_10 = mux(_hazardAType_T_5, UInt<3>("h2"), _hazardAType_T_9) @[Forward.scala 19:135]
+    node hazardAType = mux(_hazardAType_T_2, UInt<3>("h1"), _hazardAType_T_10) @[Forward.scala 18:24]
+    node _hazardBType_T = eq(io_withDecode_srcAddrB, io_withExecute_wbAddrFromExecute) @[Forward.scala 26:29]
+    node _hazardBType_T_1 = eq(io_withExecute_regTypeFromExecute, UInt<2>("h1")) @[Forward.scala 26:105]
+    node _hazardBType_T_2 = and(_hazardBType_T, _hazardBType_T_1) @[Forward.scala 26:67]
+    node _hazardBType_T_3 = eq(io_withDecode_srcAddrB, io_withMema_wbAddrFromMema) @[Forward.scala 27:31]
+    node _hazardBType_T_4 = eq(io_withMema_regTypeFromMema, UInt<2>("h1")) @[Forward.scala 27:95]
+    node _hazardBType_T_5 = and(_hazardBType_T_3, _hazardBType_T_4) @[Forward.scala 27:63]
+    node _hazardBType_T_6 = eq(io_withDecode_srcAddrB, io_withWriteback_wbAddrFromWB) @[Forward.scala 28:33]
+    node _hazardBType_T_7 = eq(io_withWriteback_regTypeFromWB, UInt<2>("h1")) @[Forward.scala 28:103]
+    node _hazardBType_T_8 = and(_hazardBType_T_6, _hazardBType_T_7) @[Forward.scala 28:68]
+    node _hazardBType_T_9 = mux(_hazardBType_T_8, UInt<3>("h3"), UInt<3>("h0")) @[Forward.scala 27:125]
+    node _hazardBType_T_10 = mux(_hazardBType_T_5, UInt<3>("h2"), _hazardBType_T_9) @[Forward.scala 26:135]
+    node hazardBType = mux(_hazardBType_T_2, UInt<3>("h1"), _hazardBType_T_10) @[Forward.scala 25:24]
+    node _hazardADataMux_T = eq(hazardAType, UInt<3>("h1")) @[Forward.scala 34:18]
+    node _hazardADataMux_T_1 = eq(hazardAType, UInt<3>("h2")) @[Forward.scala 35:18]
+    node _hazardADataMux_T_2 = eq(hazardAType, UInt<3>("h3")) @[Forward.scala 36:18]
+    node _hazardADataMux_T_3 = mux(_hazardADataMux_T_2, io_withWriteback_wbDataFromWB, UInt<64>("h0")) @[Mux.scala 101:16]
+    node _hazardADataMux_T_4 = mux(_hazardADataMux_T_1, io_withMema_wbDataFromMema, _hazardADataMux_T_3) @[Mux.scala 101:16]
+    node hazardADataMux = mux(_hazardADataMux_T, io_withExecute_wbDataFromExe, _hazardADataMux_T_4) @[Mux.scala 101:16]
+    node _hazardBDataMux_T = eq(hazardBType, UInt<3>("h1")) @[Forward.scala 43:18]
+    node _hazardBDataMux_T_1 = eq(hazardBType, UInt<3>("h2")) @[Forward.scala 44:18]
+    node _hazardBDataMux_T_2 = eq(hazardBType, UInt<3>("h3")) @[Forward.scala 45:18]
+    node _hazardBDataMux_T_3 = mux(_hazardBDataMux_T_2, io_withWriteback_wbDataFromWB, UInt<64>("h0")) @[Mux.scala 101:16]
+    node _hazardBDataMux_T_4 = mux(_hazardBDataMux_T_1, io_withMema_wbDataFromMema, _hazardBDataMux_T_3) @[Mux.scala 101:16]
+    node hazardBDataMux = mux(_hazardBDataMux_T, io_withExecute_wbDataFromExe, _hazardBDataMux_T_4) @[Mux.scala 101:16]
+    node _AhazardFlag_T = eq(hazardAType, UInt<3>("h1")) @[Forward.scala 52:34]
+    node _AhazardFlag_T_1 = eq(hazardAType, UInt<3>("h2")) @[Forward.scala 52:67]
+    node _AhazardFlag_T_2 = or(_AhazardFlag_T, _AhazardFlag_T_1) @[Forward.scala 52:52]
+    node _AhazardFlag_T_3 = eq(hazardAType, UInt<3>("h3")) @[Forward.scala 52:100]
+    node AhazardFlag = or(_AhazardFlag_T_2, _AhazardFlag_T_3) @[Forward.scala 52:85]
+    node _BhazardFlag_T = eq(hazardBType, UInt<3>("h1")) @[Forward.scala 55:34]
+    node _BhazardFlag_T_1 = eq(hazardBType, UInt<3>("h2")) @[Forward.scala 55:67]
+    node _BhazardFlag_T_2 = or(_BhazardFlag_T, _BhazardFlag_T_1) @[Forward.scala 55:52]
+    node _BhazardFlag_T_3 = eq(hazardBType, UInt<3>("h3")) @[Forward.scala 55:100]
+    node BhazardFlag = or(_BhazardFlag_T_2, _BhazardFlag_T_3) @[Forward.scala 55:85]
+    io_withDecode_AhazardFlag <= AhazardFlag @[Forward.scala 53:29]
+    io_withDecode_BhazardFlag <= AhazardFlag @[Forward.scala 56:29]
+    io_withDecode_hazardAData <= hazardADataMux @[Forward.scala 40:29]
+    io_withDecode_hazardBData <= hazardBDataMux @[Forward.scala 49:29]
+    io_probe_typeA <= hazardAType @[Forward.scala 59:18]
+    io_probe_typeB <= hazardBType @[Forward.scala 60:18]
 
   module Stall :
     input clock : Clock
@@ -1215,19 +1240,23 @@ circuit Check :
       reader => io_reg_read_read_data_b_MPORT
       writer => MPORT
       read-under-write => undefined
+    node _io_reg_read_read_data_a_T = eq(io_reg_read_read_addr_a, UInt<5>("h0")) @[RegFile.scala 13:58]
+    node _io_reg_read_read_data_a_T_1 = mux(_io_reg_read_read_data_a_T, UInt<64>("h0"), registers.io_reg_read_read_data_a_MPORT.data) @[RegFile.scala 13:33]
+    node _io_reg_read_read_data_b_T = eq(io_reg_read_read_addr_b, UInt<5>("h0")) @[RegFile.scala 14:58]
+    node _io_reg_read_read_data_b_T_1 = mux(_io_reg_read_read_data_b_T, UInt<64>("h0"), registers.io_reg_read_read_data_b_MPORT.data) @[RegFile.scala 14:33]
     node _GEN_0 = validif(io_reg_write_write_enable, io_reg_write_write_addr) @[RegFile.scala 15:34]
     node _GEN_1 = validif(io_reg_write_write_enable, clock) @[RegFile.scala 15:34]
     node _GEN_2 = mux(io_reg_write_write_enable, UInt<1>("h1"), UInt<1>("h0")) @[RegFile.scala 12:22 15:34]
     node _GEN_3 = validif(io_reg_write_write_enable, UInt<1>("h1")) @[RegFile.scala 15:34]
     node _GEN_4 = validif(io_reg_write_write_enable, io_reg_write_write_data) @[RegFile.scala 15:34]
-    io_reg_read_read_data_a <= registers.io_reg_read_read_data_a_MPORT.data @[RegFile.scala 13:27]
-    io_reg_read_read_data_b <= registers.io_reg_read_read_data_b_MPORT.data @[RegFile.scala 14:27]
-    registers.io_reg_read_read_data_a_MPORT.addr <= io_reg_read_read_addr_a @[RegFile.scala 13:44]
-    registers.io_reg_read_read_data_a_MPORT.en <= UInt<1>("h1") @[RegFile.scala 13:44]
-    registers.io_reg_read_read_data_a_MPORT.clk <= clock @[RegFile.scala 13:44]
-    registers.io_reg_read_read_data_b_MPORT.addr <= io_reg_read_read_addr_b @[RegFile.scala 14:44]
-    registers.io_reg_read_read_data_b_MPORT.en <= UInt<1>("h1") @[RegFile.scala 14:44]
-    registers.io_reg_read_read_data_b_MPORT.clk <= clock @[RegFile.scala 14:44]
+    io_reg_read_read_data_a <= _io_reg_read_read_data_a_T_1 @[RegFile.scala 13:27]
+    io_reg_read_read_data_b <= _io_reg_read_read_data_b_T_1 @[RegFile.scala 14:27]
+    registers.io_reg_read_read_data_a_MPORT.addr <= io_reg_read_read_addr_a @[RegFile.scala 13:125]
+    registers.io_reg_read_read_data_a_MPORT.en <= UInt<1>("h1") @[RegFile.scala 13:125]
+    registers.io_reg_read_read_data_a_MPORT.clk <= clock @[RegFile.scala 13:125]
+    registers.io_reg_read_read_data_b_MPORT.addr <= io_reg_read_read_addr_b @[RegFile.scala 14:125]
+    registers.io_reg_read_read_data_b_MPORT.en <= UInt<1>("h1") @[RegFile.scala 14:125]
+    registers.io_reg_read_read_data_b_MPORT.clk <= clock @[RegFile.scala 14:125]
     registers.MPORT.addr <= _GEN_0
     registers.MPORT.en <= _GEN_2
     registers.MPORT.clk <= _GEN_1
@@ -1291,8 +1320,8 @@ circuit Check :
     output io_probe_alu_result : UInt<64>
     output io_probe_writeback_data : UInt<64>
     output io_probe_mem_read_addr : UInt<64>
-    output io_probe_forwardAtype : UInt<2>
-    output io_probe_forwardBtype : UInt<2>
+    output io_probe_forwardAtype : UInt<3>
+    output io_probe_forwardBtype : UInt<3>
     output io_probe_stallFlag : UInt<1>
     output io_probe_branchFlag : UInt<1>
     output io_probe_cycleTime : UInt<12>
@@ -1312,30 +1341,30 @@ circuit Check :
     inst regs of RegFile @[Core.scala 38:20]
     inst csrs of CSRfile @[Core.scala 39:20]
     reg counter : UInt<12>, clock with :
-      reset => (UInt<1>("h0"), counter) @[Core.scala 130:24]
-    node _counter_T = add(counter, UInt<12>("h1")) @[Core.scala 131:22]
-    node _counter_T_1 = tail(_counter_T, 1) @[Core.scala 131:22]
-    node _io_probe_writeback_data_T = eq(mema_to_wb.io_wbinfoPass_regwrite_enable, UInt<2>("h1")) @[Core.scala 139:75]
-    node _io_probe_writeback_data_T_1 = mux(_io_probe_writeback_data_T, mema_to_wb.io_wbinfoPass_writeback_data, UInt<64>("h0")) @[Core.scala 139:33]
+      reset => (UInt<1>("h0"), counter) @[Core.scala 131:24]
+    node _counter_T = add(counter, UInt<12>("h1")) @[Core.scala 132:22]
+    node _counter_T_1 = tail(_counter_T, 1) @[Core.scala 132:22]
+    node _io_probe_writeback_data_T = eq(mema_to_wb.io_wbinfoPass_regwrite_enable, UInt<2>("h1")) @[Core.scala 140:75]
+    node _io_probe_writeback_data_T_1 = mux(_io_probe_writeback_data_T, mema_to_wb.io_wbinfoPass_writeback_data, UInt<64>("h0")) @[Core.scala 140:33]
     io_instfetch_fetchMem_read_addr_a <= instfetch.io_fetchMem_read_addr_a @[Core.scala 77:25]
     io_memoryAccess_dataReadPort_read_addr_b <= memoryAccess.io_dataReadPort_read_addr_b @[Core.scala 116:32]
     io_memoryAccess_dataWritePort_write_addr <= memoryAccess.io_dataWritePort_write_addr @[Core.scala 117:33]
     io_memoryAccess_dataWritePort_write_data <= memoryAccess.io_dataWritePort_write_data @[Core.scala 117:33]
     io_memoryAccess_dataWritePort_write_lenth <= memoryAccess.io_dataWritePort_write_lenth @[Core.scala 117:33]
     io_memoryAccess_dataWritePort_write_enable <= memoryAccess.io_dataWritePort_write_enable @[Core.scala 117:33]
-    io_probe_progcnter <= instfetch.io_pcOut @[Core.scala 134:22]
-    io_probe_inst <= pad(instfetch_to_decode.io_instOut, 64) @[Core.scala 135:17]
-    io_probe_srcA <= execute.io_srcA @[Core.scala 136:17]
-    io_probe_srcB <= execute.io_srcB @[Core.scala 137:17]
-    io_probe_alu_result <= execute.io_alu_out_alu_result @[Core.scala 138:23]
-    io_probe_writeback_data <= _io_probe_writeback_data_T_1 @[Core.scala 139:27]
-    io_probe_mem_read_addr <= memoryAccess.io_dataReadPort_read_addr_b @[Core.scala 140:26]
-    io_probe_forwardAtype <= datahazard_forward.io_probe_typeA @[Core.scala 141:25]
-    io_probe_forwardBtype <= datahazard_forward.io_probe_typeB @[Core.scala 142:25]
-    io_probe_stallFlag <= datahazard_stall.io_stallFlag @[Core.scala 143:22]
-    io_probe_branchFlag <= decode.io_branch_branchFlag @[Core.scala 144:23]
-    io_probe_cycleTime <= counter @[Core.scala 132:22]
-    io_probe_branchTarget <= decode_to_execute.io_branchout_branchTarget @[Core.scala 145:25]
+    io_probe_progcnter <= instfetch.io_pcOut @[Core.scala 135:22]
+    io_probe_inst <= pad(instfetch_to_decode.io_instOut, 64) @[Core.scala 136:17]
+    io_probe_srcA <= execute.io_srcA @[Core.scala 137:17]
+    io_probe_srcB <= execute.io_srcB @[Core.scala 138:17]
+    io_probe_alu_result <= execute.io_alu_out_alu_result @[Core.scala 139:23]
+    io_probe_writeback_data <= _io_probe_writeback_data_T_1 @[Core.scala 140:27]
+    io_probe_mem_read_addr <= memoryAccess.io_dataReadPort_read_addr_b @[Core.scala 141:26]
+    io_probe_forwardAtype <= datahazard_forward.io_probe_typeA @[Core.scala 142:25]
+    io_probe_forwardBtype <= datahazard_forward.io_probe_typeB @[Core.scala 143:25]
+    io_probe_stallFlag <= datahazard_stall.io_stallFlag @[Core.scala 144:22]
+    io_probe_branchFlag <= decode.io_branch_branchFlag @[Core.scala 145:23]
+    io_probe_cycleTime <= counter @[Core.scala 133:22]
+    io_probe_branchTarget <= decode_to_execute.io_branchout_branchTarget @[Core.scala 146:25]
     instfetch.clock <= clock
     instfetch.reset <= reset
     instfetch.io_branchFlag <= decode_to_execute.io_branchout_branchFlag @[Core.scala 72:27]
@@ -1429,12 +1458,12 @@ circuit Check :
     mema_to_wb.io_wbinfo_CSRType <= memoryAccess.io_memPass_CSRType @[Core.scala 121:24]
     writeback.clock <= clock
     writeback.reset <= reset
-    writeback.io_wbinfo_writeback_addr <= mema_to_wb.io_wbinfoPass_writeback_addr @[Core.scala 123:23]
-    writeback.io_wbinfo_writeback_data <= mema_to_wb.io_wbinfoPass_writeback_data @[Core.scala 123:23]
-    writeback.io_wbinfo_regwrite_enable <= mema_to_wb.io_wbinfoPass_regwrite_enable @[Core.scala 123:23]
-    writeback.io_wbinfo_csrwrite_addr <= mema_to_wb.io_wbinfoPass_csrwrite_addr @[Core.scala 123:23]
-    writeback.io_wbinfo_csrwrite_data <= mema_to_wb.io_wbinfoPass_csrwrite_data @[Core.scala 123:23]
-    writeback.io_wbinfo_CSRType <= mema_to_wb.io_wbinfoPass_CSRType @[Core.scala 123:23]
+    writeback.io_wbinfo_writeback_addr <= mema_to_wb.io_wbinfoPass_writeback_addr @[Core.scala 124:23]
+    writeback.io_wbinfo_writeback_data <= mema_to_wb.io_wbinfoPass_writeback_data @[Core.scala 124:23]
+    writeback.io_wbinfo_regwrite_enable <= mema_to_wb.io_wbinfoPass_regwrite_enable @[Core.scala 124:23]
+    writeback.io_wbinfo_csrwrite_addr <= mema_to_wb.io_wbinfoPass_csrwrite_addr @[Core.scala 124:23]
+    writeback.io_wbinfo_csrwrite_data <= mema_to_wb.io_wbinfoPass_csrwrite_data @[Core.scala 124:23]
+    writeback.io_wbinfo_CSRType <= mema_to_wb.io_wbinfoPass_CSRType @[Core.scala 124:23]
     datahazard_forward.clock <= clock
     datahazard_forward.reset <= reset
     datahazard_forward.io_withDecode_srcAddrA <= decode.io_forward_srcAddrA @[Core.scala 92:21]
@@ -1445,6 +1474,9 @@ circuit Check :
     datahazard_forward.io_withMema_wbAddrFromMema <= memoryAccess.io_forward_wbAddrFromMema @[Core.scala 119:27]
     datahazard_forward.io_withMema_regTypeFromMema <= memoryAccess.io_forward_regTypeFromMema @[Core.scala 119:27]
     datahazard_forward.io_withMema_wbDataFromMema <= memoryAccess.io_forward_wbDataFromMema @[Core.scala 119:27]
+    datahazard_forward.io_withWriteback_wbAddrFromWB <= writeback.io_forward_wbAddrFromWB @[Core.scala 123:24]
+    datahazard_forward.io_withWriteback_regTypeFromWB <= writeback.io_forward_regTypeFromWB @[Core.scala 123:24]
+    datahazard_forward.io_withWriteback_wbDataFromWB <= writeback.io_forward_wbDataFromWB @[Core.scala 123:24]
     datahazard_stall.clock <= clock
     datahazard_stall.reset <= reset
     datahazard_stall.io_withIDDE_srcAddrA <= instfetch_to_decode.io_stall_srcAddrA @[Core.scala 85:32]
@@ -1455,17 +1487,17 @@ circuit Check :
     regs.reset <= reset
     regs.io_reg_read_read_addr_a <= decode.io_readReg_read_addr_a @[Core.scala 93:21]
     regs.io_reg_read_read_addr_b <= decode.io_readReg_read_addr_b @[Core.scala 93:21]
-    regs.io_reg_write_write_addr <= writeback.io_regWrite_write_addr @[Core.scala 124:21]
-    regs.io_reg_write_write_data <= writeback.io_regWrite_write_data @[Core.scala 124:21]
-    regs.io_reg_write_write_enable <= writeback.io_regWrite_write_enable @[Core.scala 124:21]
+    regs.io_reg_write_write_addr <= writeback.io_regWrite_write_addr @[Core.scala 125:21]
+    regs.io_reg_write_write_data <= writeback.io_regWrite_write_data @[Core.scala 125:21]
+    regs.io_reg_write_write_enable <= writeback.io_regWrite_write_enable @[Core.scala 125:21]
     csrs.clock <= clock
     csrs.reset <= reset
     csrs.io_csrRead_csr_read_addr <= memoryAccess.io_csrRead_csr_read_addr @[Core.scala 118:27]
     csrs.io_envRead_csr_read_addr <= instfetch.io_envRead_csr_read_addr @[Core.scala 78:24]
-    csrs.io_csrWrite_csr_write_addr <= writeback.io_csrWrite_csr_write_addr @[Core.scala 125:20]
-    csrs.io_csrWrite_csr_write_data <= writeback.io_csrWrite_csr_write_data @[Core.scala 125:20]
-    csrs.io_csrWrite_csr_write_enable <= writeback.io_csrWrite_csr_write_enable @[Core.scala 125:20]
-    counter <= mux(reset, UInt<12>("h0"), _counter_T_1) @[Core.scala 130:{24,24} 131:11]
+    csrs.io_csrWrite_csr_write_addr <= writeback.io_csrWrite_csr_write_addr @[Core.scala 126:20]
+    csrs.io_csrWrite_csr_write_data <= writeback.io_csrWrite_csr_write_data @[Core.scala 126:20]
+    csrs.io_csrWrite_csr_write_enable <= writeback.io_csrWrite_csr_write_enable @[Core.scala 126:20]
+    counter <= mux(reset, UInt<12>("h0"), _counter_T_1) @[Core.scala 131:{24,24} 132:11]
 
   module Memory :
     input clock : Clock
@@ -1904,8 +1936,8 @@ circuit Check :
     output io_probe_alu_result : UInt<64>
     output io_probe_writeback_data : UInt<64>
     output io_probe_mem_read_addr : UInt<64>
-    output io_probe_forwardAtype : UInt<2>
-    output io_probe_forwardBtype : UInt<2>
+    output io_probe_forwardAtype : UInt<3>
+    output io_probe_forwardBtype : UInt<3>
     output io_probe_stallFlag : UInt<1>
     output io_probe_branchFlag : UInt<1>
     output io_probe_cycleTime : UInt<12>

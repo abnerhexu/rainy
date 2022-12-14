@@ -9,24 +9,31 @@ class Forward extends Module {
     val withDecode = new ForwardWithDecode
     val withExecute = new ForwardWithExecute
     val withMema = new ForwardWithMema
+    val withWriteback = new ForwardWithWriteback
     // probe
     val probe_typeA = Output(UInt(DATAHAZARD_LEN))
     val probe_typeB = Output(UInt(DATAHAZARD_LEN))
   })
 
-  val hazardAType = MuxCase(DATA_NO_HAZARD, Seq(
-    ((io.withDecode.srcAddrA === io.withExecute.wbAddrFromExecute) && (io.withExecute.regTypeFromExecute === REG_S)) -> DATA_FROM_EXE,
-    ((io.withDecode.srcAddrA === io.withMema.wbAddrFromMema) && (io.withMema.regTypeFromMema === REG_S)) -> DATA_FROM_MEA
-  ))
-  val hazardBType = MuxCase(DATA_NO_HAZARD, Seq(
-    ((io.withDecode.srcAddrB === io.withExecute.wbAddrFromExecute) && (io.withExecute.regTypeFromExecute === REG_S)) -> DATA_FROM_EXE,
-    ((io.withDecode.srcAddrB === io.withMema.wbAddrFromMema) && (io.withMema.regTypeFromMema === REG_S)) -> DATA_FROM_MEA
-  ))
-
+  val hazardAType = Mux(
+    (io.withDecode.srcAddrA === io.withExecute.wbAddrFromExecute) && (io.withExecute.regTypeFromExecute === REG_S), DATA_FROM_EXE, Mux(
+      (io.withDecode.srcAddrA === io.withMema.wbAddrFromMema) && (io.withMema.regTypeFromMema === REG_S), DATA_FROM_MEA, Mux(
+        (io.withDecode.srcAddrA === io.withWriteback.wbAddrFromWB) && (io.withWriteback.regTypeFromWB === REG_S), DATA_FROM_WB, DATA_NO_HAZARD
+      )
+    )
+  )
+  val hazardBType = Mux(
+    (io.withDecode.srcAddrB === io.withExecute.wbAddrFromExecute) && (io.withExecute.regTypeFromExecute === REG_S), DATA_FROM_EXE, Mux(
+      (io.withDecode.srcAddrB === io.withMema.wbAddrFromMema) && (io.withMema.regTypeFromMema === REG_S), DATA_FROM_MEA, Mux(
+        (io.withDecode.srcAddrB === io.withWriteback.wbAddrFromWB) && (io.withWriteback.regTypeFromWB === REG_S), DATA_FROM_WB, DATA_NO_HAZARD
+      )
+    )
+  )
 
   val hazardADataMux = MuxCase(0.U(DOUBLE_WORD_LEN_WIDTH), Seq(
     (hazardAType === DATA_FROM_EXE) -> io.withExecute.wbDataFromExe,
-    (hazardAType === DATA_FROM_MEA) -> io.withMema.wbDataFromMema
+    (hazardAType === DATA_FROM_MEA) -> io.withMema.wbDataFromMema,
+    (hazardAType === DATA_FROM_WB)  -> io.withWriteback.wbDataFromWB
   ))
   // val hazardAData = RegInit(0.U(DOUBLE_WORD_LEN_WIDTH))
   // hazardAData := hazardADataMux
@@ -34,17 +41,18 @@ class Forward extends Module {
 
   val hazardBDataMux = MuxCase(0.U(DOUBLE_WORD_LEN_WIDTH), Seq(
     (hazardBType === DATA_FROM_EXE) -> io.withExecute.wbDataFromExe,
-    (hazardBType === DATA_FROM_MEA) -> io.withMema.wbDataFromMema
+    (hazardBType === DATA_FROM_MEA) -> io.withMema.wbDataFromMema,
+    (hazardBType === DATA_FROM_WB)  -> io.withWriteback.wbDataFromWB
   ))
   // val hazardBData = RegInit(0.U(DOUBLE_WORD_LEN_WIDTH))
   // hazardBData := hazardBDataMux
   io.withDecode.hazardBData := hazardBDataMux
 
   // val AhazardFlag = RegInit(false.asBool)
-  val AhazardFlag = (hazardAType === DATA_FROM_EXE || hazardAType === DATA_FROM_MEA)
+  val AhazardFlag = (hazardAType === DATA_FROM_EXE || hazardAType === DATA_FROM_MEA || hazardAType === DATA_FROM_WB)
   io.withDecode.AhazardFlag := AhazardFlag
   // val BhazardFlag = RegInit(false.asBool)
-  val BhazardFlag = (hazardBType === DATA_FROM_EXE || hazardBType === DATA_FROM_MEA)
+  val BhazardFlag = (hazardBType === DATA_FROM_EXE || hazardBType === DATA_FROM_MEA || hazardBType === DATA_FROM_WB)
   io.withDecode.BhazardFlag := AhazardFlag
 
   // probe

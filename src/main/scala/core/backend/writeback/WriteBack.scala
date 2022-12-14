@@ -5,13 +5,22 @@ import core.backend.mema.MemaOutPort
 import core.backend.regfile.{CSRWritePort, RegWritePort}
 import common.Defines.{CSR_TYPE_LEN, REG_S}
 
+import core.backend.datahazard.ForwardWithWriteback
+
 class WriteBack extends Module {
   val io = IO(new Bundle() {
     val wbinfo = Flipped(new MemaOutPort)
     val regWrite = Flipped(new RegWritePort)
     val csrWrite = Flipped(new CSRWritePort)
+    val forward = Flipped(new ForwardWithWriteback)
   })
 
+  // forward
+  io.forward.wbAddrFromWB := io.wbinfo.writeback_addr
+  io.forward.regTypeFromWB := io.wbinfo.regwrite_enable
+  io.forward.wbDataFromWB := io.wbinfo.writeback_data
+
+  // write back
   io.regWrite.write_addr := io.wbinfo.writeback_addr
   io.regWrite.write_data := io.wbinfo.writeback_data
 

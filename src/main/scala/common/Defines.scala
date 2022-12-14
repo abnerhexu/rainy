@@ -99,8 +99,12 @@ object Defines {
   val ALUSRC_FROM_MEA = 2.U(ALUSRC_MUX_LEN)
 
   // DataHazard Choice
-  val DATAHAZARD_LEN = 2.W
+  val DATAHAZARD_LEN = 3.W
   val DATA_NO_HAZARD = 0.U(DATAHAZARD_LEN)
   val DATA_FROM_EXE = 1.U(DATAHAZARD_LEN)
   val DATA_FROM_MEA = 2.U(DATAHAZARD_LEN)
+  val DATA_FROM_WB = 3.U(DATAHAZARD_LEN)
+
+  // interrupt
+  val INTERRUPT_FLAG_WIDTH = 32.W
 }
