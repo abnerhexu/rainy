@@ -38,13 +38,13 @@ class Testbench extends Module {
 class Test extends FlatSpec with ChiselScalatestTester {
   "mycpu" should "work through hex" in {
     test(new Testbench) { c =>
-      for (i <- 1 to 12) {
+      for (i <- 1 to 415) {
         c.clock.step(1)
       }
     }
   }
 }
 
-object Testbench extends App {
+object TestbenchVerilog extends App {
   (new ChiselStage).emitVerilog(new Testbench())
 }

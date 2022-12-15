@@ -64,6 +64,8 @@ class Alu extends Module {
   io.alu_out.jumpTarget := alu_out
 
   // data hazard
+//  val aluOutReg = RegInit(0.U(DOUBLE_WORD_LEN_WIDTH))
+//  aluOutReg := alu_out
   io.forward.wbDataFromExe := alu_out
   io.forward.wbAddrFromExecute := io.alu_in.writeback_addr
   io.forward.regTypeFromExecute := io.controlSignal.regType
