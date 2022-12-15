@@ -2611,7 +2611,7 @@ end // initial
 `endif
 `endif // SYNTHESIS
 endmodule
-module Check(
+module Testbench(
   input         clock,
   input         reset,
   output [63:0] io_probe_progcnter,

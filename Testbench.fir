@@ -1,4 +1,4 @@
-circuit Check :
+circuit Testbench :
   module Instfetch :
     input clock : Clock
     input reset : Reset
@@ -1350,7 +1350,7 @@ circuit Check :
               write mport MPORT_14 = memory[_T_55], clock
               MPORT_14 <= _T_54
 
-  module Check :
+  module Testbench :
     input clock : Clock
     input reset : UInt<1>
     output io : { probe : { progcnter : UInt<64>, inst : UInt<64>, srcA : UInt<64>, srcB : UInt<64>, alu_result : UInt<64>, writeback_data : UInt<64>, mem_read_addr : UInt<64>, forwardAtype : UInt<3>, forwardBtype : UInt<3>, stallFlag : UInt<1>, branchFlag : UInt<1>, cycleTime : UInt<12>, branchTarget : UInt<64>}}
