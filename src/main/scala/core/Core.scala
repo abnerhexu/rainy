@@ -10,6 +10,7 @@ import core.backend.writeback.WriteBack
 import core.backend.pipereg.{DecodeToExecute, ExecuteToMema, FetchToDecode, MemaToWB}
 
 import rainy.shaheway.org.core.backend.datahazard.{Forward, Stall}
+import rainy.shaheway.org.core.backend.regfile.RegDisplay
 // import core.backend.datahazard.{Forward, Stall}
 import core.backend.regfile.{CSRfile, RegFile}
 import mem.{DataReadPort, InstReadPort, MemWritePort}
@@ -19,8 +20,10 @@ class Core extends Module {
     val instfetch_fetchMem = Flipped(new InstReadPort)
     val memoryAccess_dataReadPort = Flipped(new DataReadPort)
     val memoryAccess_dataWritePort = Flipped(new MemWritePort)
-    val probe = new Probe
+    // val probe = new Probe
+    val display = new RegDisplay
   })
+
   // inside core
   val instfetch = Module(new Instfetch)
   val instfetch_to_decode = Module(new FetchToDecode)
@@ -38,6 +41,8 @@ class Core extends Module {
   val regs = Module(new RegFile)
   val csrs = Module(new CSRfile)
 
+  // display
+  regs.io.display <> io.display
   // 外部设备连接
   /*
   val instfetch_fetchMem_read_addr_a = Wire(UInt(DOUBLE_WORD_LEN_WIDTH))
@@ -128,6 +133,7 @@ class Core extends Module {
   // 控制冒险连线(这里没有)
 
   // probe
+  /*
   val counter = RegInit(0.U(12.W))
   counter := counter + 1.U(12.W)
   io.probe.cycleTime := counter
@@ -144,4 +150,5 @@ class Core extends Module {
   io.probe.stallFlag := datahazard_stall.io.stallFlag
   io.probe.branchFlag := decode.io.branch.branchFlag
   io.probe.branchTarget := decode_to_execute.io.branchout.branchTarget
+   */
 }
