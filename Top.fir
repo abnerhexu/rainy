@@ -1074,110 +1074,110 @@ circuit Top :
   module Core :
     input clock : Clock
     input reset : Reset
-    output io : { flip instfetch_fetchMem : { flip read_addr_a : UInt<64>, read_inst_a : UInt<32>}, flip memoryAccess_dataReadPort : { flip read_addr_b : UInt<64>, read_data_b : UInt<64>}, flip memoryAccess_dataWritePort : { flip write_addr : UInt<64>, flip write_data : UInt<64>, flip write_lenth : UInt<4>, flip write_enable : UInt<1>}, display : { flip in : UInt<8>, out : UInt<16>}}
+    output io : { flip instfetch_fetchMem : { flip read_addr_a : UInt<64>, read_inst_a : UInt<32>}, flip memoryAccess_dataReadPort : { flip read_addr_b : UInt<64>, read_data_b : UInt<64>}, flip memoryAccess_dataWritePort : { flip write_addr : UInt<64>, flip write_data : UInt<64>, flip write_lenth : UInt<4>, flip write_enable : UInt<1>}, flip display_a : UInt<8>, display_ans : UInt<64>}
 
-    inst instfetch of Instfetch @[Core.scala 28:25]
+    inst instfetch of Instfetch @[Core.scala 29:25]
     instfetch.clock <= clock
     instfetch.reset <= reset
-    inst instfetch_to_decode of FetchToDecode @[Core.scala 29:35]
+    inst instfetch_to_decode of FetchToDecode @[Core.scala 30:35]
     instfetch_to_decode.clock <= clock
     instfetch_to_decode.reset <= reset
-    inst decode of Decode @[Core.scala 30:22]
+    inst decode of Decode @[Core.scala 31:22]
     decode.clock <= clock
     decode.reset <= reset
-    inst decode_to_execute of DecodeToExecute @[Core.scala 31:33]
+    inst decode_to_execute of DecodeToExecute @[Core.scala 32:33]
     decode_to_execute.clock <= clock
     decode_to_execute.reset <= reset
-    inst execute of Alu @[Core.scala 32:23]
+    inst execute of Alu @[Core.scala 33:23]
     execute.clock <= clock
     execute.reset <= reset
-    inst execute_to_mema of ExecuteToMema @[Core.scala 33:31]
+    inst execute_to_mema of ExecuteToMema @[Core.scala 34:31]
     execute_to_mema.clock <= clock
     execute_to_mema.reset <= reset
-    inst memoryAccess of MemAccess @[Core.scala 34:28]
+    inst memoryAccess of MemAccess @[Core.scala 35:28]
     memoryAccess.clock <= clock
     memoryAccess.reset <= reset
-    inst mema_to_wb of MemaToWB @[Core.scala 35:26]
+    inst mema_to_wb of MemaToWB @[Core.scala 36:26]
     mema_to_wb.clock <= clock
     mema_to_wb.reset <= reset
-    inst writeback of WriteBack @[Core.scala 36:25]
+    inst writeback of WriteBack @[Core.scala 37:25]
     writeback.clock <= clock
     writeback.reset <= reset
-    inst datahazard_forward of Forward @[Core.scala 37:34]
+    inst datahazard_forward of Forward @[Core.scala 38:34]
     datahazard_forward.clock <= clock
     datahazard_forward.reset <= reset
-    inst datahazard_stall of Stall @[Core.scala 38:32]
+    inst datahazard_stall of Stall @[Core.scala 39:32]
     datahazard_stall.clock <= clock
     datahazard_stall.reset <= reset
-    inst regs of RegFile @[Core.scala 41:20]
+    inst regs of RegFile @[Core.scala 42:20]
     regs.clock <= clock
     regs.reset <= reset
-    inst csrs of CSRfile @[Core.scala 42:20]
+    inst csrs of CSRfile @[Core.scala 43:20]
     csrs.clock <= clock
     csrs.reset <= reset
-    io.display.out <= regs.io.display.out @[Core.scala 45:19]
-    regs.io.display.in <= io.display.in @[Core.scala 45:19]
-    instfetch.io.branchFlag <= decode_to_execute.io.branchout.branchFlag @[Core.scala 77:27]
-    instfetch.io.jumpFlag <= execute_to_mema.io.jumpFlag @[Core.scala 78:25]
-    instfetch.io.stallFlag <= datahazard_stall.io.stallFlag @[Core.scala 79:26]
-    instfetch.io.branchTarget <= decode_to_execute.io.branchout.branchTarget @[Core.scala 80:29]
-    instfetch.io.jumpTarget <= execute.io.alu_out.alu_result @[Core.scala 81:27]
-    instfetch.io.fetchMem <= io.instfetch_fetchMem @[Core.scala 82:25]
-    instfetch.io.envRead <= csrs.io.envRead @[Core.scala 83:24]
-    instfetch_to_decode.io.stallFlag <= datahazard_stall.io.stallFlag @[Core.scala 85:36]
-    instfetch_to_decode.io.pcIn <= instfetch.io.pcOut @[Core.scala 86:31]
-    instfetch_to_decode.io.instIn <= instfetch.io.instOut @[Core.scala 87:33]
-    instfetch_to_decode.io.branchFlag <= decode_to_execute.io.branchout.branchFlag @[Core.scala 88:37]
-    instfetch_to_decode.io.jumpFlag <= execute_to_mema.io.jumpFlag @[Core.scala 89:35]
-    datahazard_stall.io.withIDDE.srcAddrB <= instfetch_to_decode.io.stall.srcAddrB @[Core.scala 90:32]
-    datahazard_stall.io.withIDDE.srcAddrA <= instfetch_to_decode.io.stall.srcAddrA @[Core.scala 90:32]
-    decode.io.jumpFlag <= execute_to_mema.io.jumpFlag @[Core.scala 93:22]
-    decode.io.stallFlag <= datahazard_stall.io.stallFlag @[Core.scala 94:23]
-    decode.io.inst <= instfetch_to_decode.io.instOut @[Core.scala 95:18]
-    decode.io.cur_pc <= instfetch_to_decode.io.pcOut @[Core.scala 96:20]
-    decode.io.forward <= datahazard_forward.io.withDecode @[Core.scala 97:21]
-    decode.io.readReg <= regs.io.reg_read @[Core.scala 98:21]
-    decode_to_execute.io.branchextend <= decode.io.branch @[Core.scala 100:37]
-    decode_to_execute.io.controlSignal <= decode.io.decodeOut @[Core.scala 101:38]
-    decode_to_execute.io.jumpFlag <= execute_to_mema.io.jumpFlag @[Core.scala 102:33]
-    decode_to_execute.io.cur_pc <= decode.io.pcOut @[Core.scala 103:31]
-    decode_to_execute.io.opSrc <= decode.io.srcOut @[Core.scala 104:30]
-    execute.io.cur_pc <= decode_to_execute.io.pcOut @[Core.scala 107:21]
-    execute.io.alu_in <= decode_to_execute.io.srcPass @[Core.scala 108:21]
-    execute.io.controlSignal <= decode_to_execute.io.controlSignalPass @[Core.scala 109:28]
-    datahazard_forward.io.withExecute.wbDataFromExe <= execute.io.forward.wbDataFromExe @[Core.scala 110:22]
-    datahazard_forward.io.withExecute.regTypeFromExecute <= execute.io.forward.regTypeFromExecute @[Core.scala 110:22]
-    datahazard_forward.io.withExecute.wbAddrFromExecute <= execute.io.forward.wbAddrFromExecute @[Core.scala 110:22]
-    datahazard_stall.io.withEX.wbSrcFromEx <= execute.io.stall.wbSrcFromEx @[Core.scala 111:20]
-    datahazard_stall.io.withEX.wbAddrFromEx <= execute.io.stall.wbAddrFromEx @[Core.scala 111:20]
-    execute_to_mema.io.linkedPC <= execute.io.linkedPC @[Core.scala 113:31]
-    execute_to_mema.io.aluOut <= execute.io.alu_out @[Core.scala 114:29]
-    execute_to_mema.io.controlSignal <= execute.io.controlPass @[Core.scala 115:36]
-    memoryAccess.io.linkedPC <= execute_to_mema.io.linkedPCPass @[Core.scala 118:28]
-    memoryAccess.io.aluOut.regB_data <= execute_to_mema.io.aluOutPass.regB_data @[Core.scala 119:26]
-    memoryAccess.io.aluOut.writeback_addr <= execute_to_mema.io.aluOutPass.writeback_addr @[Core.scala 119:26]
-    memoryAccess.io.aluOut.alu_result <= execute_to_mema.io.aluOutPass.alu_result @[Core.scala 119:26]
-    memoryAccess.io.controlSignal <= execute_to_mema.io.controlSignalPass @[Core.scala 120:33]
-    memoryAccess.io.dataReadPort <= io.memoryAccess_dataReadPort @[Core.scala 121:32]
-    io.memoryAccess_dataWritePort.write_enable <= memoryAccess.io.dataWritePort.write_enable @[Core.scala 122:33]
-    io.memoryAccess_dataWritePort.write_lenth <= memoryAccess.io.dataWritePort.write_lenth @[Core.scala 122:33]
-    io.memoryAccess_dataWritePort.write_data <= memoryAccess.io.dataWritePort.write_data @[Core.scala 122:33]
-    io.memoryAccess_dataWritePort.write_addr <= memoryAccess.io.dataWritePort.write_addr @[Core.scala 122:33]
-    memoryAccess.io.csrRead <= csrs.io.csrRead @[Core.scala 123:27]
-    datahazard_forward.io.withMema.wbDataFromMema <= memoryAccess.io.forward.wbDataFromMema @[Core.scala 124:27]
-    datahazard_forward.io.withMema.regTypeFromMema <= memoryAccess.io.forward.regTypeFromMema @[Core.scala 124:27]
-    datahazard_forward.io.withMema.wbAddrFromMema <= memoryAccess.io.forward.wbAddrFromMema @[Core.scala 124:27]
-    mema_to_wb.io.wbinfo <= memoryAccess.io.memPass @[Core.scala 126:24]
-    datahazard_forward.io.withWriteback.wbDataFromWB <= writeback.io.forward.wbDataFromWB @[Core.scala 128:24]
-    datahazard_forward.io.withWriteback.regTypeFromWB <= writeback.io.forward.regTypeFromWB @[Core.scala 128:24]
-    datahazard_forward.io.withWriteback.wbAddrFromWB <= writeback.io.forward.wbAddrFromWB @[Core.scala 128:24]
-    writeback.io.wbinfo <= mema_to_wb.io.wbinfoPass @[Core.scala 129:23]
-    regs.io.reg_write.write_enable <= writeback.io.regWrite.write_enable @[Core.scala 130:21]
-    regs.io.reg_write.write_data <= writeback.io.regWrite.write_data @[Core.scala 130:21]
-    regs.io.reg_write.write_addr <= writeback.io.regWrite.write_addr @[Core.scala 130:21]
-    csrs.io.csrWrite.csr_write_enable <= writeback.io.csrWrite.csr_write_enable @[Core.scala 131:20]
-    csrs.io.csrWrite.csr_write_data <= writeback.io.csrWrite.csr_write_data @[Core.scala 131:20]
-    csrs.io.csrWrite.csr_write_addr <= writeback.io.csrWrite.csr_write_addr @[Core.scala 131:20]
+    regs.io.display.in <= io.display_a @[Core.scala 46:22]
+    io.display_ans <= regs.io.display.out @[Core.scala 47:18]
+    instfetch.io.branchFlag <= decode_to_execute.io.branchout.branchFlag @[Core.scala 79:27]
+    instfetch.io.jumpFlag <= execute_to_mema.io.jumpFlag @[Core.scala 80:25]
+    instfetch.io.stallFlag <= datahazard_stall.io.stallFlag @[Core.scala 81:26]
+    instfetch.io.branchTarget <= decode_to_execute.io.branchout.branchTarget @[Core.scala 82:29]
+    instfetch.io.jumpTarget <= execute.io.alu_out.alu_result @[Core.scala 83:27]
+    instfetch.io.fetchMem <= io.instfetch_fetchMem @[Core.scala 84:25]
+    instfetch.io.envRead <= csrs.io.envRead @[Core.scala 85:24]
+    instfetch_to_decode.io.stallFlag <= datahazard_stall.io.stallFlag @[Core.scala 87:36]
+    instfetch_to_decode.io.pcIn <= instfetch.io.pcOut @[Core.scala 88:31]
+    instfetch_to_decode.io.instIn <= instfetch.io.instOut @[Core.scala 89:33]
+    instfetch_to_decode.io.branchFlag <= decode_to_execute.io.branchout.branchFlag @[Core.scala 90:37]
+    instfetch_to_decode.io.jumpFlag <= execute_to_mema.io.jumpFlag @[Core.scala 91:35]
+    datahazard_stall.io.withIDDE.srcAddrB <= instfetch_to_decode.io.stall.srcAddrB @[Core.scala 92:32]
+    datahazard_stall.io.withIDDE.srcAddrA <= instfetch_to_decode.io.stall.srcAddrA @[Core.scala 92:32]
+    decode.io.jumpFlag <= execute_to_mema.io.jumpFlag @[Core.scala 95:22]
+    decode.io.stallFlag <= datahazard_stall.io.stallFlag @[Core.scala 96:23]
+    decode.io.inst <= instfetch_to_decode.io.instOut @[Core.scala 97:18]
+    decode.io.cur_pc <= instfetch_to_decode.io.pcOut @[Core.scala 98:20]
+    decode.io.forward <= datahazard_forward.io.withDecode @[Core.scala 99:21]
+    decode.io.readReg <= regs.io.reg_read @[Core.scala 100:21]
+    decode_to_execute.io.branchextend <= decode.io.branch @[Core.scala 102:37]
+    decode_to_execute.io.controlSignal <= decode.io.decodeOut @[Core.scala 103:38]
+    decode_to_execute.io.jumpFlag <= execute_to_mema.io.jumpFlag @[Core.scala 104:33]
+    decode_to_execute.io.cur_pc <= decode.io.pcOut @[Core.scala 105:31]
+    decode_to_execute.io.opSrc <= decode.io.srcOut @[Core.scala 106:30]
+    execute.io.cur_pc <= decode_to_execute.io.pcOut @[Core.scala 109:21]
+    execute.io.alu_in <= decode_to_execute.io.srcPass @[Core.scala 110:21]
+    execute.io.controlSignal <= decode_to_execute.io.controlSignalPass @[Core.scala 111:28]
+    datahazard_forward.io.withExecute.wbDataFromExe <= execute.io.forward.wbDataFromExe @[Core.scala 112:22]
+    datahazard_forward.io.withExecute.regTypeFromExecute <= execute.io.forward.regTypeFromExecute @[Core.scala 112:22]
+    datahazard_forward.io.withExecute.wbAddrFromExecute <= execute.io.forward.wbAddrFromExecute @[Core.scala 112:22]
+    datahazard_stall.io.withEX.wbSrcFromEx <= execute.io.stall.wbSrcFromEx @[Core.scala 113:20]
+    datahazard_stall.io.withEX.wbAddrFromEx <= execute.io.stall.wbAddrFromEx @[Core.scala 113:20]
+    execute_to_mema.io.linkedPC <= execute.io.linkedPC @[Core.scala 115:31]
+    execute_to_mema.io.aluOut <= execute.io.alu_out @[Core.scala 116:29]
+    execute_to_mema.io.controlSignal <= execute.io.controlPass @[Core.scala 117:36]
+    memoryAccess.io.linkedPC <= execute_to_mema.io.linkedPCPass @[Core.scala 120:28]
+    memoryAccess.io.aluOut.regB_data <= execute_to_mema.io.aluOutPass.regB_data @[Core.scala 121:26]
+    memoryAccess.io.aluOut.writeback_addr <= execute_to_mema.io.aluOutPass.writeback_addr @[Core.scala 121:26]
+    memoryAccess.io.aluOut.alu_result <= execute_to_mema.io.aluOutPass.alu_result @[Core.scala 121:26]
+    memoryAccess.io.controlSignal <= execute_to_mema.io.controlSignalPass @[Core.scala 122:33]
+    memoryAccess.io.dataReadPort <= io.memoryAccess_dataReadPort @[Core.scala 123:32]
+    io.memoryAccess_dataWritePort.write_enable <= memoryAccess.io.dataWritePort.write_enable @[Core.scala 124:33]
+    io.memoryAccess_dataWritePort.write_lenth <= memoryAccess.io.dataWritePort.write_lenth @[Core.scala 124:33]
+    io.memoryAccess_dataWritePort.write_data <= memoryAccess.io.dataWritePort.write_data @[Core.scala 124:33]
+    io.memoryAccess_dataWritePort.write_addr <= memoryAccess.io.dataWritePort.write_addr @[Core.scala 124:33]
+    memoryAccess.io.csrRead <= csrs.io.csrRead @[Core.scala 125:27]
+    datahazard_forward.io.withMema.wbDataFromMema <= memoryAccess.io.forward.wbDataFromMema @[Core.scala 126:27]
+    datahazard_forward.io.withMema.regTypeFromMema <= memoryAccess.io.forward.regTypeFromMema @[Core.scala 126:27]
+    datahazard_forward.io.withMema.wbAddrFromMema <= memoryAccess.io.forward.wbAddrFromMema @[Core.scala 126:27]
+    mema_to_wb.io.wbinfo <= memoryAccess.io.memPass @[Core.scala 128:24]
+    datahazard_forward.io.withWriteback.wbDataFromWB <= writeback.io.forward.wbDataFromWB @[Core.scala 130:24]
+    datahazard_forward.io.withWriteback.regTypeFromWB <= writeback.io.forward.regTypeFromWB @[Core.scala 130:24]
+    datahazard_forward.io.withWriteback.wbAddrFromWB <= writeback.io.forward.wbAddrFromWB @[Core.scala 130:24]
+    writeback.io.wbinfo <= mema_to_wb.io.wbinfoPass @[Core.scala 131:23]
+    regs.io.reg_write.write_enable <= writeback.io.regWrite.write_enable @[Core.scala 132:21]
+    regs.io.reg_write.write_data <= writeback.io.regWrite.write_data @[Core.scala 132:21]
+    regs.io.reg_write.write_addr <= writeback.io.regWrite.write_addr @[Core.scala 132:21]
+    csrs.io.csrWrite.csr_write_enable <= writeback.io.csrWrite.csr_write_enable @[Core.scala 133:20]
+    csrs.io.csrWrite.csr_write_data <= writeback.io.csrWrite.csr_write_data @[Core.scala 133:20]
+    csrs.io.csrWrite.csr_write_addr <= writeback.io.csrWrite.csr_write_addr @[Core.scala 133:20]
 
   module Memory :
     input clock : Clock
@@ -1336,26 +1336,11 @@ circuit Top :
               write mport MPORT_14 = memory[_T_55], clock
               MPORT_14 <= _T_54
 
-  module Seg7 :
-    input clock : Clock
-    input reset : Reset
-    output io : { flip ans : UInt<16>, segOut : UInt<4>, segChoice : UInt<2>}
-
-    reg p : UInt<2>, clock with :
-      reset => (reset, UInt<2>("h0")) @[Seg7.scala 15:18]
-    node _p_T = add(p, UInt<2>("h1")) @[Seg7.scala 16:10]
-    node _p_T_1 = tail(_p_T, 1) @[Seg7.scala 16:10]
-    p <= _p_T_1 @[Seg7.scala 16:5]
-    node _io_segOut_T = eq(p, UInt<2>("h0")) @[Seg7.scala 49:8]
-    node _io_segOut_T_1 = eq(p, UInt<2>("h1")) @[Seg7.scala 50:8]
-    node _io_segOut_T_2 = eq(p, UInt<2>("h2")) @[Seg7.scala 51:8]
-    node _io_segOut_T_3 = eq(p, UInt<2>("h3")) @[Seg7.scala 52:8]
-    node _io_segOut_T_4 = mux(_io_segOut_T_3, UInt<4>("h0"), UInt<4>("h0")) @[Mux.scala 101:16]
-    node _io_segOut_T_5 = mux(_io_segOut_T_2, UInt<4>("h0"), _io_segOut_T_4) @[Mux.scala 101:16]
-    node _io_segOut_T_6 = mux(_io_segOut_T_1, UInt<4>("h0"), _io_segOut_T_5) @[Mux.scala 101:16]
-    node _io_segOut_T_7 = mux(_io_segOut_T, UInt<4>("h0"), _io_segOut_T_6) @[Mux.scala 101:16]
-    io.segOut <= _io_segOut_T_7 @[Seg7.scala 48:13]
-    io.segChoice <= p @[Seg7.scala 54:16]
+  extmodule Seg7 :
+    input ans : UInt<16>
+    output segOut : UInt<4>
+    output segChoice : UInt<2>
+    defname = Seg7
 
   module Top :
     input clock : Clock
@@ -1369,17 +1354,18 @@ circuit Top :
     memory.clock <= clock
     memory.reset <= reset
     inst seg7 of Seg7 @[Top.scala 17:20]
-    seg7.clock <= clock
-    seg7.reset <= reset
+    seg7.segChoice is invalid
+    seg7.segOut is invalid
+    seg7.ans is invalid
     core.io.instfetch_fetchMem <= memory.io.instReadPort @[Top.scala 19:30]
     core.io.memoryAccess_dataReadPort <= memory.io.dataReadPort @[Top.scala 20:37]
     memory.io.writePort.write_enable <= core.io.memoryAccess_dataWritePort.write_enable @[Top.scala 21:38]
     memory.io.writePort.write_lenth <= core.io.memoryAccess_dataWritePort.write_lenth @[Top.scala 21:38]
     memory.io.writePort.write_data <= core.io.memoryAccess_dataWritePort.write_data @[Top.scala 21:38]
     memory.io.writePort.write_addr <= core.io.memoryAccess_dataWritePort.write_addr @[Top.scala 21:38]
-    core.io.display.in <= io.a @[Top.scala 22:22]
-    node _seg7_io_ans_T = bits(core.io.display.out, 15, 0) @[Top.scala 23:37]
-    seg7.io.ans <= _seg7_io_ans_T @[Top.scala 23:15]
-    io.segOut <= seg7.io.segOut @[Top.scala 24:13]
-    io.segChoice <= seg7.io.segChoice @[Top.scala 25:16]
+    core.io.display_a <= io.a @[Top.scala 22:21]
+    node _seg7_io_ans_T = bits(core.io.display_ans, 15, 0) @[Top.scala 23:37]
+    seg7.ans <= _seg7_io_ans_T @[Top.scala 23:15]
+    io.segOut <= seg7.segOut @[Top.scala 24:13]
+    io.segChoice <= seg7.segChoice @[Top.scala 25:16]
 

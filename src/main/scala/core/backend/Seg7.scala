@@ -2,19 +2,25 @@ package rainy.shaheway.org
 package core.backend
 import chisel3._
 import chisel3.util.MuxCase
-class Seg7 extends Module{
+class Seg7 extends BlackBox {
   val io = IO(new Bundle() {
     val ans = Input(UInt(16.W))
     val segOut = Output(UInt(4.W))
     val segChoice = Output(UInt(2.W))
   })
-  val d3 = 0.U(4.W)
-  val d2 = 0.U(4.W)
-  val d1 = 0.U(4.W)
-  val d0 = 0.U(4.W)
+  /*
+  val d3 = Wire(UInt(4.W))
+  val d2 = Wire(UInt(4.W))
+  val d1 = Wire(UInt(4.W))
+  val d0 = Wire(UInt(4.W))
   val p = RegInit(0.U(2.W))
   p := p + 1.U(2.W)
-  for(i <- 15 to 0){
+  val counter = RegInit(15.U(4.W))
+  when(counter >= 0.U(4.W)){
+    d3 := 0.U(4.W)
+    d2 := 0.U(4.W)
+    d1 := 0.U(4.W)
+    d0 := 0.U(4.W)
     when(d3 >= 5.U(4.W)) {
       d3 := d3 + 3.U(4.W)
     }.otherwise {
@@ -42,7 +48,8 @@ class Seg7 extends Module{
     d1 := (d1 << 1.U(4.W)).asUInt
     d1(0) := d0(3)
     d0 := (d0 << 1.U(4.W)).asUInt
-    d0(0) := io.ans(i)
+    d0(0) := io.ans(counter)
+    counter := counter - 1.U(4.W)
   }
 
   io.segOut := MuxCase(0.U(4.W), Seq(
@@ -52,4 +59,5 @@ class Seg7 extends Module{
     (p === 3.U(2.W)) -> d3
   ))
   io.segChoice := p
+   */
 }

@@ -21,7 +21,8 @@ class Core extends Module {
     val memoryAccess_dataReadPort = Flipped(new DataReadPort)
     val memoryAccess_dataWritePort = Flipped(new MemWritePort)
     // val probe = new Probe
-    val display = new RegDisplay
+    val display_a = Input(UInt(8.W))
+    val display_ans = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
   })
 
   // inside core
@@ -42,7 +43,8 @@ class Core extends Module {
   val csrs = Module(new CSRfile)
 
   // display
-  regs.io.display <> io.display
+  regs.io.display.in := io.display_a
+  io.display_ans := regs.io.display.out
   // 外部设备连接
   /*
   val instfetch_fetchMem_read_addr_a = Wire(UInt(DOUBLE_WORD_LEN_WIDTH))

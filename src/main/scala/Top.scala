@@ -19,8 +19,8 @@ class Top extends Module {
   core.io.instfetch_fetchMem <> memory.io.instReadPort
   core.io.memoryAccess_dataReadPort <> memory.io.dataReadPort
   core.io.memoryAccess_dataWritePort <> memory.io.writePort
-  core.io.display.in := io.a
-  seg7.io.ans := core.io.display.out(15, 0)
+  core.io.display_a := io.a
+  seg7.io.ans := core.io.display_ans(15, 0)
   io.segOut := seg7.io.segOut
   io.segChoice := seg7.io.segChoice
 }
