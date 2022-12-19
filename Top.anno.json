@@ -6,11 +6,5 @@
   {
     "class":"firrtl.transforms.BlackBoxTargetDirAnno",
     "targetDir":"."
-  },
-  {
-    "class":"firrtl.annotations.MemoryFileInlineAnnotation",
-    "target":"~Top|Memory>memory",
-    "filename":"memoryFile.hex",
-    "hexOrBinary":"h"
   }
 ]

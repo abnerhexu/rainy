@@ -1336,23 +1336,50 @@ circuit Top :
               write mport MPORT_14 = memory[_T_55], clock
               MPORT_14 <= _T_54
 
+  module Seg7 :
+    input clock : Clock
+    input reset : Reset
+    output io : { flip ans : UInt<16>, segOut : UInt<4>, segChoice : UInt<2>}
+
+    reg p : UInt<2>, clock with :
+      reset => (reset, UInt<2>("h0")) @[Seg7.scala 15:18]
+    node _p_T = add(p, UInt<2>("h1")) @[Seg7.scala 16:10]
+    node _p_T_1 = tail(_p_T, 1) @[Seg7.scala 16:10]
+    p <= _p_T_1 @[Seg7.scala 16:5]
+    node _io_segOut_T = eq(p, UInt<2>("h0")) @[Seg7.scala 49:8]
+    node _io_segOut_T_1 = eq(p, UInt<2>("h1")) @[Seg7.scala 50:8]
+    node _io_segOut_T_2 = eq(p, UInt<2>("h2")) @[Seg7.scala 51:8]
+    node _io_segOut_T_3 = eq(p, UInt<2>("h3")) @[Seg7.scala 52:8]
+    node _io_segOut_T_4 = mux(_io_segOut_T_3, UInt<4>("h0"), UInt<4>("h0")) @[Mux.scala 101:16]
+    node _io_segOut_T_5 = mux(_io_segOut_T_2, UInt<4>("h0"), _io_segOut_T_4) @[Mux.scala 101:16]
+    node _io_segOut_T_6 = mux(_io_segOut_T_1, UInt<4>("h0"), _io_segOut_T_5) @[Mux.scala 101:16]
+    node _io_segOut_T_7 = mux(_io_segOut_T, UInt<4>("h0"), _io_segOut_T_6) @[Mux.scala 101:16]
+    io.segOut <= _io_segOut_T_7 @[Seg7.scala 48:13]
+    io.segChoice <= p @[Seg7.scala 54:16]
+
   module Top :
     input clock : Clock
     input reset : UInt<1>
-    output io : { flip a : UInt<8>, ans : UInt<16>}
+    output io : { flip a : UInt<8>, segOut : UInt<16>, segChoice : UInt<2>}
 
-    inst core of Core @[Top.scala 13:20]
+    inst core of Core @[Top.scala 15:20]
     core.clock <= clock
     core.reset <= reset
-    inst memory of Memory @[Top.scala 14:22]
+    inst memory of Memory @[Top.scala 16:22]
     memory.clock <= clock
     memory.reset <= reset
-    core.io.instfetch_fetchMem <= memory.io.instReadPort @[Top.scala 16:30]
-    core.io.memoryAccess_dataReadPort <= memory.io.dataReadPort @[Top.scala 17:37]
-    memory.io.writePort.write_enable <= core.io.memoryAccess_dataWritePort.write_enable @[Top.scala 18:38]
-    memory.io.writePort.write_lenth <= core.io.memoryAccess_dataWritePort.write_lenth @[Top.scala 18:38]
-    memory.io.writePort.write_data <= core.io.memoryAccess_dataWritePort.write_data @[Top.scala 18:38]
-    memory.io.writePort.write_addr <= core.io.memoryAccess_dataWritePort.write_addr @[Top.scala 18:38]
-    core.io.display.in <= io.a @[Top.scala 19:22]
-    io.ans <= core.io.display.out @[Top.scala 20:10]
+    inst seg7 of Seg7 @[Top.scala 17:20]
+    seg7.clock <= clock
+    seg7.reset <= reset
+    core.io.instfetch_fetchMem <= memory.io.instReadPort @[Top.scala 19:30]
+    core.io.memoryAccess_dataReadPort <= memory.io.dataReadPort @[Top.scala 20:37]
+    memory.io.writePort.write_enable <= core.io.memoryAccess_dataWritePort.write_enable @[Top.scala 21:38]
+    memory.io.writePort.write_lenth <= core.io.memoryAccess_dataWritePort.write_lenth @[Top.scala 21:38]
+    memory.io.writePort.write_data <= core.io.memoryAccess_dataWritePort.write_data @[Top.scala 21:38]
+    memory.io.writePort.write_addr <= core.io.memoryAccess_dataWritePort.write_addr @[Top.scala 21:38]
+    core.io.display.in <= io.a @[Top.scala 22:22]
+    node _seg7_io_ans_T = bits(core.io.display.out, 15, 0) @[Top.scala 23:37]
+    seg7.io.ans <= _seg7_io_ans_T @[Top.scala 23:15]
+    io.segOut <= seg7.io.segOut @[Top.scala 24:13]
+    io.segChoice <= seg7.io.segChoice @[Top.scala 25:16]
 
