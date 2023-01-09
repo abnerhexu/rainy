@@ -1058,7 +1058,7 @@ circuit Top :
   module RegFile :
     input clock : Clock
     input reset : Reset
-    output io : { reg_read : { flip read_addr_a : UInt<5>, flip read_addr_b : UInt<5>, read_data_a : UInt<64>, read_data_b : UInt<64>}, reg_write : { flip write_addr : UInt<5>, flip write_data : UInt<64>, flip write_enable : UInt<1>}, display : { flip in : UInt<8>, out : UInt<16>, startFlag : UInt<1>}}
+    output io : { reg_read : { flip read_addr_a : UInt<5>, flip read_addr_b : UInt<5>, read_data_a : UInt<64>, read_data_b : UInt<64>}, reg_write : { flip write_addr : UInt<5>, flip write_data : UInt<64>, flip write_enable : UInt<1>}, display : { flip in : UInt<8>, out : UInt<64>, startFlag : UInt<1>}}
 
     cmem registers : UInt<64> [32] @[RegFile.scala 12:22]
     write mport MPORT = registers[UInt<5>("h13")], clock
@@ -1371,7 +1371,7 @@ circuit Top :
   module Show :
     input clock : Clock
     input reset : Reset
-    output io : { flip start : UInt<1>, flip in_result : UInt<64>, out_result : UInt<7>, valid : UInt<1>, seg_choice : UInt<2>}
+    output io : { flip start : UInt<1>, flip in_result : UInt<64>, out_result : UInt<10>, valid : UInt<1>}
 
     reg bin : UInt<64>, clock with :
       reset => (reset, UInt<64>("h0")) @[Show.scala 13:20]
@@ -1495,7 +1495,6 @@ circuit Top :
     node _seg_choice_T_1 = add(seg_choice, _seg_choice_T) @[Show.scala 37:28]
     node _seg_choice_T_2 = tail(_seg_choice_T_1, 1) @[Show.scala 37:28]
     seg_choice <= _seg_choice_T_2 @[Show.scala 37:14]
-    io.seg_choice <= seg_choice @[Show.scala 38:17]
     node _show_result_T = bits(bcd41, 2, 0) @[Show.scala 40:26]
     node _show_result_T_1 = cat(_show_result_T, bcd0) @[Cat.scala 31:58]
     node _show_result_T_2 = bits(bcd85, 2, 0) @[Show.scala 41:26]
@@ -1512,32 +1511,39 @@ circuit Top :
     node _show_result_T_13 = mux(_show_result_T_12, _show_result_T_7, _show_result_T_11) @[Mux.scala 81:58]
     node _show_result_T_14 = eq(UInt<2>("h3"), seg_choice) @[Mux.scala 81:61]
     node show_result = mux(_show_result_T_14, _show_result_T_9, _show_result_T_13) @[Mux.scala 81:58]
-    node _io_out_result_T_1 = eq(UInt<4>("h0"), show_result) @[Mux.scala 81:61]
-    node _io_out_result_T_2 = mux(_io_out_result_T_1, UInt<7>("h40"), UInt<7>("h0")) @[Mux.scala 81:58]
-    node _io_out_result_T_3 = eq(UInt<4>("h1"), show_result) @[Mux.scala 81:61]
-    node _io_out_result_T_4 = mux(_io_out_result_T_3, UInt<7>("h79"), _io_out_result_T_2) @[Mux.scala 81:58]
-    node _io_out_result_T_5 = eq(UInt<4>("h2"), show_result) @[Mux.scala 81:61]
-    node _io_out_result_T_6 = mux(_io_out_result_T_5, UInt<7>("h24"), _io_out_result_T_4) @[Mux.scala 81:58]
-    node _io_out_result_T_7 = eq(UInt<4>("h3"), show_result) @[Mux.scala 81:61]
-    node _io_out_result_T_8 = mux(_io_out_result_T_7, UInt<7>("h30"), _io_out_result_T_6) @[Mux.scala 81:58]
-    node _io_out_result_T_9 = eq(UInt<4>("h4"), show_result) @[Mux.scala 81:61]
-    node _io_out_result_T_10 = mux(_io_out_result_T_9, UInt<7>("h19"), _io_out_result_T_8) @[Mux.scala 81:58]
-    node _io_out_result_T_11 = eq(UInt<4>("h5"), show_result) @[Mux.scala 81:61]
-    node _io_out_result_T_12 = mux(_io_out_result_T_11, UInt<7>("h12"), _io_out_result_T_10) @[Mux.scala 81:58]
-    node _io_out_result_T_13 = eq(UInt<4>("h6"), show_result) @[Mux.scala 81:61]
-    node _io_out_result_T_14 = mux(_io_out_result_T_13, UInt<7>("h2"), _io_out_result_T_12) @[Mux.scala 81:58]
-    node _io_out_result_T_15 = eq(UInt<4>("h7"), show_result) @[Mux.scala 81:61]
-    node _io_out_result_T_16 = mux(_io_out_result_T_15, UInt<7>("h78"), _io_out_result_T_14) @[Mux.scala 81:58]
-    node _io_out_result_T_17 = eq(UInt<4>("h8"), show_result) @[Mux.scala 81:61]
-    node _io_out_result_T_18 = mux(_io_out_result_T_17, UInt<7>("h0"), _io_out_result_T_16) @[Mux.scala 81:58]
-    node _io_out_result_T_19 = eq(UInt<4>("h9"), show_result) @[Mux.scala 81:61]
-    node _io_out_result_T_20 = mux(_io_out_result_T_19, UInt<7>("h10"), _io_out_result_T_18) @[Mux.scala 81:58]
-    io.out_result <= _io_out_result_T_20 @[Show.scala 45:17]
+    node _show_bcd_T = eq(UInt<4>("h0"), show_result) @[Mux.scala 81:61]
+    node _show_bcd_T_1 = mux(_show_bcd_T, UInt<7>("h40"), UInt<7>("h0")) @[Mux.scala 81:58]
+    node _show_bcd_T_2 = eq(UInt<4>("h1"), show_result) @[Mux.scala 81:61]
+    node _show_bcd_T_3 = mux(_show_bcd_T_2, UInt<7>("h79"), _show_bcd_T_1) @[Mux.scala 81:58]
+    node _show_bcd_T_4 = eq(UInt<4>("h2"), show_result) @[Mux.scala 81:61]
+    node _show_bcd_T_5 = mux(_show_bcd_T_4, UInt<7>("h24"), _show_bcd_T_3) @[Mux.scala 81:58]
+    node _show_bcd_T_6 = eq(UInt<4>("h3"), show_result) @[Mux.scala 81:61]
+    node _show_bcd_T_7 = mux(_show_bcd_T_6, UInt<7>("h30"), _show_bcd_T_5) @[Mux.scala 81:58]
+    node _show_bcd_T_8 = eq(UInt<4>("h4"), show_result) @[Mux.scala 81:61]
+    node _show_bcd_T_9 = mux(_show_bcd_T_8, UInt<7>("h19"), _show_bcd_T_7) @[Mux.scala 81:58]
+    node _show_bcd_T_10 = eq(UInt<4>("h5"), show_result) @[Mux.scala 81:61]
+    node _show_bcd_T_11 = mux(_show_bcd_T_10, UInt<7>("h12"), _show_bcd_T_9) @[Mux.scala 81:58]
+    node _show_bcd_T_12 = eq(UInt<4>("h6"), show_result) @[Mux.scala 81:61]
+    node _show_bcd_T_13 = mux(_show_bcd_T_12, UInt<7>("h2"), _show_bcd_T_11) @[Mux.scala 81:58]
+    node _show_bcd_T_14 = eq(UInt<4>("h7"), show_result) @[Mux.scala 81:61]
+    node _show_bcd_T_15 = mux(_show_bcd_T_14, UInt<7>("h78"), _show_bcd_T_13) @[Mux.scala 81:58]
+    node _show_bcd_T_16 = eq(UInt<4>("h8"), show_result) @[Mux.scala 81:61]
+    node _show_bcd_T_17 = mux(_show_bcd_T_16, UInt<7>("h0"), _show_bcd_T_15) @[Mux.scala 81:58]
+    node _show_bcd_T_18 = eq(UInt<4>("h9"), show_result) @[Mux.scala 81:61]
+    node show_bcd = mux(_show_bcd_T_18, UInt<7>("h10"), _show_bcd_T_17) @[Mux.scala 81:58]
+    node _show_choice_T = eq(UInt<2>("h1"), seg_choice) @[Mux.scala 81:61]
+    node _show_choice_T_1 = mux(_show_choice_T, UInt<4>("hd"), UInt<4>("he")) @[Mux.scala 81:58]
+    node _show_choice_T_2 = eq(UInt<2>("h2"), seg_choice) @[Mux.scala 81:61]
+    node _show_choice_T_3 = mux(_show_choice_T_2, UInt<4>("hb"), _show_choice_T_1) @[Mux.scala 81:58]
+    node _show_choice_T_4 = eq(UInt<2>("h3"), seg_choice) @[Mux.scala 81:61]
+    node show_choice = mux(_show_choice_T_4, UInt<4>("h7"), _show_choice_T_3) @[Mux.scala 81:58]
+    node _io_out_result_T_1 = cat(show_choice, show_bcd) @[Cat.scala 31:58]
+    io.out_result <= _io_out_result_T_1 @[Show.scala 63:17]
 
   module Top :
     input clock : Clock
     input reset : UInt<1>
-    output io : { flip a : UInt<8>, segOut : UInt<7>, segValid : UInt<1>, segChoice : UInt<2>, forward_cnt : UInt<12>, stall_cnt : UInt<12>}
+    output io : { flip a : UInt<8>, segOut : UInt<10>, segValid : UInt<1>, forward_cnt : UInt<12>, stall_cnt : UInt<12>}
 
     inst core of Core @[Top.scala 18:20]
     core.clock <= clock
@@ -1557,7 +1563,6 @@ circuit Top :
     core.io.display_a <= io.a @[Top.scala 25:21]
     io.segValid <= seg7.io.valid @[Top.scala 26:15]
     io.segOut <= seg7.io.out_result @[Top.scala 27:13]
-    io.segChoice <= seg7.io.seg_choice @[Top.scala 28:16]
     seg7.io.in_result <= core.io.display_ans @[Top.scala 29:21]
     node _seg7_io_start_T = eq(seg7.io.valid, UInt<1>("h0")) @[Top.scala 30:49]
     node _seg7_io_start_T_1 = and(core.io.segStartFlag, _seg7_io_start_T) @[Top.scala 30:45]

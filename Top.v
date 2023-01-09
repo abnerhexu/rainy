@@ -1500,7 +1500,7 @@ module RegFile(
   input  [63:0] io_reg_write_write_data,
   input         io_reg_write_write_enable,
   input  [7:0]  io_display_in,
-  output [15:0] io_display_out,
+  output [63:0] io_display_out,
   output        io_display_startFlag
 );
 `ifdef RANDOMIZE_MEM_INIT
@@ -1551,7 +1551,7 @@ module RegFile(
     registers_io_reg_read_read_data_a_MPORT_data; // @[RegFile.scala 16:33]
   assign io_reg_read_read_data_b = io_reg_read_read_addr_b == 5'h0 ? 64'h0 :
     registers_io_reg_read_read_data_b_MPORT_data; // @[RegFile.scala 17:33]
-  assign io_display_out = registers_io_display_out_MPORT_data[15:0]; // @[RegFile.scala 14:18]
+  assign io_display_out = registers_io_display_out_MPORT_data; // @[RegFile.scala 14:18]
   assign io_display_startFlag = registers_io_display_startFlag_MPORT_data == 64'h1; // @[RegFile.scala 15:54]
   always @(posedge clock) begin
     if (registers_MPORT_en & registers_MPORT_mask) begin
@@ -1929,7 +1929,7 @@ module Core(
   wire [63:0] regs_io_reg_write_write_data; // @[Core.scala 46:20]
   wire  regs_io_reg_write_write_enable; // @[Core.scala 46:20]
   wire [7:0] regs_io_display_in; // @[Core.scala 46:20]
-  wire [15:0] regs_io_display_out; // @[Core.scala 46:20]
+  wire [63:0] regs_io_display_out; // @[Core.scala 46:20]
   wire  regs_io_display_startFlag; // @[Core.scala 46:20]
   wire  csrs_clock; // @[Core.scala 47:20]
   wire [11:0] csrs_io_csrRead_csr_read_addr; // @[Core.scala 47:20]
@@ -2196,7 +2196,7 @@ module Core(
   assign io_memoryAccess_dataWritePort_write_data = memoryAccess_io_dataWritePort_write_data; // @[Core.scala 134:33]
   assign io_memoryAccess_dataWritePort_write_lenth = memoryAccess_io_dataWritePort_write_lenth; // @[Core.scala 134:33]
   assign io_memoryAccess_dataWritePort_write_enable = memoryAccess_io_dataWritePort_write_enable; // @[Core.scala 134:33]
-  assign io_display_ans = {{48'd0}, regs_io_display_out}; // @[Core.scala 51:18]
+  assign io_display_ans = regs_io_display_out; // @[Core.scala 51:18]
   assign io_stall_cnt = perf_io_stall_cnt; // @[Core.scala 57:16]
   assign io_forward_cnt = perf_io_forward_cnt; // @[Core.scala 56:18]
   assign io_segStartFlag = regs_io_display_startFlag; // @[Core.scala 52:19]
@@ -2657,9 +2657,8 @@ module Show(
   input         reset,
   input         io_start,
   input  [63:0] io_in_result,
-  output [6:0]  io_out_result,
-  output        io_valid,
-  output [1:0]  io_seg_choice
+  output [9:0]  io_out_result,
+  output        io_valid
 );
 `ifdef RANDOMIZE_REG_INIT
   reg [63:0] _RAND_0;
@@ -2703,18 +2702,22 @@ module Show(
   wire [3:0] _show_result_T_11 = 2'h1 == seg_choice ? _bcd85_T_3 : _bcd41_T_2; // @[Mux.scala 81:58]
   wire [3:0] _show_result_T_13 = 2'h2 == seg_choice ? _bcd129_T_3 : _show_result_T_11; // @[Mux.scala 81:58]
   wire [3:0] show_result = 2'h3 == seg_choice ? _bcd1513_T_3 : _show_result_T_13; // @[Mux.scala 81:58]
-  wire [6:0] _io_out_result_T_2 = 4'h0 == show_result ? 7'h40 : 7'h0; // @[Mux.scala 81:58]
-  wire [6:0] _io_out_result_T_4 = 4'h1 == show_result ? 7'h79 : _io_out_result_T_2; // @[Mux.scala 81:58]
-  wire [6:0] _io_out_result_T_6 = 4'h2 == show_result ? 7'h24 : _io_out_result_T_4; // @[Mux.scala 81:58]
-  wire [6:0] _io_out_result_T_8 = 4'h3 == show_result ? 7'h30 : _io_out_result_T_6; // @[Mux.scala 81:58]
-  wire [6:0] _io_out_result_T_10 = 4'h4 == show_result ? 7'h19 : _io_out_result_T_8; // @[Mux.scala 81:58]
-  wire [6:0] _io_out_result_T_12 = 4'h5 == show_result ? 7'h12 : _io_out_result_T_10; // @[Mux.scala 81:58]
-  wire [6:0] _io_out_result_T_14 = 4'h6 == show_result ? 7'h2 : _io_out_result_T_12; // @[Mux.scala 81:58]
-  wire [6:0] _io_out_result_T_16 = 4'h7 == show_result ? 7'h78 : _io_out_result_T_14; // @[Mux.scala 81:58]
-  wire [6:0] _io_out_result_T_18 = 4'h8 == show_result ? 7'h0 : _io_out_result_T_16; // @[Mux.scala 81:58]
-  assign io_out_result = 4'h9 == show_result ? 7'h10 : _io_out_result_T_18; // @[Mux.scala 81:58]
+  wire [6:0] _show_bcd_T_1 = 4'h0 == show_result ? 7'h40 : 7'h0; // @[Mux.scala 81:58]
+  wire [6:0] _show_bcd_T_3 = 4'h1 == show_result ? 7'h79 : _show_bcd_T_1; // @[Mux.scala 81:58]
+  wire [6:0] _show_bcd_T_5 = 4'h2 == show_result ? 7'h24 : _show_bcd_T_3; // @[Mux.scala 81:58]
+  wire [6:0] _show_bcd_T_7 = 4'h3 == show_result ? 7'h30 : _show_bcd_T_5; // @[Mux.scala 81:58]
+  wire [6:0] _show_bcd_T_9 = 4'h4 == show_result ? 7'h19 : _show_bcd_T_7; // @[Mux.scala 81:58]
+  wire [6:0] _show_bcd_T_11 = 4'h5 == show_result ? 7'h12 : _show_bcd_T_9; // @[Mux.scala 81:58]
+  wire [6:0] _show_bcd_T_13 = 4'h6 == show_result ? 7'h2 : _show_bcd_T_11; // @[Mux.scala 81:58]
+  wire [6:0] _show_bcd_T_15 = 4'h7 == show_result ? 7'h78 : _show_bcd_T_13; // @[Mux.scala 81:58]
+  wire [6:0] _show_bcd_T_17 = 4'h8 == show_result ? 7'h0 : _show_bcd_T_15; // @[Mux.scala 81:58]
+  wire [6:0] show_bcd = 4'h9 == show_result ? 7'h10 : _show_bcd_T_17; // @[Mux.scala 81:58]
+  wire [3:0] _show_choice_T_1 = 2'h1 == seg_choice ? 4'hd : 4'he; // @[Mux.scala 81:58]
+  wire [3:0] _show_choice_T_3 = 2'h2 == seg_choice ? 4'hb : _show_choice_T_1; // @[Mux.scala 81:58]
+  wire [3:0] show_choice = 2'h3 == seg_choice ? 4'h7 : _show_choice_T_3; // @[Mux.scala 81:58]
+  wire [10:0] _io_out_result_T_1 = {show_choice,show_bcd}; // @[Cat.scala 31:58]
+  assign io_out_result = _io_out_result_T_1[9:0]; // @[Show.scala 63:17]
   assign io_valid = valid; // @[Show.scala 32:12]
-  assign io_seg_choice = seg_choice; // @[Show.scala 38:17]
   always @(posedge clock) begin
     if (reset) begin // @[Show.scala 13:20]
       bin <= 64'h0; // @[Show.scala 13:20]
@@ -2878,9 +2881,8 @@ module Top(
   input         clock,
   input         reset,
   input  [7:0]  io_a,
-  output [6:0]  io_segOut,
+  output [9:0]  io_segOut,
   output        io_segValid,
-  output [1:0]  io_segChoice,
   output [11:0] io_forward_cnt,
   output [11:0] io_stall_cnt
 );
@@ -2912,9 +2914,8 @@ module Top(
   wire  seg7_reset; // @[Top.scala 20:20]
   wire  seg7_io_start; // @[Top.scala 20:20]
   wire [63:0] seg7_io_in_result; // @[Top.scala 20:20]
-  wire [6:0] seg7_io_out_result; // @[Top.scala 20:20]
+  wire [9:0] seg7_io_out_result; // @[Top.scala 20:20]
   wire  seg7_io_valid; // @[Top.scala 20:20]
-  wire [1:0] seg7_io_seg_choice; // @[Top.scala 20:20]
   Core core ( // @[Top.scala 18:20]
     .clock(core_clock),
     .reset(core_reset),
@@ -2949,12 +2950,10 @@ module Top(
     .io_start(seg7_io_start),
     .io_in_result(seg7_io_in_result),
     .io_out_result(seg7_io_out_result),
-    .io_valid(seg7_io_valid),
-    .io_seg_choice(seg7_io_seg_choice)
+    .io_valid(seg7_io_valid)
   );
   assign io_segOut = seg7_io_out_result; // @[Top.scala 27:13]
   assign io_segValid = seg7_io_valid; // @[Top.scala 26:15]
-  assign io_segChoice = seg7_io_seg_choice; // @[Top.scala 28:16]
   assign io_forward_cnt = core_io_forward_cnt; // @[Top.scala 31:18]
   assign io_stall_cnt = core_io_stall_cnt; // @[Top.scala 32:16]
   assign core_clock = clock;
