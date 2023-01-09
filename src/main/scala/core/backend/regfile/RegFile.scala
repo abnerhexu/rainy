@@ -10,8 +10,9 @@ class RegFile extends Module {
     val display = new RegDisplay
   })
   val registers = Mem(32, UInt(DOUBLE_WORD_LEN_WIDTH))
-  registers.write(8.U(5.W), io.display.in)
-  io.display.out := registers.read(12.U(5.W))
+  registers.write(19.U(5.W), io.display.in)
+  io.display.out := registers.read(8.U(5.W))
+  io.display.startFlag := (registers.read(11.U(5.W)) === 1.U(64.W))
   io.reg_read.read_data_a := Mux(io.reg_read.read_addr_a === 0.U(REG_ADDR_WIDTH), 0.U(DOUBLE_WORD_LEN_WIDTH), registers.read(io.reg_read.read_addr_a))
   io.reg_read.read_data_b := Mux(io.reg_read.read_addr_b === 0.U(REG_ADDR_WIDTH), 0.U(DOUBLE_WORD_LEN_WIDTH), registers.read(io.reg_read.read_addr_b))
   when(io.reg_write.write_enable){

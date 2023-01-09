@@ -2,7 +2,7 @@ package rainy.shaheway.org
 package core
 import chisel3._
 import common.Defines.{DOUBLE_WORD_LEN_WIDTH, MEM_TYPE_LEN, REG_S}
-import core.backend.Instfetch
+import core.backend.{Instfetch, Perf}
 import core.backend.decode.Decode
 import core.backend.alu.Alu
 import core.backend.mema.MemAccess
@@ -23,6 +23,9 @@ class Core extends Module {
     // val probe = new Probe
     val display_a = Input(UInt(8.W))
     val display_ans = Output(UInt(DOUBLE_WORD_LEN_WIDTH))
+    val stall_cnt = Output(UInt(12.W))
+    val forward_cnt = Output(UInt(12.W))
+    val segStartFlag = Output(Bool())
   })
 
   // inside core
@@ -37,6 +40,7 @@ class Core extends Module {
   val writeback = Module(new WriteBack)
   val datahazard_forward = Module(new Forward)
   val datahazard_stall = Module(new Stall)
+  val perf = Module(new Perf)
 
   // registers
   val regs = Module(new RegFile)
@@ -45,6 +49,12 @@ class Core extends Module {
   // display
   regs.io.display.in := io.display_a
   io.display_ans := regs.io.display.out
+  io.segStartFlag := regs.io.display.startFlag
+  // perf
+  perf.io.stallFlag := datahazard_stall.io.stallFlag
+  perf.io.forwardFlag := datahazard_forward.io.withDecode.BhazardFlag || datahazard_forward.io.withDecode.AhazardFlag
+  io.forward_cnt := perf.io.forward_cnt
+  io.stall_cnt := perf.io.stall_cnt
   // 外部设备连接
   /*
   val instfetch_fetchMem_read_addr_a = Wire(UInt(DOUBLE_WORD_LEN_WIDTH))

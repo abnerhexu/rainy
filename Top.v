@@ -1412,6 +1412,84 @@ module Stall(
     ; // @[Stall.scala 14:92]
   assign io_stallFlag = rsADatahazard | rsBDatahazard; // @[Stall.scala 15:33]
 endmodule
+module Perf(
+  input         clock,
+  input         reset,
+  input         io_stallFlag,
+  input         io_forwardFlag,
+  output [11:0] io_stall_cnt,
+  output [11:0] io_forward_cnt
+);
+`ifdef RANDOMIZE_REG_INIT
+  reg [31:0] _RAND_0;
+  reg [31:0] _RAND_1;
+`endif // RANDOMIZE_REG_INIT
+  reg [11:0] stall_cnt; // @[Perf.scala 12:26]
+  wire [11:0] _stall_cnt_T_1 = stall_cnt + 12'h1; // @[Perf.scala 13:43]
+  reg [11:0] forward_cnt; // @[Perf.scala 15:28]
+  wire [11:0] _forward_cnt_T_1 = forward_cnt + 12'h1; // @[Perf.scala 16:49]
+  assign io_stall_cnt = stall_cnt; // @[Perf.scala 14:16]
+  assign io_forward_cnt = forward_cnt; // @[Perf.scala 17:18]
+  always @(posedge clock) begin
+    if (reset) begin // @[Perf.scala 12:26]
+      stall_cnt <= 12'h0; // @[Perf.scala 12:26]
+    end else if (io_stallFlag) begin // @[Perf.scala 13:19]
+      stall_cnt <= _stall_cnt_T_1;
+    end
+    if (reset) begin // @[Perf.scala 15:28]
+      forward_cnt <= 12'h0; // @[Perf.scala 15:28]
+    end else if (io_forwardFlag) begin // @[Perf.scala 16:21]
+      forward_cnt <= _forward_cnt_T_1;
+    end
+  end
+// Register and memory initialization
+`ifdef RANDOMIZE_GARBAGE_ASSIGN
+`define RANDOMIZE
+`endif
+`ifdef RANDOMIZE_INVALID_ASSIGN
+`define RANDOMIZE
+`endif
+`ifdef RANDOMIZE_REG_INIT
+`define RANDOMIZE
+`endif
+`ifdef RANDOMIZE_MEM_INIT
+`define RANDOMIZE
+`endif
+`ifndef RANDOM
+`define RANDOM $random
+`endif
+`ifdef RANDOMIZE_MEM_INIT
+  integer initvar;
+`endif
+`ifndef SYNTHESIS
+`ifdef FIRRTL_BEFORE_INITIAL
+`FIRRTL_BEFORE_INITIAL
+`endif
+initial begin
+  `ifdef RANDOMIZE
+    `ifdef INIT_RANDOM
+      `INIT_RANDOM
+    `endif
+    `ifndef VERILATOR
+      `ifdef RANDOMIZE_DELAY
+        #`RANDOMIZE_DELAY begin end
+      `else
+        #0.002 begin end
+      `endif
+    `endif
+`ifdef RANDOMIZE_REG_INIT
+  _RAND_0 = {1{`RANDOM}};
+  stall_cnt = _RAND_0[11:0];
+  _RAND_1 = {1{`RANDOM}};
+  forward_cnt = _RAND_1[11:0];
+`endif // RANDOMIZE_REG_INIT
+  `endif // RANDOMIZE
+end // initial
+`ifdef FIRRTL_AFTER_INITIAL
+`FIRRTL_AFTER_INITIAL
+`endif
+`endif // SYNTHESIS
+endmodule
 module RegFile(
   input         clock,
   input  [4:0]  io_reg_read_read_addr_a,
@@ -1422,7 +1500,8 @@ module RegFile(
   input  [63:0] io_reg_write_write_data,
   input         io_reg_write_write_enable,
   input  [7:0]  io_display_in,
-  output [15:0] io_display_out
+  output [15:0] io_display_out,
+  output        io_display_startFlag
 );
 `ifdef RANDOMIZE_MEM_INIT
   reg [63:0] _RAND_0;
@@ -1431,6 +1510,9 @@ module RegFile(
   wire  registers_io_display_out_MPORT_en; // @[RegFile.scala 12:22]
   wire [4:0] registers_io_display_out_MPORT_addr; // @[RegFile.scala 12:22]
   wire [63:0] registers_io_display_out_MPORT_data; // @[RegFile.scala 12:22]
+  wire  registers_io_display_startFlag_MPORT_en; // @[RegFile.scala 12:22]
+  wire [4:0] registers_io_display_startFlag_MPORT_addr; // @[RegFile.scala 12:22]
+  wire [63:0] registers_io_display_startFlag_MPORT_data; // @[RegFile.scala 12:22]
   wire  registers_io_reg_read_read_data_a_MPORT_en; // @[RegFile.scala 12:22]
   wire [4:0] registers_io_reg_read_read_data_a_MPORT_addr; // @[RegFile.scala 12:22]
   wire [63:0] registers_io_reg_read_read_data_a_MPORT_data; // @[RegFile.scala 12:22]
@@ -1446,8 +1528,11 @@ module RegFile(
   wire  registers_MPORT_1_mask; // @[RegFile.scala 12:22]
   wire  registers_MPORT_1_en; // @[RegFile.scala 12:22]
   assign registers_io_display_out_MPORT_en = 1'h1;
-  assign registers_io_display_out_MPORT_addr = 5'hc;
+  assign registers_io_display_out_MPORT_addr = 5'h8;
   assign registers_io_display_out_MPORT_data = registers[registers_io_display_out_MPORT_addr]; // @[RegFile.scala 12:22]
+  assign registers_io_display_startFlag_MPORT_en = 1'h1;
+  assign registers_io_display_startFlag_MPORT_addr = 5'hb;
+  assign registers_io_display_startFlag_MPORT_data = registers[registers_io_display_startFlag_MPORT_addr]; // @[RegFile.scala 12:22]
   assign registers_io_reg_read_read_data_a_MPORT_en = 1'h1;
   assign registers_io_reg_read_read_data_a_MPORT_addr = io_reg_read_read_addr_a;
   assign registers_io_reg_read_read_data_a_MPORT_data = registers[registers_io_reg_read_read_data_a_MPORT_addr]; // @[RegFile.scala 12:22]
@@ -1455,7 +1540,7 @@ module RegFile(
   assign registers_io_reg_read_read_data_b_MPORT_addr = io_reg_read_read_addr_b;
   assign registers_io_reg_read_read_data_b_MPORT_data = registers[registers_io_reg_read_read_data_b_MPORT_addr]; // @[RegFile.scala 12:22]
   assign registers_MPORT_data = {{56'd0}, io_display_in};
-  assign registers_MPORT_addr = 5'h8;
+  assign registers_MPORT_addr = 5'h13;
   assign registers_MPORT_mask = 1'h1;
   assign registers_MPORT_en = 1'h1;
   assign registers_MPORT_1_data = io_reg_write_write_data;
@@ -1463,10 +1548,11 @@ module RegFile(
   assign registers_MPORT_1_mask = 1'h1;
   assign registers_MPORT_1_en = io_reg_write_write_enable;
   assign io_reg_read_read_data_a = io_reg_read_read_addr_a == 5'h0 ? 64'h0 :
-    registers_io_reg_read_read_data_a_MPORT_data; // @[RegFile.scala 15:33]
+    registers_io_reg_read_read_data_a_MPORT_data; // @[RegFile.scala 16:33]
   assign io_reg_read_read_data_b = io_reg_read_read_addr_b == 5'h0 ? 64'h0 :
-    registers_io_reg_read_read_data_b_MPORT_data; // @[RegFile.scala 16:33]
+    registers_io_reg_read_read_data_b_MPORT_data; // @[RegFile.scala 17:33]
   assign io_display_out = registers_io_display_out_MPORT_data[15:0]; // @[RegFile.scala 14:18]
+  assign io_display_startFlag = registers_io_display_startFlag_MPORT_data == 64'h1; // @[RegFile.scala 15:54]
   always @(posedge clock) begin
     if (registers_MPORT_en & registers_MPORT_mask) begin
       registers[registers_MPORT_addr] <= registers_MPORT_data; // @[RegFile.scala 12:22]
@@ -1623,226 +1709,236 @@ module Core(
   output [3:0]  io_memoryAccess_dataWritePort_write_lenth,
   output        io_memoryAccess_dataWritePort_write_enable,
   input  [7:0]  io_display_a,
-  output [63:0] io_display_ans
+  output [63:0] io_display_ans,
+  output [11:0] io_stall_cnt,
+  output [11:0] io_forward_cnt,
+  output        io_segStartFlag
 );
-  wire  instfetch_clock; // @[Core.scala 29:25]
-  wire  instfetch_reset; // @[Core.scala 29:25]
-  wire  instfetch_io_branchFlag; // @[Core.scala 29:25]
-  wire  instfetch_io_jumpFlag; // @[Core.scala 29:25]
-  wire  instfetch_io_stallFlag; // @[Core.scala 29:25]
-  wire [63:0] instfetch_io_branchTarget; // @[Core.scala 29:25]
-  wire [63:0] instfetch_io_jumpTarget; // @[Core.scala 29:25]
-  wire [63:0] instfetch_io_instOut; // @[Core.scala 29:25]
-  wire [63:0] instfetch_io_pcOut; // @[Core.scala 29:25]
-  wire [63:0] instfetch_io_fetchMem_read_addr_a; // @[Core.scala 29:25]
-  wire [31:0] instfetch_io_fetchMem_read_inst_a; // @[Core.scala 29:25]
-  wire [63:0] instfetch_io_envRead_csr_read_data; // @[Core.scala 29:25]
-  wire  instfetch_to_decode_clock; // @[Core.scala 30:35]
-  wire  instfetch_to_decode_reset; // @[Core.scala 30:35]
-  wire  instfetch_to_decode_io_stallFlag; // @[Core.scala 30:35]
-  wire [63:0] instfetch_to_decode_io_pcIn; // @[Core.scala 30:35]
-  wire [31:0] instfetch_to_decode_io_instIn; // @[Core.scala 30:35]
-  wire [31:0] instfetch_to_decode_io_instOut; // @[Core.scala 30:35]
-  wire [63:0] instfetch_to_decode_io_pcOut; // @[Core.scala 30:35]
-  wire [4:0] instfetch_to_decode_io_stall_srcAddrA; // @[Core.scala 30:35]
-  wire [4:0] instfetch_to_decode_io_stall_srcAddrB; // @[Core.scala 30:35]
-  wire  decode_io_jumpFlag; // @[Core.scala 31:22]
-  wire  decode_io_stallFlag; // @[Core.scala 31:22]
-  wire [31:0] decode_io_inst; // @[Core.scala 31:22]
-  wire [63:0] decode_io_cur_pc; // @[Core.scala 31:22]
-  wire [63:0] decode_io_pcOut; // @[Core.scala 31:22]
-  wire [4:0] decode_io_decodeOut_alu_exe_fun; // @[Core.scala 31:22]
-  wire [3:0] decode_io_decodeOut_memType; // @[Core.scala 31:22]
-  wire [1:0] decode_io_decodeOut_regType; // @[Core.scala 31:22]
-  wire [2:0] decode_io_decodeOut_wbType; // @[Core.scala 31:22]
-  wire [2:0] decode_io_decodeOut_CSRType; // @[Core.scala 31:22]
-  wire [11:0] decode_io_decodeOut_csrAddr; // @[Core.scala 31:22]
-  wire [63:0] decode_io_srcOut_aluSrc_a; // @[Core.scala 31:22]
-  wire [63:0] decode_io_srcOut_aluSrc_b; // @[Core.scala 31:22]
-  wire [63:0] decode_io_srcOut_regB_data; // @[Core.scala 31:22]
-  wire [4:0] decode_io_srcOut_writeback_addr; // @[Core.scala 31:22]
-  wire [4:0] decode_io_forward_srcAddrA; // @[Core.scala 31:22]
-  wire [4:0] decode_io_forward_srcAddrB; // @[Core.scala 31:22]
-  wire  decode_io_forward_AhazardFlag; // @[Core.scala 31:22]
-  wire  decode_io_forward_BhazardFlag; // @[Core.scala 31:22]
-  wire [63:0] decode_io_forward_hazardAData; // @[Core.scala 31:22]
-  wire [63:0] decode_io_forward_hazardBData; // @[Core.scala 31:22]
-  wire [4:0] decode_io_readReg_read_addr_a; // @[Core.scala 31:22]
-  wire [4:0] decode_io_readReg_read_addr_b; // @[Core.scala 31:22]
-  wire [63:0] decode_io_readReg_read_data_a; // @[Core.scala 31:22]
-  wire [63:0] decode_io_readReg_read_data_b; // @[Core.scala 31:22]
-  wire  decode_io_branch_branchFlag; // @[Core.scala 31:22]
-  wire [63:0] decode_io_branch_branchTarget; // @[Core.scala 31:22]
-  wire  decode_to_execute_clock; // @[Core.scala 32:33]
-  wire  decode_to_execute_reset; // @[Core.scala 32:33]
-  wire  decode_to_execute_io_jumpFlag; // @[Core.scala 32:33]
-  wire [63:0] decode_to_execute_io_cur_pc; // @[Core.scala 32:33]
-  wire [63:0] decode_to_execute_io_pcOut; // @[Core.scala 32:33]
-  wire [4:0] decode_to_execute_io_controlSignal_alu_exe_fun; // @[Core.scala 32:33]
-  wire [3:0] decode_to_execute_io_controlSignal_memType; // @[Core.scala 32:33]
-  wire [1:0] decode_to_execute_io_controlSignal_regType; // @[Core.scala 32:33]
-  wire [2:0] decode_to_execute_io_controlSignal_wbType; // @[Core.scala 32:33]
-  wire [2:0] decode_to_execute_io_controlSignal_CSRType; // @[Core.scala 32:33]
-  wire [11:0] decode_to_execute_io_controlSignal_csrAddr; // @[Core.scala 32:33]
-  wire [63:0] decode_to_execute_io_opSrc_aluSrc_a; // @[Core.scala 32:33]
-  wire [63:0] decode_to_execute_io_opSrc_aluSrc_b; // @[Core.scala 32:33]
-  wire [63:0] decode_to_execute_io_opSrc_regB_data; // @[Core.scala 32:33]
-  wire [4:0] decode_to_execute_io_opSrc_writeback_addr; // @[Core.scala 32:33]
-  wire [4:0] decode_to_execute_io_controlSignalPass_alu_exe_fun; // @[Core.scala 32:33]
-  wire [3:0] decode_to_execute_io_controlSignalPass_memType; // @[Core.scala 32:33]
-  wire [1:0] decode_to_execute_io_controlSignalPass_regType; // @[Core.scala 32:33]
-  wire [2:0] decode_to_execute_io_controlSignalPass_wbType; // @[Core.scala 32:33]
-  wire [2:0] decode_to_execute_io_controlSignalPass_CSRType; // @[Core.scala 32:33]
-  wire [11:0] decode_to_execute_io_controlSignalPass_csrAddr; // @[Core.scala 32:33]
-  wire [63:0] decode_to_execute_io_srcPass_aluSrc_a; // @[Core.scala 32:33]
-  wire [63:0] decode_to_execute_io_srcPass_aluSrc_b; // @[Core.scala 32:33]
-  wire [63:0] decode_to_execute_io_srcPass_regB_data; // @[Core.scala 32:33]
-  wire [4:0] decode_to_execute_io_srcPass_writeback_addr; // @[Core.scala 32:33]
-  wire  decode_to_execute_io_branchextend_branchFlag; // @[Core.scala 32:33]
-  wire [63:0] decode_to_execute_io_branchextend_branchTarget; // @[Core.scala 32:33]
-  wire  decode_to_execute_io_branchout_branchFlag; // @[Core.scala 32:33]
-  wire [63:0] decode_to_execute_io_branchout_branchTarget; // @[Core.scala 32:33]
-  wire [63:0] execute_io_cur_pc; // @[Core.scala 33:23]
-  wire [63:0] execute_io_linkedPC; // @[Core.scala 33:23]
-  wire [63:0] execute_io_alu_in_aluSrc_a; // @[Core.scala 33:23]
-  wire [63:0] execute_io_alu_in_aluSrc_b; // @[Core.scala 33:23]
-  wire [63:0] execute_io_alu_in_regB_data; // @[Core.scala 33:23]
-  wire [4:0] execute_io_alu_in_writeback_addr; // @[Core.scala 33:23]
-  wire [63:0] execute_io_alu_out_alu_result; // @[Core.scala 33:23]
-  wire [4:0] execute_io_alu_out_writeback_addr; // @[Core.scala 33:23]
-  wire [63:0] execute_io_alu_out_regB_data; // @[Core.scala 33:23]
-  wire  execute_io_alu_out_jumpFlag; // @[Core.scala 33:23]
-  wire [3:0] execute_io_controlPass_memType; // @[Core.scala 33:23]
-  wire [1:0] execute_io_controlPass_regType; // @[Core.scala 33:23]
-  wire [2:0] execute_io_controlPass_wbType; // @[Core.scala 33:23]
-  wire [2:0] execute_io_controlPass_CSRType; // @[Core.scala 33:23]
-  wire [11:0] execute_io_controlPass_csrAddr; // @[Core.scala 33:23]
-  wire [4:0] execute_io_controlSignal_alu_exe_fun; // @[Core.scala 33:23]
-  wire [3:0] execute_io_controlSignal_memType; // @[Core.scala 33:23]
-  wire [1:0] execute_io_controlSignal_regType; // @[Core.scala 33:23]
-  wire [2:0] execute_io_controlSignal_wbType; // @[Core.scala 33:23]
-  wire [2:0] execute_io_controlSignal_CSRType; // @[Core.scala 33:23]
-  wire [11:0] execute_io_controlSignal_csrAddr; // @[Core.scala 33:23]
-  wire [4:0] execute_io_forward_wbAddrFromExecute; // @[Core.scala 33:23]
-  wire [1:0] execute_io_forward_regTypeFromExecute; // @[Core.scala 33:23]
-  wire [63:0] execute_io_forward_wbDataFromExe; // @[Core.scala 33:23]
-  wire [4:0] execute_io_stall_wbAddrFromEx; // @[Core.scala 33:23]
-  wire [1:0] execute_io_stall_wbSrcFromEx; // @[Core.scala 33:23]
-  wire  execute_to_mema_clock; // @[Core.scala 34:31]
-  wire  execute_to_mema_reset; // @[Core.scala 34:31]
-  wire [63:0] execute_to_mema_io_linkedPC; // @[Core.scala 34:31]
-  wire [63:0] execute_to_mema_io_linkedPCPass; // @[Core.scala 34:31]
-  wire [63:0] execute_to_mema_io_aluOut_alu_result; // @[Core.scala 34:31]
-  wire [4:0] execute_to_mema_io_aluOut_writeback_addr; // @[Core.scala 34:31]
-  wire [63:0] execute_to_mema_io_aluOut_regB_data; // @[Core.scala 34:31]
-  wire  execute_to_mema_io_aluOut_jumpFlag; // @[Core.scala 34:31]
-  wire [3:0] execute_to_mema_io_controlSignal_memType; // @[Core.scala 34:31]
-  wire [1:0] execute_to_mema_io_controlSignal_regType; // @[Core.scala 34:31]
-  wire [2:0] execute_to_mema_io_controlSignal_wbType; // @[Core.scala 34:31]
-  wire [2:0] execute_to_mema_io_controlSignal_CSRType; // @[Core.scala 34:31]
-  wire [11:0] execute_to_mema_io_controlSignal_csrAddr; // @[Core.scala 34:31]
-  wire [63:0] execute_to_mema_io_aluOutPass_alu_result; // @[Core.scala 34:31]
-  wire [4:0] execute_to_mema_io_aluOutPass_writeback_addr; // @[Core.scala 34:31]
-  wire [63:0] execute_to_mema_io_aluOutPass_regB_data; // @[Core.scala 34:31]
-  wire [3:0] execute_to_mema_io_controlSignalPass_memType; // @[Core.scala 34:31]
-  wire [1:0] execute_to_mema_io_controlSignalPass_regType; // @[Core.scala 34:31]
-  wire [2:0] execute_to_mema_io_controlSignalPass_wbType; // @[Core.scala 34:31]
-  wire [2:0] execute_to_mema_io_controlSignalPass_CSRType; // @[Core.scala 34:31]
-  wire [11:0] execute_to_mema_io_controlSignalPass_csrAddr; // @[Core.scala 34:31]
-  wire  execute_to_mema_io_jumpFlag; // @[Core.scala 34:31]
-  wire [63:0] memoryAccess_io_linkedPC; // @[Core.scala 35:28]
-  wire [63:0] memoryAccess_io_aluOut_alu_result; // @[Core.scala 35:28]
-  wire [4:0] memoryAccess_io_aluOut_writeback_addr; // @[Core.scala 35:28]
-  wire [63:0] memoryAccess_io_aluOut_regB_data; // @[Core.scala 35:28]
-  wire [3:0] memoryAccess_io_controlSignal_memType; // @[Core.scala 35:28]
-  wire [1:0] memoryAccess_io_controlSignal_regType; // @[Core.scala 35:28]
-  wire [2:0] memoryAccess_io_controlSignal_wbType; // @[Core.scala 35:28]
-  wire [2:0] memoryAccess_io_controlSignal_CSRType; // @[Core.scala 35:28]
-  wire [11:0] memoryAccess_io_controlSignal_csrAddr; // @[Core.scala 35:28]
-  wire [63:0] memoryAccess_io_dataReadPort_read_addr_b; // @[Core.scala 35:28]
-  wire [63:0] memoryAccess_io_dataReadPort_read_data_b; // @[Core.scala 35:28]
-  wire [63:0] memoryAccess_io_dataWritePort_write_addr; // @[Core.scala 35:28]
-  wire [63:0] memoryAccess_io_dataWritePort_write_data; // @[Core.scala 35:28]
-  wire [3:0] memoryAccess_io_dataWritePort_write_lenth; // @[Core.scala 35:28]
-  wire  memoryAccess_io_dataWritePort_write_enable; // @[Core.scala 35:28]
-  wire [11:0] memoryAccess_io_csrRead_csr_read_addr; // @[Core.scala 35:28]
-  wire [63:0] memoryAccess_io_csrRead_csr_read_data; // @[Core.scala 35:28]
-  wire [4:0] memoryAccess_io_forward_wbAddrFromMema; // @[Core.scala 35:28]
-  wire [1:0] memoryAccess_io_forward_regTypeFromMema; // @[Core.scala 35:28]
-  wire [63:0] memoryAccess_io_forward_wbDataFromMema; // @[Core.scala 35:28]
-  wire [4:0] memoryAccess_io_memPass_writeback_addr; // @[Core.scala 35:28]
-  wire [63:0] memoryAccess_io_memPass_writeback_data; // @[Core.scala 35:28]
-  wire [1:0] memoryAccess_io_memPass_regwrite_enable; // @[Core.scala 35:28]
-  wire [11:0] memoryAccess_io_memPass_csrwrite_addr; // @[Core.scala 35:28]
-  wire [63:0] memoryAccess_io_memPass_csrwrite_data; // @[Core.scala 35:28]
-  wire [2:0] memoryAccess_io_memPass_CSRType; // @[Core.scala 35:28]
-  wire  mema_to_wb_clock; // @[Core.scala 36:26]
-  wire  mema_to_wb_reset; // @[Core.scala 36:26]
-  wire [4:0] mema_to_wb_io_wbinfo_writeback_addr; // @[Core.scala 36:26]
-  wire [63:0] mema_to_wb_io_wbinfo_writeback_data; // @[Core.scala 36:26]
-  wire [1:0] mema_to_wb_io_wbinfo_regwrite_enable; // @[Core.scala 36:26]
-  wire [11:0] mema_to_wb_io_wbinfo_csrwrite_addr; // @[Core.scala 36:26]
-  wire [63:0] mema_to_wb_io_wbinfo_csrwrite_data; // @[Core.scala 36:26]
-  wire [2:0] mema_to_wb_io_wbinfo_CSRType; // @[Core.scala 36:26]
-  wire [4:0] mema_to_wb_io_wbinfoPass_writeback_addr; // @[Core.scala 36:26]
-  wire [63:0] mema_to_wb_io_wbinfoPass_writeback_data; // @[Core.scala 36:26]
-  wire [1:0] mema_to_wb_io_wbinfoPass_regwrite_enable; // @[Core.scala 36:26]
-  wire [11:0] mema_to_wb_io_wbinfoPass_csrwrite_addr; // @[Core.scala 36:26]
-  wire [63:0] mema_to_wb_io_wbinfoPass_csrwrite_data; // @[Core.scala 36:26]
-  wire [2:0] mema_to_wb_io_wbinfoPass_CSRType; // @[Core.scala 36:26]
-  wire [4:0] writeback_io_wbinfo_writeback_addr; // @[Core.scala 37:25]
-  wire [63:0] writeback_io_wbinfo_writeback_data; // @[Core.scala 37:25]
-  wire [1:0] writeback_io_wbinfo_regwrite_enable; // @[Core.scala 37:25]
-  wire [11:0] writeback_io_wbinfo_csrwrite_addr; // @[Core.scala 37:25]
-  wire [63:0] writeback_io_wbinfo_csrwrite_data; // @[Core.scala 37:25]
-  wire [2:0] writeback_io_wbinfo_CSRType; // @[Core.scala 37:25]
-  wire [4:0] writeback_io_regWrite_write_addr; // @[Core.scala 37:25]
-  wire [63:0] writeback_io_regWrite_write_data; // @[Core.scala 37:25]
-  wire  writeback_io_regWrite_write_enable; // @[Core.scala 37:25]
-  wire [11:0] writeback_io_csrWrite_csr_write_addr; // @[Core.scala 37:25]
-  wire [63:0] writeback_io_csrWrite_csr_write_data; // @[Core.scala 37:25]
-  wire  writeback_io_csrWrite_csr_write_enable; // @[Core.scala 37:25]
-  wire [4:0] writeback_io_forward_wbAddrFromWB; // @[Core.scala 37:25]
-  wire [1:0] writeback_io_forward_regTypeFromWB; // @[Core.scala 37:25]
-  wire [63:0] writeback_io_forward_wbDataFromWB; // @[Core.scala 37:25]
-  wire [4:0] datahazard_forward_io_withDecode_srcAddrA; // @[Core.scala 38:34]
-  wire [4:0] datahazard_forward_io_withDecode_srcAddrB; // @[Core.scala 38:34]
-  wire  datahazard_forward_io_withDecode_AhazardFlag; // @[Core.scala 38:34]
-  wire  datahazard_forward_io_withDecode_BhazardFlag; // @[Core.scala 38:34]
-  wire [63:0] datahazard_forward_io_withDecode_hazardAData; // @[Core.scala 38:34]
-  wire [63:0] datahazard_forward_io_withDecode_hazardBData; // @[Core.scala 38:34]
-  wire [4:0] datahazard_forward_io_withExecute_wbAddrFromExecute; // @[Core.scala 38:34]
-  wire [1:0] datahazard_forward_io_withExecute_regTypeFromExecute; // @[Core.scala 38:34]
-  wire [63:0] datahazard_forward_io_withExecute_wbDataFromExe; // @[Core.scala 38:34]
-  wire [4:0] datahazard_forward_io_withMema_wbAddrFromMema; // @[Core.scala 38:34]
-  wire [1:0] datahazard_forward_io_withMema_regTypeFromMema; // @[Core.scala 38:34]
-  wire [63:0] datahazard_forward_io_withMema_wbDataFromMema; // @[Core.scala 38:34]
-  wire [4:0] datahazard_forward_io_withWriteback_wbAddrFromWB; // @[Core.scala 38:34]
-  wire [1:0] datahazard_forward_io_withWriteback_regTypeFromWB; // @[Core.scala 38:34]
-  wire [63:0] datahazard_forward_io_withWriteback_wbDataFromWB; // @[Core.scala 38:34]
-  wire [4:0] datahazard_stall_io_withIDDE_srcAddrA; // @[Core.scala 39:32]
-  wire [4:0] datahazard_stall_io_withIDDE_srcAddrB; // @[Core.scala 39:32]
-  wire [4:0] datahazard_stall_io_withEX_wbAddrFromEx; // @[Core.scala 39:32]
-  wire [1:0] datahazard_stall_io_withEX_wbSrcFromEx; // @[Core.scala 39:32]
-  wire  datahazard_stall_io_stallFlag; // @[Core.scala 39:32]
-  wire  regs_clock; // @[Core.scala 42:20]
-  wire [4:0] regs_io_reg_read_read_addr_a; // @[Core.scala 42:20]
-  wire [4:0] regs_io_reg_read_read_addr_b; // @[Core.scala 42:20]
-  wire [63:0] regs_io_reg_read_read_data_a; // @[Core.scala 42:20]
-  wire [63:0] regs_io_reg_read_read_data_b; // @[Core.scala 42:20]
-  wire [4:0] regs_io_reg_write_write_addr; // @[Core.scala 42:20]
-  wire [63:0] regs_io_reg_write_write_data; // @[Core.scala 42:20]
-  wire  regs_io_reg_write_write_enable; // @[Core.scala 42:20]
-  wire [7:0] regs_io_display_in; // @[Core.scala 42:20]
-  wire [15:0] regs_io_display_out; // @[Core.scala 42:20]
-  wire  csrs_clock; // @[Core.scala 43:20]
-  wire [11:0] csrs_io_csrRead_csr_read_addr; // @[Core.scala 43:20]
-  wire [63:0] csrs_io_csrRead_csr_read_data; // @[Core.scala 43:20]
-  wire [63:0] csrs_io_envRead_csr_read_data; // @[Core.scala 43:20]
-  wire [11:0] csrs_io_csrWrite_csr_write_addr; // @[Core.scala 43:20]
-  wire [63:0] csrs_io_csrWrite_csr_write_data; // @[Core.scala 43:20]
-  wire  csrs_io_csrWrite_csr_write_enable; // @[Core.scala 43:20]
-  Instfetch instfetch ( // @[Core.scala 29:25]
+  wire  instfetch_clock; // @[Core.scala 32:25]
+  wire  instfetch_reset; // @[Core.scala 32:25]
+  wire  instfetch_io_branchFlag; // @[Core.scala 32:25]
+  wire  instfetch_io_jumpFlag; // @[Core.scala 32:25]
+  wire  instfetch_io_stallFlag; // @[Core.scala 32:25]
+  wire [63:0] instfetch_io_branchTarget; // @[Core.scala 32:25]
+  wire [63:0] instfetch_io_jumpTarget; // @[Core.scala 32:25]
+  wire [63:0] instfetch_io_instOut; // @[Core.scala 32:25]
+  wire [63:0] instfetch_io_pcOut; // @[Core.scala 32:25]
+  wire [63:0] instfetch_io_fetchMem_read_addr_a; // @[Core.scala 32:25]
+  wire [31:0] instfetch_io_fetchMem_read_inst_a; // @[Core.scala 32:25]
+  wire [63:0] instfetch_io_envRead_csr_read_data; // @[Core.scala 32:25]
+  wire  instfetch_to_decode_clock; // @[Core.scala 33:35]
+  wire  instfetch_to_decode_reset; // @[Core.scala 33:35]
+  wire  instfetch_to_decode_io_stallFlag; // @[Core.scala 33:35]
+  wire [63:0] instfetch_to_decode_io_pcIn; // @[Core.scala 33:35]
+  wire [31:0] instfetch_to_decode_io_instIn; // @[Core.scala 33:35]
+  wire [31:0] instfetch_to_decode_io_instOut; // @[Core.scala 33:35]
+  wire [63:0] instfetch_to_decode_io_pcOut; // @[Core.scala 33:35]
+  wire [4:0] instfetch_to_decode_io_stall_srcAddrA; // @[Core.scala 33:35]
+  wire [4:0] instfetch_to_decode_io_stall_srcAddrB; // @[Core.scala 33:35]
+  wire  decode_io_jumpFlag; // @[Core.scala 34:22]
+  wire  decode_io_stallFlag; // @[Core.scala 34:22]
+  wire [31:0] decode_io_inst; // @[Core.scala 34:22]
+  wire [63:0] decode_io_cur_pc; // @[Core.scala 34:22]
+  wire [63:0] decode_io_pcOut; // @[Core.scala 34:22]
+  wire [4:0] decode_io_decodeOut_alu_exe_fun; // @[Core.scala 34:22]
+  wire [3:0] decode_io_decodeOut_memType; // @[Core.scala 34:22]
+  wire [1:0] decode_io_decodeOut_regType; // @[Core.scala 34:22]
+  wire [2:0] decode_io_decodeOut_wbType; // @[Core.scala 34:22]
+  wire [2:0] decode_io_decodeOut_CSRType; // @[Core.scala 34:22]
+  wire [11:0] decode_io_decodeOut_csrAddr; // @[Core.scala 34:22]
+  wire [63:0] decode_io_srcOut_aluSrc_a; // @[Core.scala 34:22]
+  wire [63:0] decode_io_srcOut_aluSrc_b; // @[Core.scala 34:22]
+  wire [63:0] decode_io_srcOut_regB_data; // @[Core.scala 34:22]
+  wire [4:0] decode_io_srcOut_writeback_addr; // @[Core.scala 34:22]
+  wire [4:0] decode_io_forward_srcAddrA; // @[Core.scala 34:22]
+  wire [4:0] decode_io_forward_srcAddrB; // @[Core.scala 34:22]
+  wire  decode_io_forward_AhazardFlag; // @[Core.scala 34:22]
+  wire  decode_io_forward_BhazardFlag; // @[Core.scala 34:22]
+  wire [63:0] decode_io_forward_hazardAData; // @[Core.scala 34:22]
+  wire [63:0] decode_io_forward_hazardBData; // @[Core.scala 34:22]
+  wire [4:0] decode_io_readReg_read_addr_a; // @[Core.scala 34:22]
+  wire [4:0] decode_io_readReg_read_addr_b; // @[Core.scala 34:22]
+  wire [63:0] decode_io_readReg_read_data_a; // @[Core.scala 34:22]
+  wire [63:0] decode_io_readReg_read_data_b; // @[Core.scala 34:22]
+  wire  decode_io_branch_branchFlag; // @[Core.scala 34:22]
+  wire [63:0] decode_io_branch_branchTarget; // @[Core.scala 34:22]
+  wire  decode_to_execute_clock; // @[Core.scala 35:33]
+  wire  decode_to_execute_reset; // @[Core.scala 35:33]
+  wire  decode_to_execute_io_jumpFlag; // @[Core.scala 35:33]
+  wire [63:0] decode_to_execute_io_cur_pc; // @[Core.scala 35:33]
+  wire [63:0] decode_to_execute_io_pcOut; // @[Core.scala 35:33]
+  wire [4:0] decode_to_execute_io_controlSignal_alu_exe_fun; // @[Core.scala 35:33]
+  wire [3:0] decode_to_execute_io_controlSignal_memType; // @[Core.scala 35:33]
+  wire [1:0] decode_to_execute_io_controlSignal_regType; // @[Core.scala 35:33]
+  wire [2:0] decode_to_execute_io_controlSignal_wbType; // @[Core.scala 35:33]
+  wire [2:0] decode_to_execute_io_controlSignal_CSRType; // @[Core.scala 35:33]
+  wire [11:0] decode_to_execute_io_controlSignal_csrAddr; // @[Core.scala 35:33]
+  wire [63:0] decode_to_execute_io_opSrc_aluSrc_a; // @[Core.scala 35:33]
+  wire [63:0] decode_to_execute_io_opSrc_aluSrc_b; // @[Core.scala 35:33]
+  wire [63:0] decode_to_execute_io_opSrc_regB_data; // @[Core.scala 35:33]
+  wire [4:0] decode_to_execute_io_opSrc_writeback_addr; // @[Core.scala 35:33]
+  wire [4:0] decode_to_execute_io_controlSignalPass_alu_exe_fun; // @[Core.scala 35:33]
+  wire [3:0] decode_to_execute_io_controlSignalPass_memType; // @[Core.scala 35:33]
+  wire [1:0] decode_to_execute_io_controlSignalPass_regType; // @[Core.scala 35:33]
+  wire [2:0] decode_to_execute_io_controlSignalPass_wbType; // @[Core.scala 35:33]
+  wire [2:0] decode_to_execute_io_controlSignalPass_CSRType; // @[Core.scala 35:33]
+  wire [11:0] decode_to_execute_io_controlSignalPass_csrAddr; // @[Core.scala 35:33]
+  wire [63:0] decode_to_execute_io_srcPass_aluSrc_a; // @[Core.scala 35:33]
+  wire [63:0] decode_to_execute_io_srcPass_aluSrc_b; // @[Core.scala 35:33]
+  wire [63:0] decode_to_execute_io_srcPass_regB_data; // @[Core.scala 35:33]
+  wire [4:0] decode_to_execute_io_srcPass_writeback_addr; // @[Core.scala 35:33]
+  wire  decode_to_execute_io_branchextend_branchFlag; // @[Core.scala 35:33]
+  wire [63:0] decode_to_execute_io_branchextend_branchTarget; // @[Core.scala 35:33]
+  wire  decode_to_execute_io_branchout_branchFlag; // @[Core.scala 35:33]
+  wire [63:0] decode_to_execute_io_branchout_branchTarget; // @[Core.scala 35:33]
+  wire [63:0] execute_io_cur_pc; // @[Core.scala 36:23]
+  wire [63:0] execute_io_linkedPC; // @[Core.scala 36:23]
+  wire [63:0] execute_io_alu_in_aluSrc_a; // @[Core.scala 36:23]
+  wire [63:0] execute_io_alu_in_aluSrc_b; // @[Core.scala 36:23]
+  wire [63:0] execute_io_alu_in_regB_data; // @[Core.scala 36:23]
+  wire [4:0] execute_io_alu_in_writeback_addr; // @[Core.scala 36:23]
+  wire [63:0] execute_io_alu_out_alu_result; // @[Core.scala 36:23]
+  wire [4:0] execute_io_alu_out_writeback_addr; // @[Core.scala 36:23]
+  wire [63:0] execute_io_alu_out_regB_data; // @[Core.scala 36:23]
+  wire  execute_io_alu_out_jumpFlag; // @[Core.scala 36:23]
+  wire [3:0] execute_io_controlPass_memType; // @[Core.scala 36:23]
+  wire [1:0] execute_io_controlPass_regType; // @[Core.scala 36:23]
+  wire [2:0] execute_io_controlPass_wbType; // @[Core.scala 36:23]
+  wire [2:0] execute_io_controlPass_CSRType; // @[Core.scala 36:23]
+  wire [11:0] execute_io_controlPass_csrAddr; // @[Core.scala 36:23]
+  wire [4:0] execute_io_controlSignal_alu_exe_fun; // @[Core.scala 36:23]
+  wire [3:0] execute_io_controlSignal_memType; // @[Core.scala 36:23]
+  wire [1:0] execute_io_controlSignal_regType; // @[Core.scala 36:23]
+  wire [2:0] execute_io_controlSignal_wbType; // @[Core.scala 36:23]
+  wire [2:0] execute_io_controlSignal_CSRType; // @[Core.scala 36:23]
+  wire [11:0] execute_io_controlSignal_csrAddr; // @[Core.scala 36:23]
+  wire [4:0] execute_io_forward_wbAddrFromExecute; // @[Core.scala 36:23]
+  wire [1:0] execute_io_forward_regTypeFromExecute; // @[Core.scala 36:23]
+  wire [63:0] execute_io_forward_wbDataFromExe; // @[Core.scala 36:23]
+  wire [4:0] execute_io_stall_wbAddrFromEx; // @[Core.scala 36:23]
+  wire [1:0] execute_io_stall_wbSrcFromEx; // @[Core.scala 36:23]
+  wire  execute_to_mema_clock; // @[Core.scala 37:31]
+  wire  execute_to_mema_reset; // @[Core.scala 37:31]
+  wire [63:0] execute_to_mema_io_linkedPC; // @[Core.scala 37:31]
+  wire [63:0] execute_to_mema_io_linkedPCPass; // @[Core.scala 37:31]
+  wire [63:0] execute_to_mema_io_aluOut_alu_result; // @[Core.scala 37:31]
+  wire [4:0] execute_to_mema_io_aluOut_writeback_addr; // @[Core.scala 37:31]
+  wire [63:0] execute_to_mema_io_aluOut_regB_data; // @[Core.scala 37:31]
+  wire  execute_to_mema_io_aluOut_jumpFlag; // @[Core.scala 37:31]
+  wire [3:0] execute_to_mema_io_controlSignal_memType; // @[Core.scala 37:31]
+  wire [1:0] execute_to_mema_io_controlSignal_regType; // @[Core.scala 37:31]
+  wire [2:0] execute_to_mema_io_controlSignal_wbType; // @[Core.scala 37:31]
+  wire [2:0] execute_to_mema_io_controlSignal_CSRType; // @[Core.scala 37:31]
+  wire [11:0] execute_to_mema_io_controlSignal_csrAddr; // @[Core.scala 37:31]
+  wire [63:0] execute_to_mema_io_aluOutPass_alu_result; // @[Core.scala 37:31]
+  wire [4:0] execute_to_mema_io_aluOutPass_writeback_addr; // @[Core.scala 37:31]
+  wire [63:0] execute_to_mema_io_aluOutPass_regB_data; // @[Core.scala 37:31]
+  wire [3:0] execute_to_mema_io_controlSignalPass_memType; // @[Core.scala 37:31]
+  wire [1:0] execute_to_mema_io_controlSignalPass_regType; // @[Core.scala 37:31]
+  wire [2:0] execute_to_mema_io_controlSignalPass_wbType; // @[Core.scala 37:31]
+  wire [2:0] execute_to_mema_io_controlSignalPass_CSRType; // @[Core.scala 37:31]
+  wire [11:0] execute_to_mema_io_controlSignalPass_csrAddr; // @[Core.scala 37:31]
+  wire  execute_to_mema_io_jumpFlag; // @[Core.scala 37:31]
+  wire [63:0] memoryAccess_io_linkedPC; // @[Core.scala 38:28]
+  wire [63:0] memoryAccess_io_aluOut_alu_result; // @[Core.scala 38:28]
+  wire [4:0] memoryAccess_io_aluOut_writeback_addr; // @[Core.scala 38:28]
+  wire [63:0] memoryAccess_io_aluOut_regB_data; // @[Core.scala 38:28]
+  wire [3:0] memoryAccess_io_controlSignal_memType; // @[Core.scala 38:28]
+  wire [1:0] memoryAccess_io_controlSignal_regType; // @[Core.scala 38:28]
+  wire [2:0] memoryAccess_io_controlSignal_wbType; // @[Core.scala 38:28]
+  wire [2:0] memoryAccess_io_controlSignal_CSRType; // @[Core.scala 38:28]
+  wire [11:0] memoryAccess_io_controlSignal_csrAddr; // @[Core.scala 38:28]
+  wire [63:0] memoryAccess_io_dataReadPort_read_addr_b; // @[Core.scala 38:28]
+  wire [63:0] memoryAccess_io_dataReadPort_read_data_b; // @[Core.scala 38:28]
+  wire [63:0] memoryAccess_io_dataWritePort_write_addr; // @[Core.scala 38:28]
+  wire [63:0] memoryAccess_io_dataWritePort_write_data; // @[Core.scala 38:28]
+  wire [3:0] memoryAccess_io_dataWritePort_write_lenth; // @[Core.scala 38:28]
+  wire  memoryAccess_io_dataWritePort_write_enable; // @[Core.scala 38:28]
+  wire [11:0] memoryAccess_io_csrRead_csr_read_addr; // @[Core.scala 38:28]
+  wire [63:0] memoryAccess_io_csrRead_csr_read_data; // @[Core.scala 38:28]
+  wire [4:0] memoryAccess_io_forward_wbAddrFromMema; // @[Core.scala 38:28]
+  wire [1:0] memoryAccess_io_forward_regTypeFromMema; // @[Core.scala 38:28]
+  wire [63:0] memoryAccess_io_forward_wbDataFromMema; // @[Core.scala 38:28]
+  wire [4:0] memoryAccess_io_memPass_writeback_addr; // @[Core.scala 38:28]
+  wire [63:0] memoryAccess_io_memPass_writeback_data; // @[Core.scala 38:28]
+  wire [1:0] memoryAccess_io_memPass_regwrite_enable; // @[Core.scala 38:28]
+  wire [11:0] memoryAccess_io_memPass_csrwrite_addr; // @[Core.scala 38:28]
+  wire [63:0] memoryAccess_io_memPass_csrwrite_data; // @[Core.scala 38:28]
+  wire [2:0] memoryAccess_io_memPass_CSRType; // @[Core.scala 38:28]
+  wire  mema_to_wb_clock; // @[Core.scala 39:26]
+  wire  mema_to_wb_reset; // @[Core.scala 39:26]
+  wire [4:0] mema_to_wb_io_wbinfo_writeback_addr; // @[Core.scala 39:26]
+  wire [63:0] mema_to_wb_io_wbinfo_writeback_data; // @[Core.scala 39:26]
+  wire [1:0] mema_to_wb_io_wbinfo_regwrite_enable; // @[Core.scala 39:26]
+  wire [11:0] mema_to_wb_io_wbinfo_csrwrite_addr; // @[Core.scala 39:26]
+  wire [63:0] mema_to_wb_io_wbinfo_csrwrite_data; // @[Core.scala 39:26]
+  wire [2:0] mema_to_wb_io_wbinfo_CSRType; // @[Core.scala 39:26]
+  wire [4:0] mema_to_wb_io_wbinfoPass_writeback_addr; // @[Core.scala 39:26]
+  wire [63:0] mema_to_wb_io_wbinfoPass_writeback_data; // @[Core.scala 39:26]
+  wire [1:0] mema_to_wb_io_wbinfoPass_regwrite_enable; // @[Core.scala 39:26]
+  wire [11:0] mema_to_wb_io_wbinfoPass_csrwrite_addr; // @[Core.scala 39:26]
+  wire [63:0] mema_to_wb_io_wbinfoPass_csrwrite_data; // @[Core.scala 39:26]
+  wire [2:0] mema_to_wb_io_wbinfoPass_CSRType; // @[Core.scala 39:26]
+  wire [4:0] writeback_io_wbinfo_writeback_addr; // @[Core.scala 40:25]
+  wire [63:0] writeback_io_wbinfo_writeback_data; // @[Core.scala 40:25]
+  wire [1:0] writeback_io_wbinfo_regwrite_enable; // @[Core.scala 40:25]
+  wire [11:0] writeback_io_wbinfo_csrwrite_addr; // @[Core.scala 40:25]
+  wire [63:0] writeback_io_wbinfo_csrwrite_data; // @[Core.scala 40:25]
+  wire [2:0] writeback_io_wbinfo_CSRType; // @[Core.scala 40:25]
+  wire [4:0] writeback_io_regWrite_write_addr; // @[Core.scala 40:25]
+  wire [63:0] writeback_io_regWrite_write_data; // @[Core.scala 40:25]
+  wire  writeback_io_regWrite_write_enable; // @[Core.scala 40:25]
+  wire [11:0] writeback_io_csrWrite_csr_write_addr; // @[Core.scala 40:25]
+  wire [63:0] writeback_io_csrWrite_csr_write_data; // @[Core.scala 40:25]
+  wire  writeback_io_csrWrite_csr_write_enable; // @[Core.scala 40:25]
+  wire [4:0] writeback_io_forward_wbAddrFromWB; // @[Core.scala 40:25]
+  wire [1:0] writeback_io_forward_regTypeFromWB; // @[Core.scala 40:25]
+  wire [63:0] writeback_io_forward_wbDataFromWB; // @[Core.scala 40:25]
+  wire [4:0] datahazard_forward_io_withDecode_srcAddrA; // @[Core.scala 41:34]
+  wire [4:0] datahazard_forward_io_withDecode_srcAddrB; // @[Core.scala 41:34]
+  wire  datahazard_forward_io_withDecode_AhazardFlag; // @[Core.scala 41:34]
+  wire  datahazard_forward_io_withDecode_BhazardFlag; // @[Core.scala 41:34]
+  wire [63:0] datahazard_forward_io_withDecode_hazardAData; // @[Core.scala 41:34]
+  wire [63:0] datahazard_forward_io_withDecode_hazardBData; // @[Core.scala 41:34]
+  wire [4:0] datahazard_forward_io_withExecute_wbAddrFromExecute; // @[Core.scala 41:34]
+  wire [1:0] datahazard_forward_io_withExecute_regTypeFromExecute; // @[Core.scala 41:34]
+  wire [63:0] datahazard_forward_io_withExecute_wbDataFromExe; // @[Core.scala 41:34]
+  wire [4:0] datahazard_forward_io_withMema_wbAddrFromMema; // @[Core.scala 41:34]
+  wire [1:0] datahazard_forward_io_withMema_regTypeFromMema; // @[Core.scala 41:34]
+  wire [63:0] datahazard_forward_io_withMema_wbDataFromMema; // @[Core.scala 41:34]
+  wire [4:0] datahazard_forward_io_withWriteback_wbAddrFromWB; // @[Core.scala 41:34]
+  wire [1:0] datahazard_forward_io_withWriteback_regTypeFromWB; // @[Core.scala 41:34]
+  wire [63:0] datahazard_forward_io_withWriteback_wbDataFromWB; // @[Core.scala 41:34]
+  wire [4:0] datahazard_stall_io_withIDDE_srcAddrA; // @[Core.scala 42:32]
+  wire [4:0] datahazard_stall_io_withIDDE_srcAddrB; // @[Core.scala 42:32]
+  wire [4:0] datahazard_stall_io_withEX_wbAddrFromEx; // @[Core.scala 42:32]
+  wire [1:0] datahazard_stall_io_withEX_wbSrcFromEx; // @[Core.scala 42:32]
+  wire  datahazard_stall_io_stallFlag; // @[Core.scala 42:32]
+  wire  perf_clock; // @[Core.scala 43:20]
+  wire  perf_reset; // @[Core.scala 43:20]
+  wire  perf_io_stallFlag; // @[Core.scala 43:20]
+  wire  perf_io_forwardFlag; // @[Core.scala 43:20]
+  wire [11:0] perf_io_stall_cnt; // @[Core.scala 43:20]
+  wire [11:0] perf_io_forward_cnt; // @[Core.scala 43:20]
+  wire  regs_clock; // @[Core.scala 46:20]
+  wire [4:0] regs_io_reg_read_read_addr_a; // @[Core.scala 46:20]
+  wire [4:0] regs_io_reg_read_read_addr_b; // @[Core.scala 46:20]
+  wire [63:0] regs_io_reg_read_read_data_a; // @[Core.scala 46:20]
+  wire [63:0] regs_io_reg_read_read_data_b; // @[Core.scala 46:20]
+  wire [4:0] regs_io_reg_write_write_addr; // @[Core.scala 46:20]
+  wire [63:0] regs_io_reg_write_write_data; // @[Core.scala 46:20]
+  wire  regs_io_reg_write_write_enable; // @[Core.scala 46:20]
+  wire [7:0] regs_io_display_in; // @[Core.scala 46:20]
+  wire [15:0] regs_io_display_out; // @[Core.scala 46:20]
+  wire  regs_io_display_startFlag; // @[Core.scala 46:20]
+  wire  csrs_clock; // @[Core.scala 47:20]
+  wire [11:0] csrs_io_csrRead_csr_read_addr; // @[Core.scala 47:20]
+  wire [63:0] csrs_io_csrRead_csr_read_data; // @[Core.scala 47:20]
+  wire [63:0] csrs_io_envRead_csr_read_data; // @[Core.scala 47:20]
+  wire [11:0] csrs_io_csrWrite_csr_write_addr; // @[Core.scala 47:20]
+  wire [63:0] csrs_io_csrWrite_csr_write_data; // @[Core.scala 47:20]
+  wire  csrs_io_csrWrite_csr_write_enable; // @[Core.scala 47:20]
+  Instfetch instfetch ( // @[Core.scala 32:25]
     .clock(instfetch_clock),
     .reset(instfetch_reset),
     .io_branchFlag(instfetch_io_branchFlag),
@@ -1856,7 +1952,7 @@ module Core(
     .io_fetchMem_read_inst_a(instfetch_io_fetchMem_read_inst_a),
     .io_envRead_csr_read_data(instfetch_io_envRead_csr_read_data)
   );
-  FetchToDecode instfetch_to_decode ( // @[Core.scala 30:35]
+  FetchToDecode instfetch_to_decode ( // @[Core.scala 33:35]
     .clock(instfetch_to_decode_clock),
     .reset(instfetch_to_decode_reset),
     .io_stallFlag(instfetch_to_decode_io_stallFlag),
@@ -1867,7 +1963,7 @@ module Core(
     .io_stall_srcAddrA(instfetch_to_decode_io_stall_srcAddrA),
     .io_stall_srcAddrB(instfetch_to_decode_io_stall_srcAddrB)
   );
-  Decode decode ( // @[Core.scala 31:22]
+  Decode decode ( // @[Core.scala 34:22]
     .io_jumpFlag(decode_io_jumpFlag),
     .io_stallFlag(decode_io_stallFlag),
     .io_inst(decode_io_inst),
@@ -1896,7 +1992,7 @@ module Core(
     .io_branch_branchFlag(decode_io_branch_branchFlag),
     .io_branch_branchTarget(decode_io_branch_branchTarget)
   );
-  DecodeToExecute decode_to_execute ( // @[Core.scala 32:33]
+  DecodeToExecute decode_to_execute ( // @[Core.scala 35:33]
     .clock(decode_to_execute_clock),
     .reset(decode_to_execute_reset),
     .io_jumpFlag(decode_to_execute_io_jumpFlag),
@@ -1927,7 +2023,7 @@ module Core(
     .io_branchout_branchFlag(decode_to_execute_io_branchout_branchFlag),
     .io_branchout_branchTarget(decode_to_execute_io_branchout_branchTarget)
   );
-  Alu execute ( // @[Core.scala 33:23]
+  Alu execute ( // @[Core.scala 36:23]
     .io_cur_pc(execute_io_cur_pc),
     .io_linkedPC(execute_io_linkedPC),
     .io_alu_in_aluSrc_a(execute_io_alu_in_aluSrc_a),
@@ -1955,7 +2051,7 @@ module Core(
     .io_stall_wbAddrFromEx(execute_io_stall_wbAddrFromEx),
     .io_stall_wbSrcFromEx(execute_io_stall_wbSrcFromEx)
   );
-  ExecuteToMema execute_to_mema ( // @[Core.scala 34:31]
+  ExecuteToMema execute_to_mema ( // @[Core.scala 37:31]
     .clock(execute_to_mema_clock),
     .reset(execute_to_mema_reset),
     .io_linkedPC(execute_to_mema_io_linkedPC),
@@ -1979,7 +2075,7 @@ module Core(
     .io_controlSignalPass_csrAddr(execute_to_mema_io_controlSignalPass_csrAddr),
     .io_jumpFlag(execute_to_mema_io_jumpFlag)
   );
-  MemAccess memoryAccess ( // @[Core.scala 35:28]
+  MemAccess memoryAccess ( // @[Core.scala 38:28]
     .io_linkedPC(memoryAccess_io_linkedPC),
     .io_aluOut_alu_result(memoryAccess_io_aluOut_alu_result),
     .io_aluOut_writeback_addr(memoryAccess_io_aluOut_writeback_addr),
@@ -2007,7 +2103,7 @@ module Core(
     .io_memPass_csrwrite_data(memoryAccess_io_memPass_csrwrite_data),
     .io_memPass_CSRType(memoryAccess_io_memPass_CSRType)
   );
-  MemaToWB mema_to_wb ( // @[Core.scala 36:26]
+  MemaToWB mema_to_wb ( // @[Core.scala 39:26]
     .clock(mema_to_wb_clock),
     .reset(mema_to_wb_reset),
     .io_wbinfo_writeback_addr(mema_to_wb_io_wbinfo_writeback_addr),
@@ -2023,7 +2119,7 @@ module Core(
     .io_wbinfoPass_csrwrite_data(mema_to_wb_io_wbinfoPass_csrwrite_data),
     .io_wbinfoPass_CSRType(mema_to_wb_io_wbinfoPass_CSRType)
   );
-  WriteBack writeback ( // @[Core.scala 37:25]
+  WriteBack writeback ( // @[Core.scala 40:25]
     .io_wbinfo_writeback_addr(writeback_io_wbinfo_writeback_addr),
     .io_wbinfo_writeback_data(writeback_io_wbinfo_writeback_data),
     .io_wbinfo_regwrite_enable(writeback_io_wbinfo_regwrite_enable),
@@ -2040,7 +2136,7 @@ module Core(
     .io_forward_regTypeFromWB(writeback_io_forward_regTypeFromWB),
     .io_forward_wbDataFromWB(writeback_io_forward_wbDataFromWB)
   );
-  Forward datahazard_forward ( // @[Core.scala 38:34]
+  Forward datahazard_forward ( // @[Core.scala 41:34]
     .io_withDecode_srcAddrA(datahazard_forward_io_withDecode_srcAddrA),
     .io_withDecode_srcAddrB(datahazard_forward_io_withDecode_srcAddrB),
     .io_withDecode_AhazardFlag(datahazard_forward_io_withDecode_AhazardFlag),
@@ -2057,14 +2153,22 @@ module Core(
     .io_withWriteback_regTypeFromWB(datahazard_forward_io_withWriteback_regTypeFromWB),
     .io_withWriteback_wbDataFromWB(datahazard_forward_io_withWriteback_wbDataFromWB)
   );
-  Stall datahazard_stall ( // @[Core.scala 39:32]
+  Stall datahazard_stall ( // @[Core.scala 42:32]
     .io_withIDDE_srcAddrA(datahazard_stall_io_withIDDE_srcAddrA),
     .io_withIDDE_srcAddrB(datahazard_stall_io_withIDDE_srcAddrB),
     .io_withEX_wbAddrFromEx(datahazard_stall_io_withEX_wbAddrFromEx),
     .io_withEX_wbSrcFromEx(datahazard_stall_io_withEX_wbSrcFromEx),
     .io_stallFlag(datahazard_stall_io_stallFlag)
   );
-  RegFile regs ( // @[Core.scala 42:20]
+  Perf perf ( // @[Core.scala 43:20]
+    .clock(perf_clock),
+    .reset(perf_reset),
+    .io_stallFlag(perf_io_stallFlag),
+    .io_forwardFlag(perf_io_forwardFlag),
+    .io_stall_cnt(perf_io_stall_cnt),
+    .io_forward_cnt(perf_io_forward_cnt)
+  );
+  RegFile regs ( // @[Core.scala 46:20]
     .clock(regs_clock),
     .io_reg_read_read_addr_a(regs_io_reg_read_read_addr_a),
     .io_reg_read_read_addr_b(regs_io_reg_read_read_addr_b),
@@ -2074,9 +2178,10 @@ module Core(
     .io_reg_write_write_data(regs_io_reg_write_write_data),
     .io_reg_write_write_enable(regs_io_reg_write_write_enable),
     .io_display_in(regs_io_display_in),
-    .io_display_out(regs_io_display_out)
+    .io_display_out(regs_io_display_out),
+    .io_display_startFlag(regs_io_display_startFlag)
   );
-  CSRfile csrs ( // @[Core.scala 43:20]
+  CSRfile csrs ( // @[Core.scala 47:20]
     .clock(csrs_clock),
     .io_csrRead_csr_read_addr(csrs_io_csrRead_csr_read_addr),
     .io_csrRead_csr_read_data(csrs_io_csrRead_csr_read_data),
@@ -2085,128 +2190,136 @@ module Core(
     .io_csrWrite_csr_write_data(csrs_io_csrWrite_csr_write_data),
     .io_csrWrite_csr_write_enable(csrs_io_csrWrite_csr_write_enable)
   );
-  assign io_instfetch_fetchMem_read_addr_a = instfetch_io_fetchMem_read_addr_a; // @[Core.scala 84:25]
-  assign io_memoryAccess_dataReadPort_read_addr_b = memoryAccess_io_dataReadPort_read_addr_b; // @[Core.scala 123:32]
-  assign io_memoryAccess_dataWritePort_write_addr = memoryAccess_io_dataWritePort_write_addr; // @[Core.scala 124:33]
-  assign io_memoryAccess_dataWritePort_write_data = memoryAccess_io_dataWritePort_write_data; // @[Core.scala 124:33]
-  assign io_memoryAccess_dataWritePort_write_lenth = memoryAccess_io_dataWritePort_write_lenth; // @[Core.scala 124:33]
-  assign io_memoryAccess_dataWritePort_write_enable = memoryAccess_io_dataWritePort_write_enable; // @[Core.scala 124:33]
-  assign io_display_ans = {{48'd0}, regs_io_display_out}; // @[Core.scala 47:18]
+  assign io_instfetch_fetchMem_read_addr_a = instfetch_io_fetchMem_read_addr_a; // @[Core.scala 94:25]
+  assign io_memoryAccess_dataReadPort_read_addr_b = memoryAccess_io_dataReadPort_read_addr_b; // @[Core.scala 133:32]
+  assign io_memoryAccess_dataWritePort_write_addr = memoryAccess_io_dataWritePort_write_addr; // @[Core.scala 134:33]
+  assign io_memoryAccess_dataWritePort_write_data = memoryAccess_io_dataWritePort_write_data; // @[Core.scala 134:33]
+  assign io_memoryAccess_dataWritePort_write_lenth = memoryAccess_io_dataWritePort_write_lenth; // @[Core.scala 134:33]
+  assign io_memoryAccess_dataWritePort_write_enable = memoryAccess_io_dataWritePort_write_enable; // @[Core.scala 134:33]
+  assign io_display_ans = {{48'd0}, regs_io_display_out}; // @[Core.scala 51:18]
+  assign io_stall_cnt = perf_io_stall_cnt; // @[Core.scala 57:16]
+  assign io_forward_cnt = perf_io_forward_cnt; // @[Core.scala 56:18]
+  assign io_segStartFlag = regs_io_display_startFlag; // @[Core.scala 52:19]
   assign instfetch_clock = clock;
   assign instfetch_reset = reset;
-  assign instfetch_io_branchFlag = decode_to_execute_io_branchout_branchFlag; // @[Core.scala 79:27]
-  assign instfetch_io_jumpFlag = execute_to_mema_io_jumpFlag; // @[Core.scala 80:25]
-  assign instfetch_io_stallFlag = datahazard_stall_io_stallFlag; // @[Core.scala 81:26]
-  assign instfetch_io_branchTarget = decode_to_execute_io_branchout_branchTarget; // @[Core.scala 82:29]
-  assign instfetch_io_jumpTarget = execute_io_alu_out_alu_result; // @[Core.scala 83:27]
-  assign instfetch_io_fetchMem_read_inst_a = io_instfetch_fetchMem_read_inst_a; // @[Core.scala 84:25]
-  assign instfetch_io_envRead_csr_read_data = csrs_io_envRead_csr_read_data; // @[Core.scala 85:24]
+  assign instfetch_io_branchFlag = decode_to_execute_io_branchout_branchFlag; // @[Core.scala 89:27]
+  assign instfetch_io_jumpFlag = execute_to_mema_io_jumpFlag; // @[Core.scala 90:25]
+  assign instfetch_io_stallFlag = datahazard_stall_io_stallFlag; // @[Core.scala 91:26]
+  assign instfetch_io_branchTarget = decode_to_execute_io_branchout_branchTarget; // @[Core.scala 92:29]
+  assign instfetch_io_jumpTarget = execute_io_alu_out_alu_result; // @[Core.scala 93:27]
+  assign instfetch_io_fetchMem_read_inst_a = io_instfetch_fetchMem_read_inst_a; // @[Core.scala 94:25]
+  assign instfetch_io_envRead_csr_read_data = csrs_io_envRead_csr_read_data; // @[Core.scala 95:24]
   assign instfetch_to_decode_clock = clock;
   assign instfetch_to_decode_reset = reset;
-  assign instfetch_to_decode_io_stallFlag = datahazard_stall_io_stallFlag; // @[Core.scala 87:36]
-  assign instfetch_to_decode_io_pcIn = instfetch_io_pcOut; // @[Core.scala 88:31]
-  assign instfetch_to_decode_io_instIn = instfetch_io_instOut[31:0]; // @[Core.scala 89:33]
-  assign decode_io_jumpFlag = execute_to_mema_io_jumpFlag; // @[Core.scala 95:22]
-  assign decode_io_stallFlag = datahazard_stall_io_stallFlag; // @[Core.scala 96:23]
-  assign decode_io_inst = instfetch_to_decode_io_instOut; // @[Core.scala 97:18]
-  assign decode_io_cur_pc = instfetch_to_decode_io_pcOut; // @[Core.scala 98:20]
-  assign decode_io_forward_AhazardFlag = datahazard_forward_io_withDecode_AhazardFlag; // @[Core.scala 99:21]
-  assign decode_io_forward_BhazardFlag = datahazard_forward_io_withDecode_BhazardFlag; // @[Core.scala 99:21]
-  assign decode_io_forward_hazardAData = datahazard_forward_io_withDecode_hazardAData; // @[Core.scala 99:21]
-  assign decode_io_forward_hazardBData = datahazard_forward_io_withDecode_hazardBData; // @[Core.scala 99:21]
-  assign decode_io_readReg_read_data_a = regs_io_reg_read_read_data_a; // @[Core.scala 100:21]
-  assign decode_io_readReg_read_data_b = regs_io_reg_read_read_data_b; // @[Core.scala 100:21]
+  assign instfetch_to_decode_io_stallFlag = datahazard_stall_io_stallFlag; // @[Core.scala 97:36]
+  assign instfetch_to_decode_io_pcIn = instfetch_io_pcOut; // @[Core.scala 98:31]
+  assign instfetch_to_decode_io_instIn = instfetch_io_instOut[31:0]; // @[Core.scala 99:33]
+  assign decode_io_jumpFlag = execute_to_mema_io_jumpFlag; // @[Core.scala 105:22]
+  assign decode_io_stallFlag = datahazard_stall_io_stallFlag; // @[Core.scala 106:23]
+  assign decode_io_inst = instfetch_to_decode_io_instOut; // @[Core.scala 107:18]
+  assign decode_io_cur_pc = instfetch_to_decode_io_pcOut; // @[Core.scala 108:20]
+  assign decode_io_forward_AhazardFlag = datahazard_forward_io_withDecode_AhazardFlag; // @[Core.scala 109:21]
+  assign decode_io_forward_BhazardFlag = datahazard_forward_io_withDecode_BhazardFlag; // @[Core.scala 109:21]
+  assign decode_io_forward_hazardAData = datahazard_forward_io_withDecode_hazardAData; // @[Core.scala 109:21]
+  assign decode_io_forward_hazardBData = datahazard_forward_io_withDecode_hazardBData; // @[Core.scala 109:21]
+  assign decode_io_readReg_read_data_a = regs_io_reg_read_read_data_a; // @[Core.scala 110:21]
+  assign decode_io_readReg_read_data_b = regs_io_reg_read_read_data_b; // @[Core.scala 110:21]
   assign decode_to_execute_clock = clock;
   assign decode_to_execute_reset = reset;
-  assign decode_to_execute_io_jumpFlag = execute_to_mema_io_jumpFlag; // @[Core.scala 104:33]
-  assign decode_to_execute_io_cur_pc = decode_io_pcOut; // @[Core.scala 105:31]
-  assign decode_to_execute_io_controlSignal_alu_exe_fun = decode_io_decodeOut_alu_exe_fun; // @[Core.scala 103:38]
-  assign decode_to_execute_io_controlSignal_memType = decode_io_decodeOut_memType; // @[Core.scala 103:38]
-  assign decode_to_execute_io_controlSignal_regType = decode_io_decodeOut_regType; // @[Core.scala 103:38]
-  assign decode_to_execute_io_controlSignal_wbType = decode_io_decodeOut_wbType; // @[Core.scala 103:38]
-  assign decode_to_execute_io_controlSignal_CSRType = decode_io_decodeOut_CSRType; // @[Core.scala 103:38]
-  assign decode_to_execute_io_controlSignal_csrAddr = decode_io_decodeOut_csrAddr; // @[Core.scala 103:38]
-  assign decode_to_execute_io_opSrc_aluSrc_a = decode_io_srcOut_aluSrc_a; // @[Core.scala 106:30]
-  assign decode_to_execute_io_opSrc_aluSrc_b = decode_io_srcOut_aluSrc_b; // @[Core.scala 106:30]
-  assign decode_to_execute_io_opSrc_regB_data = decode_io_srcOut_regB_data; // @[Core.scala 106:30]
-  assign decode_to_execute_io_opSrc_writeback_addr = decode_io_srcOut_writeback_addr; // @[Core.scala 106:30]
-  assign decode_to_execute_io_branchextend_branchFlag = decode_io_branch_branchFlag; // @[Core.scala 102:37]
-  assign decode_to_execute_io_branchextend_branchTarget = decode_io_branch_branchTarget; // @[Core.scala 102:37]
-  assign execute_io_cur_pc = decode_to_execute_io_pcOut; // @[Core.scala 109:21]
-  assign execute_io_alu_in_aluSrc_a = decode_to_execute_io_srcPass_aluSrc_a; // @[Core.scala 110:21]
-  assign execute_io_alu_in_aluSrc_b = decode_to_execute_io_srcPass_aluSrc_b; // @[Core.scala 110:21]
-  assign execute_io_alu_in_regB_data = decode_to_execute_io_srcPass_regB_data; // @[Core.scala 110:21]
-  assign execute_io_alu_in_writeback_addr = decode_to_execute_io_srcPass_writeback_addr; // @[Core.scala 110:21]
-  assign execute_io_controlSignal_alu_exe_fun = decode_to_execute_io_controlSignalPass_alu_exe_fun; // @[Core.scala 111:28]
-  assign execute_io_controlSignal_memType = decode_to_execute_io_controlSignalPass_memType; // @[Core.scala 111:28]
-  assign execute_io_controlSignal_regType = decode_to_execute_io_controlSignalPass_regType; // @[Core.scala 111:28]
-  assign execute_io_controlSignal_wbType = decode_to_execute_io_controlSignalPass_wbType; // @[Core.scala 111:28]
-  assign execute_io_controlSignal_CSRType = decode_to_execute_io_controlSignalPass_CSRType; // @[Core.scala 111:28]
-  assign execute_io_controlSignal_csrAddr = decode_to_execute_io_controlSignalPass_csrAddr; // @[Core.scala 111:28]
+  assign decode_to_execute_io_jumpFlag = execute_to_mema_io_jumpFlag; // @[Core.scala 114:33]
+  assign decode_to_execute_io_cur_pc = decode_io_pcOut; // @[Core.scala 115:31]
+  assign decode_to_execute_io_controlSignal_alu_exe_fun = decode_io_decodeOut_alu_exe_fun; // @[Core.scala 113:38]
+  assign decode_to_execute_io_controlSignal_memType = decode_io_decodeOut_memType; // @[Core.scala 113:38]
+  assign decode_to_execute_io_controlSignal_regType = decode_io_decodeOut_regType; // @[Core.scala 113:38]
+  assign decode_to_execute_io_controlSignal_wbType = decode_io_decodeOut_wbType; // @[Core.scala 113:38]
+  assign decode_to_execute_io_controlSignal_CSRType = decode_io_decodeOut_CSRType; // @[Core.scala 113:38]
+  assign decode_to_execute_io_controlSignal_csrAddr = decode_io_decodeOut_csrAddr; // @[Core.scala 113:38]
+  assign decode_to_execute_io_opSrc_aluSrc_a = decode_io_srcOut_aluSrc_a; // @[Core.scala 116:30]
+  assign decode_to_execute_io_opSrc_aluSrc_b = decode_io_srcOut_aluSrc_b; // @[Core.scala 116:30]
+  assign decode_to_execute_io_opSrc_regB_data = decode_io_srcOut_regB_data; // @[Core.scala 116:30]
+  assign decode_to_execute_io_opSrc_writeback_addr = decode_io_srcOut_writeback_addr; // @[Core.scala 116:30]
+  assign decode_to_execute_io_branchextend_branchFlag = decode_io_branch_branchFlag; // @[Core.scala 112:37]
+  assign decode_to_execute_io_branchextend_branchTarget = decode_io_branch_branchTarget; // @[Core.scala 112:37]
+  assign execute_io_cur_pc = decode_to_execute_io_pcOut; // @[Core.scala 119:21]
+  assign execute_io_alu_in_aluSrc_a = decode_to_execute_io_srcPass_aluSrc_a; // @[Core.scala 120:21]
+  assign execute_io_alu_in_aluSrc_b = decode_to_execute_io_srcPass_aluSrc_b; // @[Core.scala 120:21]
+  assign execute_io_alu_in_regB_data = decode_to_execute_io_srcPass_regB_data; // @[Core.scala 120:21]
+  assign execute_io_alu_in_writeback_addr = decode_to_execute_io_srcPass_writeback_addr; // @[Core.scala 120:21]
+  assign execute_io_controlSignal_alu_exe_fun = decode_to_execute_io_controlSignalPass_alu_exe_fun; // @[Core.scala 121:28]
+  assign execute_io_controlSignal_memType = decode_to_execute_io_controlSignalPass_memType; // @[Core.scala 121:28]
+  assign execute_io_controlSignal_regType = decode_to_execute_io_controlSignalPass_regType; // @[Core.scala 121:28]
+  assign execute_io_controlSignal_wbType = decode_to_execute_io_controlSignalPass_wbType; // @[Core.scala 121:28]
+  assign execute_io_controlSignal_CSRType = decode_to_execute_io_controlSignalPass_CSRType; // @[Core.scala 121:28]
+  assign execute_io_controlSignal_csrAddr = decode_to_execute_io_controlSignalPass_csrAddr; // @[Core.scala 121:28]
   assign execute_to_mema_clock = clock;
   assign execute_to_mema_reset = reset;
-  assign execute_to_mema_io_linkedPC = execute_io_linkedPC; // @[Core.scala 115:31]
-  assign execute_to_mema_io_aluOut_alu_result = execute_io_alu_out_alu_result; // @[Core.scala 116:29]
-  assign execute_to_mema_io_aluOut_writeback_addr = execute_io_alu_out_writeback_addr; // @[Core.scala 116:29]
-  assign execute_to_mema_io_aluOut_regB_data = execute_io_alu_out_regB_data; // @[Core.scala 116:29]
-  assign execute_to_mema_io_aluOut_jumpFlag = execute_io_alu_out_jumpFlag; // @[Core.scala 116:29]
-  assign execute_to_mema_io_controlSignal_memType = execute_io_controlPass_memType; // @[Core.scala 117:36]
-  assign execute_to_mema_io_controlSignal_regType = execute_io_controlPass_regType; // @[Core.scala 117:36]
-  assign execute_to_mema_io_controlSignal_wbType = execute_io_controlPass_wbType; // @[Core.scala 117:36]
-  assign execute_to_mema_io_controlSignal_CSRType = execute_io_controlPass_CSRType; // @[Core.scala 117:36]
-  assign execute_to_mema_io_controlSignal_csrAddr = execute_io_controlPass_csrAddr; // @[Core.scala 117:36]
-  assign memoryAccess_io_linkedPC = execute_to_mema_io_linkedPCPass; // @[Core.scala 120:28]
-  assign memoryAccess_io_aluOut_alu_result = execute_to_mema_io_aluOutPass_alu_result; // @[Core.scala 121:26]
-  assign memoryAccess_io_aluOut_writeback_addr = execute_to_mema_io_aluOutPass_writeback_addr; // @[Core.scala 121:26]
-  assign memoryAccess_io_aluOut_regB_data = execute_to_mema_io_aluOutPass_regB_data; // @[Core.scala 121:26]
-  assign memoryAccess_io_controlSignal_memType = execute_to_mema_io_controlSignalPass_memType; // @[Core.scala 122:33]
-  assign memoryAccess_io_controlSignal_regType = execute_to_mema_io_controlSignalPass_regType; // @[Core.scala 122:33]
-  assign memoryAccess_io_controlSignal_wbType = execute_to_mema_io_controlSignalPass_wbType; // @[Core.scala 122:33]
-  assign memoryAccess_io_controlSignal_CSRType = execute_to_mema_io_controlSignalPass_CSRType; // @[Core.scala 122:33]
-  assign memoryAccess_io_controlSignal_csrAddr = execute_to_mema_io_controlSignalPass_csrAddr; // @[Core.scala 122:33]
-  assign memoryAccess_io_dataReadPort_read_data_b = io_memoryAccess_dataReadPort_read_data_b; // @[Core.scala 123:32]
-  assign memoryAccess_io_csrRead_csr_read_data = csrs_io_csrRead_csr_read_data; // @[Core.scala 125:27]
+  assign execute_to_mema_io_linkedPC = execute_io_linkedPC; // @[Core.scala 125:31]
+  assign execute_to_mema_io_aluOut_alu_result = execute_io_alu_out_alu_result; // @[Core.scala 126:29]
+  assign execute_to_mema_io_aluOut_writeback_addr = execute_io_alu_out_writeback_addr; // @[Core.scala 126:29]
+  assign execute_to_mema_io_aluOut_regB_data = execute_io_alu_out_regB_data; // @[Core.scala 126:29]
+  assign execute_to_mema_io_aluOut_jumpFlag = execute_io_alu_out_jumpFlag; // @[Core.scala 126:29]
+  assign execute_to_mema_io_controlSignal_memType = execute_io_controlPass_memType; // @[Core.scala 127:36]
+  assign execute_to_mema_io_controlSignal_regType = execute_io_controlPass_regType; // @[Core.scala 127:36]
+  assign execute_to_mema_io_controlSignal_wbType = execute_io_controlPass_wbType; // @[Core.scala 127:36]
+  assign execute_to_mema_io_controlSignal_CSRType = execute_io_controlPass_CSRType; // @[Core.scala 127:36]
+  assign execute_to_mema_io_controlSignal_csrAddr = execute_io_controlPass_csrAddr; // @[Core.scala 127:36]
+  assign memoryAccess_io_linkedPC = execute_to_mema_io_linkedPCPass; // @[Core.scala 130:28]
+  assign memoryAccess_io_aluOut_alu_result = execute_to_mema_io_aluOutPass_alu_result; // @[Core.scala 131:26]
+  assign memoryAccess_io_aluOut_writeback_addr = execute_to_mema_io_aluOutPass_writeback_addr; // @[Core.scala 131:26]
+  assign memoryAccess_io_aluOut_regB_data = execute_to_mema_io_aluOutPass_regB_data; // @[Core.scala 131:26]
+  assign memoryAccess_io_controlSignal_memType = execute_to_mema_io_controlSignalPass_memType; // @[Core.scala 132:33]
+  assign memoryAccess_io_controlSignal_regType = execute_to_mema_io_controlSignalPass_regType; // @[Core.scala 132:33]
+  assign memoryAccess_io_controlSignal_wbType = execute_to_mema_io_controlSignalPass_wbType; // @[Core.scala 132:33]
+  assign memoryAccess_io_controlSignal_CSRType = execute_to_mema_io_controlSignalPass_CSRType; // @[Core.scala 132:33]
+  assign memoryAccess_io_controlSignal_csrAddr = execute_to_mema_io_controlSignalPass_csrAddr; // @[Core.scala 132:33]
+  assign memoryAccess_io_dataReadPort_read_data_b = io_memoryAccess_dataReadPort_read_data_b; // @[Core.scala 133:32]
+  assign memoryAccess_io_csrRead_csr_read_data = csrs_io_csrRead_csr_read_data; // @[Core.scala 135:27]
   assign mema_to_wb_clock = clock;
   assign mema_to_wb_reset = reset;
-  assign mema_to_wb_io_wbinfo_writeback_addr = memoryAccess_io_memPass_writeback_addr; // @[Core.scala 128:24]
-  assign mema_to_wb_io_wbinfo_writeback_data = memoryAccess_io_memPass_writeback_data; // @[Core.scala 128:24]
-  assign mema_to_wb_io_wbinfo_regwrite_enable = memoryAccess_io_memPass_regwrite_enable; // @[Core.scala 128:24]
-  assign mema_to_wb_io_wbinfo_csrwrite_addr = memoryAccess_io_memPass_csrwrite_addr; // @[Core.scala 128:24]
-  assign mema_to_wb_io_wbinfo_csrwrite_data = memoryAccess_io_memPass_csrwrite_data; // @[Core.scala 128:24]
-  assign mema_to_wb_io_wbinfo_CSRType = memoryAccess_io_memPass_CSRType; // @[Core.scala 128:24]
-  assign writeback_io_wbinfo_writeback_addr = mema_to_wb_io_wbinfoPass_writeback_addr; // @[Core.scala 131:23]
-  assign writeback_io_wbinfo_writeback_data = mema_to_wb_io_wbinfoPass_writeback_data; // @[Core.scala 131:23]
-  assign writeback_io_wbinfo_regwrite_enable = mema_to_wb_io_wbinfoPass_regwrite_enable; // @[Core.scala 131:23]
-  assign writeback_io_wbinfo_csrwrite_addr = mema_to_wb_io_wbinfoPass_csrwrite_addr; // @[Core.scala 131:23]
-  assign writeback_io_wbinfo_csrwrite_data = mema_to_wb_io_wbinfoPass_csrwrite_data; // @[Core.scala 131:23]
-  assign writeback_io_wbinfo_CSRType = mema_to_wb_io_wbinfoPass_CSRType; // @[Core.scala 131:23]
-  assign datahazard_forward_io_withDecode_srcAddrA = decode_io_forward_srcAddrA; // @[Core.scala 99:21]
-  assign datahazard_forward_io_withDecode_srcAddrB = decode_io_forward_srcAddrB; // @[Core.scala 99:21]
-  assign datahazard_forward_io_withExecute_wbAddrFromExecute = execute_io_forward_wbAddrFromExecute; // @[Core.scala 112:22]
-  assign datahazard_forward_io_withExecute_regTypeFromExecute = execute_io_forward_regTypeFromExecute; // @[Core.scala 112:22]
-  assign datahazard_forward_io_withExecute_wbDataFromExe = execute_io_forward_wbDataFromExe; // @[Core.scala 112:22]
-  assign datahazard_forward_io_withMema_wbAddrFromMema = memoryAccess_io_forward_wbAddrFromMema; // @[Core.scala 126:27]
-  assign datahazard_forward_io_withMema_regTypeFromMema = memoryAccess_io_forward_regTypeFromMema; // @[Core.scala 126:27]
-  assign datahazard_forward_io_withMema_wbDataFromMema = memoryAccess_io_forward_wbDataFromMema; // @[Core.scala 126:27]
-  assign datahazard_forward_io_withWriteback_wbAddrFromWB = writeback_io_forward_wbAddrFromWB; // @[Core.scala 130:24]
-  assign datahazard_forward_io_withWriteback_regTypeFromWB = writeback_io_forward_regTypeFromWB; // @[Core.scala 130:24]
-  assign datahazard_forward_io_withWriteback_wbDataFromWB = writeback_io_forward_wbDataFromWB; // @[Core.scala 130:24]
-  assign datahazard_stall_io_withIDDE_srcAddrA = instfetch_to_decode_io_stall_srcAddrA; // @[Core.scala 92:32]
-  assign datahazard_stall_io_withIDDE_srcAddrB = instfetch_to_decode_io_stall_srcAddrB; // @[Core.scala 92:32]
-  assign datahazard_stall_io_withEX_wbAddrFromEx = execute_io_stall_wbAddrFromEx; // @[Core.scala 113:20]
-  assign datahazard_stall_io_withEX_wbSrcFromEx = execute_io_stall_wbSrcFromEx; // @[Core.scala 113:20]
+  assign mema_to_wb_io_wbinfo_writeback_addr = memoryAccess_io_memPass_writeback_addr; // @[Core.scala 138:24]
+  assign mema_to_wb_io_wbinfo_writeback_data = memoryAccess_io_memPass_writeback_data; // @[Core.scala 138:24]
+  assign mema_to_wb_io_wbinfo_regwrite_enable = memoryAccess_io_memPass_regwrite_enable; // @[Core.scala 138:24]
+  assign mema_to_wb_io_wbinfo_csrwrite_addr = memoryAccess_io_memPass_csrwrite_addr; // @[Core.scala 138:24]
+  assign mema_to_wb_io_wbinfo_csrwrite_data = memoryAccess_io_memPass_csrwrite_data; // @[Core.scala 138:24]
+  assign mema_to_wb_io_wbinfo_CSRType = memoryAccess_io_memPass_CSRType; // @[Core.scala 138:24]
+  assign writeback_io_wbinfo_writeback_addr = mema_to_wb_io_wbinfoPass_writeback_addr; // @[Core.scala 141:23]
+  assign writeback_io_wbinfo_writeback_data = mema_to_wb_io_wbinfoPass_writeback_data; // @[Core.scala 141:23]
+  assign writeback_io_wbinfo_regwrite_enable = mema_to_wb_io_wbinfoPass_regwrite_enable; // @[Core.scala 141:23]
+  assign writeback_io_wbinfo_csrwrite_addr = mema_to_wb_io_wbinfoPass_csrwrite_addr; // @[Core.scala 141:23]
+  assign writeback_io_wbinfo_csrwrite_data = mema_to_wb_io_wbinfoPass_csrwrite_data; // @[Core.scala 141:23]
+  assign writeback_io_wbinfo_CSRType = mema_to_wb_io_wbinfoPass_CSRType; // @[Core.scala 141:23]
+  assign datahazard_forward_io_withDecode_srcAddrA = decode_io_forward_srcAddrA; // @[Core.scala 109:21]
+  assign datahazard_forward_io_withDecode_srcAddrB = decode_io_forward_srcAddrB; // @[Core.scala 109:21]
+  assign datahazard_forward_io_withExecute_wbAddrFromExecute = execute_io_forward_wbAddrFromExecute; // @[Core.scala 122:22]
+  assign datahazard_forward_io_withExecute_regTypeFromExecute = execute_io_forward_regTypeFromExecute; // @[Core.scala 122:22]
+  assign datahazard_forward_io_withExecute_wbDataFromExe = execute_io_forward_wbDataFromExe; // @[Core.scala 122:22]
+  assign datahazard_forward_io_withMema_wbAddrFromMema = memoryAccess_io_forward_wbAddrFromMema; // @[Core.scala 136:27]
+  assign datahazard_forward_io_withMema_regTypeFromMema = memoryAccess_io_forward_regTypeFromMema; // @[Core.scala 136:27]
+  assign datahazard_forward_io_withMema_wbDataFromMema = memoryAccess_io_forward_wbDataFromMema; // @[Core.scala 136:27]
+  assign datahazard_forward_io_withWriteback_wbAddrFromWB = writeback_io_forward_wbAddrFromWB; // @[Core.scala 140:24]
+  assign datahazard_forward_io_withWriteback_regTypeFromWB = writeback_io_forward_regTypeFromWB; // @[Core.scala 140:24]
+  assign datahazard_forward_io_withWriteback_wbDataFromWB = writeback_io_forward_wbDataFromWB; // @[Core.scala 140:24]
+  assign datahazard_stall_io_withIDDE_srcAddrA = instfetch_to_decode_io_stall_srcAddrA; // @[Core.scala 102:32]
+  assign datahazard_stall_io_withIDDE_srcAddrB = instfetch_to_decode_io_stall_srcAddrB; // @[Core.scala 102:32]
+  assign datahazard_stall_io_withEX_wbAddrFromEx = execute_io_stall_wbAddrFromEx; // @[Core.scala 123:20]
+  assign datahazard_stall_io_withEX_wbSrcFromEx = execute_io_stall_wbSrcFromEx; // @[Core.scala 123:20]
+  assign perf_clock = clock;
+  assign perf_reset = reset;
+  assign perf_io_stallFlag = datahazard_stall_io_stallFlag; // @[Core.scala 54:21]
+  assign perf_io_forwardFlag = datahazard_forward_io_withDecode_BhazardFlag |
+    datahazard_forward_io_withDecode_AhazardFlag; // @[Core.scala 55:71]
   assign regs_clock = clock;
-  assign regs_io_reg_read_read_addr_a = decode_io_readReg_read_addr_a; // @[Core.scala 100:21]
-  assign regs_io_reg_read_read_addr_b = decode_io_readReg_read_addr_b; // @[Core.scala 100:21]
-  assign regs_io_reg_write_write_addr = writeback_io_regWrite_write_addr; // @[Core.scala 132:21]
-  assign regs_io_reg_write_write_data = writeback_io_regWrite_write_data; // @[Core.scala 132:21]
-  assign regs_io_reg_write_write_enable = writeback_io_regWrite_write_enable; // @[Core.scala 132:21]
-  assign regs_io_display_in = io_display_a; // @[Core.scala 46:22]
+  assign regs_io_reg_read_read_addr_a = decode_io_readReg_read_addr_a; // @[Core.scala 110:21]
+  assign regs_io_reg_read_read_addr_b = decode_io_readReg_read_addr_b; // @[Core.scala 110:21]
+  assign regs_io_reg_write_write_addr = writeback_io_regWrite_write_addr; // @[Core.scala 142:21]
+  assign regs_io_reg_write_write_data = writeback_io_regWrite_write_data; // @[Core.scala 142:21]
+  assign regs_io_reg_write_write_enable = writeback_io_regWrite_write_enable; // @[Core.scala 142:21]
+  assign regs_io_display_in = io_display_a; // @[Core.scala 50:22]
   assign csrs_clock = clock;
-  assign csrs_io_csrRead_csr_read_addr = memoryAccess_io_csrRead_csr_read_addr; // @[Core.scala 125:27]
-  assign csrs_io_csrWrite_csr_write_addr = writeback_io_csrWrite_csr_write_addr; // @[Core.scala 133:20]
-  assign csrs_io_csrWrite_csr_write_data = writeback_io_csrWrite_csr_write_data; // @[Core.scala 133:20]
-  assign csrs_io_csrWrite_csr_write_enable = writeback_io_csrWrite_csr_write_enable; // @[Core.scala 133:20]
+  assign csrs_io_csrRead_csr_read_addr = memoryAccess_io_csrRead_csr_read_addr; // @[Core.scala 135:27]
+  assign csrs_io_csrWrite_csr_write_addr = writeback_io_csrWrite_csr_write_addr; // @[Core.scala 143:20]
+  assign csrs_io_csrWrite_csr_write_data = writeback_io_csrWrite_csr_write_data; // @[Core.scala 143:20]
+  assign csrs_io_csrWrite_csr_write_enable = writeback_io_csrWrite_csr_write_enable; // @[Core.scala 143:20]
 endmodule
 module Memory(
   input         clock,
@@ -2539,38 +2652,260 @@ end // initial
 `endif
 `endif // SYNTHESIS
 endmodule
+module Show(
+  input         clock,
+  input         reset,
+  input         io_start,
+  input  [63:0] io_in_result,
+  output [15:0] io_out_result,
+  output        io_valid,
+  output [1:0]  io_seg_choice
+);
+`ifdef RANDOMIZE_REG_INIT
+  reg [63:0] _RAND_0;
+  reg [31:0] _RAND_1;
+  reg [31:0] _RAND_2;
+  reg [31:0] _RAND_3;
+  reg [31:0] _RAND_4;
+  reg [31:0] _RAND_5;
+  reg [31:0] _RAND_6;
+  reg [31:0] _RAND_7;
+  reg [31:0] _RAND_8;
+  reg [31:0] _RAND_9;
+  reg [31:0] _RAND_10;
+`endif // RANDOMIZE_REG_INIT
+  reg [63:0] bin; // @[Show.scala 13:20]
+  reg [3:0] cnt; // @[Show.scala 15:20]
+  reg  op; // @[Show.scala 16:19]
+  wire  _op_T = cnt == 4'hc; // @[Show.scala 17:17]
+  wire [3:0] _cnt_T_2 = cnt + 4'h1; // @[Show.scala 18:49]
+  reg  bcd0; // @[Show.scala 20:21]
+  reg [3:0] bcd41; // @[Show.scala 21:22]
+  reg [3:0] bcd85; // @[Show.scala 22:22]
+  reg [3:0] bcd129; // @[Show.scala 23:23]
+  reg [2:0] bcd1513; // @[Show.scala 24:24]
+  wire [3:0] _bcd0_T_2 = 4'hd - cnt; // @[Show.scala 25:62]
+  wire [63:0] _bcd0_T_3 = bin >> _bcd0_T_2; // @[Show.scala 25:52]
+  wire [3:0] _bcd41_T_2 = {bcd41[2:0],bcd0}; // @[Cat.scala 31:58]
+  wire [3:0] _bcd41_T_7 = _bcd41_T_2 + 4'h3; // @[Show.scala 26:111]
+  wire [3:0] _bcd85_T_3 = {bcd85[2:0],bcd41[3]}; // @[Cat.scala 31:58]
+  wire [3:0] _bcd85_T_9 = _bcd85_T_3 + 4'h3; // @[Show.scala 27:119]
+  wire [3:0] _bcd129_T_3 = {bcd129[2:0],bcd85[3]}; // @[Cat.scala 31:58]
+  wire [3:0] _bcd129_T_9 = _bcd129_T_3 + 4'h3; // @[Show.scala 28:122]
+  wire [3:0] _bcd1513_T_3 = {bcd1513,bcd129[3]}; // @[Cat.scala 31:58]
+  wire [3:0] _bcd1513_T_9 = _bcd1513_T_3 + 4'h3; // @[Show.scala 29:128]
+  reg  valid; // @[Show.scala 30:22]
+  wire [4:0] io_out_result_lo = {bcd41,bcd0}; // @[Cat.scala 31:58]
+  wire [10:0] io_out_result_hi = {bcd1513,bcd129,bcd85}; // @[Cat.scala 31:58]
+  reg [1:0] seg_choice; // @[Show.scala 34:27]
+  reg [3:0] slow_clock; // @[Show.scala 35:27]
+  wire [3:0] _slow_clock_T_1 = slow_clock + 4'h1; // @[Show.scala 36:28]
+  wire [1:0] _GEN_0 = {{1'd0}, slow_clock[3]}; // @[Show.scala 37:28]
+  wire [1:0] _seg_choice_T_2 = seg_choice + _GEN_0; // @[Show.scala 37:28]
+  assign io_out_result = {io_out_result_hi,io_out_result_lo}; // @[Cat.scala 31:58]
+  assign io_valid = valid; // @[Show.scala 32:12]
+  assign io_seg_choice = seg_choice; // @[Show.scala 38:17]
+  always @(posedge clock) begin
+    if (reset) begin // @[Show.scala 13:20]
+      bin <= 64'h0; // @[Show.scala 13:20]
+    end else begin
+      bin <= io_in_result; // @[Show.scala 14:7]
+    end
+    if (reset) begin // @[Show.scala 15:20]
+      cnt <= 4'h0; // @[Show.scala 15:20]
+    end else if (~op) begin // @[Show.scala 18:13]
+      cnt <= 4'h0;
+    end else begin
+      cnt <= _cnt_T_2;
+    end
+    if (reset) begin // @[Show.scala 16:19]
+      op <= 1'h0; // @[Show.scala 16:19]
+    end else if (cnt == 4'hc) begin // @[Show.scala 17:12]
+      op <= 1'h0;
+    end else begin
+      op <= 1'h1;
+    end
+    if (reset) begin // @[Show.scala 20:21]
+      bcd0 <= 1'h0; // @[Show.scala 20:21]
+    end else if (io_start) begin // @[Show.scala 25:14]
+      bcd0 <= op & _bcd0_T_3[0];
+    end
+    if (reset) begin // @[Show.scala 21:22]
+      bcd41 <= 4'h0; // @[Show.scala 21:22]
+    end else if (io_start) begin // @[Show.scala 26:15]
+      if (op) begin // @[Show.scala 26:29]
+        if (_bcd41_T_2 > 4'h4) begin // @[Show.scala 26:53]
+          bcd41 <= _bcd41_T_7;
+        end else begin
+          bcd41 <= _bcd41_T_2;
+        end
+      end else begin
+        bcd41 <= 4'h0;
+      end
+    end
+    if (reset) begin // @[Show.scala 22:22]
+      bcd85 <= 4'h0; // @[Show.scala 22:22]
+    end else if (io_start) begin // @[Show.scala 27:15]
+      if (op) begin // @[Show.scala 27:29]
+        if (_bcd85_T_3 > 4'h4) begin // @[Show.scala 27:53]
+          bcd85 <= _bcd85_T_9;
+        end else begin
+          bcd85 <= _bcd85_T_3;
+        end
+      end else begin
+        bcd85 <= 4'h0;
+      end
+    end
+    if (reset) begin // @[Show.scala 23:23]
+      bcd129 <= 4'h0; // @[Show.scala 23:23]
+    end else if (io_start) begin // @[Show.scala 28:16]
+      if (op) begin // @[Show.scala 28:30]
+        if (_bcd129_T_3 > 4'h4) begin // @[Show.scala 28:54]
+          bcd129 <= _bcd129_T_9;
+        end else begin
+          bcd129 <= _bcd129_T_3;
+        end
+      end else begin
+        bcd129 <= 4'h0;
+      end
+    end
+    if (reset) begin // @[Show.scala 24:24]
+      bcd1513 <= 3'h0; // @[Show.scala 24:24]
+    end else if (io_start) begin // @[Show.scala 29:17]
+      if (op) begin // @[Show.scala 29:31]
+        if (_bcd1513_T_3 > 4'h4) begin // @[Show.scala 29:55]
+          bcd1513 <= _bcd1513_T_9[2:0];
+        end else begin
+          bcd1513 <= _bcd1513_T_3[2:0];
+        end
+      end else begin
+        bcd1513 <= 3'h0;
+      end
+    end
+    if (reset) begin // @[Show.scala 30:22]
+      valid <= 1'h0; // @[Show.scala 30:22]
+    end else begin
+      valid <= _op_T; // @[Show.scala 31:9]
+    end
+    if (reset) begin // @[Show.scala 34:27]
+      seg_choice <= 2'h0; // @[Show.scala 34:27]
+    end else begin
+      seg_choice <= _seg_choice_T_2; // @[Show.scala 37:14]
+    end
+    if (reset) begin // @[Show.scala 35:27]
+      slow_clock <= 4'h0; // @[Show.scala 35:27]
+    end else begin
+      slow_clock <= _slow_clock_T_1; // @[Show.scala 36:14]
+    end
+  end
+// Register and memory initialization
+`ifdef RANDOMIZE_GARBAGE_ASSIGN
+`define RANDOMIZE
+`endif
+`ifdef RANDOMIZE_INVALID_ASSIGN
+`define RANDOMIZE
+`endif
+`ifdef RANDOMIZE_REG_INIT
+`define RANDOMIZE
+`endif
+`ifdef RANDOMIZE_MEM_INIT
+`define RANDOMIZE
+`endif
+`ifndef RANDOM
+`define RANDOM $random
+`endif
+`ifdef RANDOMIZE_MEM_INIT
+  integer initvar;
+`endif
+`ifndef SYNTHESIS
+`ifdef FIRRTL_BEFORE_INITIAL
+`FIRRTL_BEFORE_INITIAL
+`endif
+initial begin
+  `ifdef RANDOMIZE
+    `ifdef INIT_RANDOM
+      `INIT_RANDOM
+    `endif
+    `ifndef VERILATOR
+      `ifdef RANDOMIZE_DELAY
+        #`RANDOMIZE_DELAY begin end
+      `else
+        #0.002 begin end
+      `endif
+    `endif
+`ifdef RANDOMIZE_REG_INIT
+  _RAND_0 = {2{`RANDOM}};
+  bin = _RAND_0[63:0];
+  _RAND_1 = {1{`RANDOM}};
+  cnt = _RAND_1[3:0];
+  _RAND_2 = {1{`RANDOM}};
+  op = _RAND_2[0:0];
+  _RAND_3 = {1{`RANDOM}};
+  bcd0 = _RAND_3[0:0];
+  _RAND_4 = {1{`RANDOM}};
+  bcd41 = _RAND_4[3:0];
+  _RAND_5 = {1{`RANDOM}};
+  bcd85 = _RAND_5[3:0];
+  _RAND_6 = {1{`RANDOM}};
+  bcd129 = _RAND_6[3:0];
+  _RAND_7 = {1{`RANDOM}};
+  bcd1513 = _RAND_7[2:0];
+  _RAND_8 = {1{`RANDOM}};
+  valid = _RAND_8[0:0];
+  _RAND_9 = {1{`RANDOM}};
+  seg_choice = _RAND_9[1:0];
+  _RAND_10 = {1{`RANDOM}};
+  slow_clock = _RAND_10[3:0];
+`endif // RANDOMIZE_REG_INIT
+  `endif // RANDOMIZE
+end // initial
+`ifdef FIRRTL_AFTER_INITIAL
+`FIRRTL_AFTER_INITIAL
+`endif
+`endif // SYNTHESIS
+endmodule
 module Top(
   input         clock,
   input         reset,
   input  [7:0]  io_a,
   output [15:0] io_segOut,
-  output [1:0]  io_segChoice
+  output        io_segValid,
+  output [1:0]  io_segChoice,
+  output [11:0] io_forward_cnt,
+  output [11:0] io_stall_cnt
 );
-  wire  core_clock; // @[Top.scala 15:20]
-  wire  core_reset; // @[Top.scala 15:20]
-  wire [63:0] core_io_instfetch_fetchMem_read_addr_a; // @[Top.scala 15:20]
-  wire [31:0] core_io_instfetch_fetchMem_read_inst_a; // @[Top.scala 15:20]
-  wire [63:0] core_io_memoryAccess_dataReadPort_read_addr_b; // @[Top.scala 15:20]
-  wire [63:0] core_io_memoryAccess_dataReadPort_read_data_b; // @[Top.scala 15:20]
-  wire [63:0] core_io_memoryAccess_dataWritePort_write_addr; // @[Top.scala 15:20]
-  wire [63:0] core_io_memoryAccess_dataWritePort_write_data; // @[Top.scala 15:20]
-  wire [3:0] core_io_memoryAccess_dataWritePort_write_lenth; // @[Top.scala 15:20]
-  wire  core_io_memoryAccess_dataWritePort_write_enable; // @[Top.scala 15:20]
-  wire [7:0] core_io_display_a; // @[Top.scala 15:20]
-  wire [63:0] core_io_display_ans; // @[Top.scala 15:20]
-  wire  memory_clock; // @[Top.scala 16:22]
-  wire [63:0] memory_io_instReadPort_read_addr_a; // @[Top.scala 16:22]
-  wire [31:0] memory_io_instReadPort_read_inst_a; // @[Top.scala 16:22]
-  wire [63:0] memory_io_dataReadPort_read_addr_b; // @[Top.scala 16:22]
-  wire [63:0] memory_io_dataReadPort_read_data_b; // @[Top.scala 16:22]
-  wire [63:0] memory_io_writePort_write_addr; // @[Top.scala 16:22]
-  wire [63:0] memory_io_writePort_write_data; // @[Top.scala 16:22]
-  wire [3:0] memory_io_writePort_write_lenth; // @[Top.scala 16:22]
-  wire  memory_io_writePort_write_enable; // @[Top.scala 16:22]
-  wire [15:0] seg7_ans; // @[Top.scala 17:20]
-  wire [3:0] seg7_segOut; // @[Top.scala 17:20]
-  wire [1:0] seg7_segChoice; // @[Top.scala 17:20]
-  Core core ( // @[Top.scala 15:20]
+  wire  core_clock; // @[Top.scala 18:20]
+  wire  core_reset; // @[Top.scala 18:20]
+  wire [63:0] core_io_instfetch_fetchMem_read_addr_a; // @[Top.scala 18:20]
+  wire [31:0] core_io_instfetch_fetchMem_read_inst_a; // @[Top.scala 18:20]
+  wire [63:0] core_io_memoryAccess_dataReadPort_read_addr_b; // @[Top.scala 18:20]
+  wire [63:0] core_io_memoryAccess_dataReadPort_read_data_b; // @[Top.scala 18:20]
+  wire [63:0] core_io_memoryAccess_dataWritePort_write_addr; // @[Top.scala 18:20]
+  wire [63:0] core_io_memoryAccess_dataWritePort_write_data; // @[Top.scala 18:20]
+  wire [3:0] core_io_memoryAccess_dataWritePort_write_lenth; // @[Top.scala 18:20]
+  wire  core_io_memoryAccess_dataWritePort_write_enable; // @[Top.scala 18:20]
+  wire [7:0] core_io_display_a; // @[Top.scala 18:20]
+  wire [63:0] core_io_display_ans; // @[Top.scala 18:20]
+  wire [11:0] core_io_stall_cnt; // @[Top.scala 18:20]
+  wire [11:0] core_io_forward_cnt; // @[Top.scala 18:20]
+  wire  core_io_segStartFlag; // @[Top.scala 18:20]
+  wire  memory_clock; // @[Top.scala 19:22]
+  wire [63:0] memory_io_instReadPort_read_addr_a; // @[Top.scala 19:22]
+  wire [31:0] memory_io_instReadPort_read_inst_a; // @[Top.scala 19:22]
+  wire [63:0] memory_io_dataReadPort_read_addr_b; // @[Top.scala 19:22]
+  wire [63:0] memory_io_dataReadPort_read_data_b; // @[Top.scala 19:22]
+  wire [63:0] memory_io_writePort_write_addr; // @[Top.scala 19:22]
+  wire [63:0] memory_io_writePort_write_data; // @[Top.scala 19:22]
+  wire [3:0] memory_io_writePort_write_lenth; // @[Top.scala 19:22]
+  wire  memory_io_writePort_write_enable; // @[Top.scala 19:22]
+  wire  seg7_clock; // @[Top.scala 20:20]
+  wire  seg7_reset; // @[Top.scala 20:20]
+  wire  seg7_io_start; // @[Top.scala 20:20]
+  wire [63:0] seg7_io_in_result; // @[Top.scala 20:20]
+  wire [15:0] seg7_io_out_result; // @[Top.scala 20:20]
+  wire  seg7_io_valid; // @[Top.scala 20:20]
+  wire [1:0] seg7_io_seg_choice; // @[Top.scala 20:20]
+  Core core ( // @[Top.scala 18:20]
     .clock(core_clock),
     .reset(core_reset),
     .io_instfetch_fetchMem_read_addr_a(core_io_instfetch_fetchMem_read_addr_a),
@@ -2582,9 +2917,12 @@ module Top(
     .io_memoryAccess_dataWritePort_write_lenth(core_io_memoryAccess_dataWritePort_write_lenth),
     .io_memoryAccess_dataWritePort_write_enable(core_io_memoryAccess_dataWritePort_write_enable),
     .io_display_a(core_io_display_a),
-    .io_display_ans(core_io_display_ans)
+    .io_display_ans(core_io_display_ans),
+    .io_stall_cnt(core_io_stall_cnt),
+    .io_forward_cnt(core_io_forward_cnt),
+    .io_segStartFlag(core_io_segStartFlag)
   );
-  Memory memory ( // @[Top.scala 16:22]
+  Memory memory ( // @[Top.scala 19:22]
     .clock(memory_clock),
     .io_instReadPort_read_addr_a(memory_io_instReadPort_read_addr_a),
     .io_instReadPort_read_inst_a(memory_io_instReadPort_read_inst_a),
@@ -2595,24 +2933,34 @@ module Top(
     .io_writePort_write_lenth(memory_io_writePort_write_lenth),
     .io_writePort_write_enable(memory_io_writePort_write_enable)
   );
-  Seg7 seg7 ( // @[Top.scala 17:20]
-    .ans(seg7_ans),
-    .segOut(seg7_segOut),
-    .segChoice(seg7_segChoice)
+  Show seg7 ( // @[Top.scala 20:20]
+    .clock(seg7_clock),
+    .reset(seg7_reset),
+    .io_start(seg7_io_start),
+    .io_in_result(seg7_io_in_result),
+    .io_out_result(seg7_io_out_result),
+    .io_valid(seg7_io_valid),
+    .io_seg_choice(seg7_io_seg_choice)
   );
-  assign io_segOut = {{12'd0}, seg7_segOut}; // @[Top.scala 24:13]
-  assign io_segChoice = seg7_segChoice; // @[Top.scala 25:16]
+  assign io_segOut = seg7_io_out_result; // @[Top.scala 27:13]
+  assign io_segValid = seg7_io_valid; // @[Top.scala 26:15]
+  assign io_segChoice = seg7_io_seg_choice; // @[Top.scala 28:16]
+  assign io_forward_cnt = core_io_forward_cnt; // @[Top.scala 31:18]
+  assign io_stall_cnt = core_io_stall_cnt; // @[Top.scala 32:16]
   assign core_clock = clock;
   assign core_reset = reset;
-  assign core_io_instfetch_fetchMem_read_inst_a = memory_io_instReadPort_read_inst_a; // @[Top.scala 19:30]
-  assign core_io_memoryAccess_dataReadPort_read_data_b = memory_io_dataReadPort_read_data_b; // @[Top.scala 20:37]
-  assign core_io_display_a = io_a; // @[Top.scala 22:21]
+  assign core_io_instfetch_fetchMem_read_inst_a = memory_io_instReadPort_read_inst_a; // @[Top.scala 22:30]
+  assign core_io_memoryAccess_dataReadPort_read_data_b = memory_io_dataReadPort_read_data_b; // @[Top.scala 23:37]
+  assign core_io_display_a = io_a; // @[Top.scala 25:21]
   assign memory_clock = clock;
-  assign memory_io_instReadPort_read_addr_a = core_io_instfetch_fetchMem_read_addr_a; // @[Top.scala 19:30]
-  assign memory_io_dataReadPort_read_addr_b = core_io_memoryAccess_dataReadPort_read_addr_b; // @[Top.scala 20:37]
-  assign memory_io_writePort_write_addr = core_io_memoryAccess_dataWritePort_write_addr; // @[Top.scala 21:38]
-  assign memory_io_writePort_write_data = core_io_memoryAccess_dataWritePort_write_data; // @[Top.scala 21:38]
-  assign memory_io_writePort_write_lenth = core_io_memoryAccess_dataWritePort_write_lenth; // @[Top.scala 21:38]
-  assign memory_io_writePort_write_enable = core_io_memoryAccess_dataWritePort_write_enable; // @[Top.scala 21:38]
-  assign seg7_ans = core_io_display_ans[15:0]; // @[Top.scala 23:37]
+  assign memory_io_instReadPort_read_addr_a = core_io_instfetch_fetchMem_read_addr_a; // @[Top.scala 22:30]
+  assign memory_io_dataReadPort_read_addr_b = core_io_memoryAccess_dataReadPort_read_addr_b; // @[Top.scala 23:37]
+  assign memory_io_writePort_write_addr = core_io_memoryAccess_dataWritePort_write_addr; // @[Top.scala 24:38]
+  assign memory_io_writePort_write_data = core_io_memoryAccess_dataWritePort_write_data; // @[Top.scala 24:38]
+  assign memory_io_writePort_write_lenth = core_io_memoryAccess_dataWritePort_write_lenth; // @[Top.scala 24:38]
+  assign memory_io_writePort_write_enable = core_io_memoryAccess_dataWritePort_write_enable; // @[Top.scala 24:38]
+  assign seg7_clock = clock;
+  assign seg7_reset = reset;
+  assign seg7_io_start = core_io_segStartFlag & ~seg7_io_valid; // @[Top.scala 30:45]
+  assign seg7_io_in_result = core_io_display_ans; // @[Top.scala 29:21]
 endmodule
