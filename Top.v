@@ -2657,7 +2657,7 @@ module Show(
   input         reset,
   input         io_start,
   input  [63:0] io_in_result,
-  output [15:0] io_out_result,
+  output [6:0]  io_out_result,
   output        io_valid,
   output [1:0]  io_seg_choice
 );
@@ -2695,14 +2695,24 @@ module Show(
   wire [3:0] _bcd1513_T_3 = {bcd1513,bcd129[3]}; // @[Cat.scala 31:58]
   wire [3:0] _bcd1513_T_9 = _bcd1513_T_3 + 4'h3; // @[Show.scala 29:128]
   reg  valid; // @[Show.scala 30:22]
-  wire [4:0] io_out_result_lo = {bcd41,bcd0}; // @[Cat.scala 31:58]
-  wire [10:0] io_out_result_hi = {bcd1513,bcd129,bcd85}; // @[Cat.scala 31:58]
   reg [1:0] seg_choice; // @[Show.scala 34:27]
   reg [3:0] slow_clock; // @[Show.scala 35:27]
   wire [3:0] _slow_clock_T_1 = slow_clock + 4'h1; // @[Show.scala 36:28]
   wire [1:0] _GEN_0 = {{1'd0}, slow_clock[3]}; // @[Show.scala 37:28]
   wire [1:0] _seg_choice_T_2 = seg_choice + _GEN_0; // @[Show.scala 37:28]
-  assign io_out_result = {io_out_result_hi,io_out_result_lo}; // @[Cat.scala 31:58]
+  wire [3:0] _show_result_T_11 = 2'h1 == seg_choice ? _bcd85_T_3 : _bcd41_T_2; // @[Mux.scala 81:58]
+  wire [3:0] _show_result_T_13 = 2'h2 == seg_choice ? _bcd129_T_3 : _show_result_T_11; // @[Mux.scala 81:58]
+  wire [3:0] show_result = 2'h3 == seg_choice ? _bcd1513_T_3 : _show_result_T_13; // @[Mux.scala 81:58]
+  wire [6:0] _io_out_result_T_2 = 4'h0 == show_result ? 7'h40 : 7'h0; // @[Mux.scala 81:58]
+  wire [6:0] _io_out_result_T_4 = 4'h1 == show_result ? 7'h79 : _io_out_result_T_2; // @[Mux.scala 81:58]
+  wire [6:0] _io_out_result_T_6 = 4'h2 == show_result ? 7'h24 : _io_out_result_T_4; // @[Mux.scala 81:58]
+  wire [6:0] _io_out_result_T_8 = 4'h3 == show_result ? 7'h30 : _io_out_result_T_6; // @[Mux.scala 81:58]
+  wire [6:0] _io_out_result_T_10 = 4'h4 == show_result ? 7'h19 : _io_out_result_T_8; // @[Mux.scala 81:58]
+  wire [6:0] _io_out_result_T_12 = 4'h5 == show_result ? 7'h12 : _io_out_result_T_10; // @[Mux.scala 81:58]
+  wire [6:0] _io_out_result_T_14 = 4'h6 == show_result ? 7'h2 : _io_out_result_T_12; // @[Mux.scala 81:58]
+  wire [6:0] _io_out_result_T_16 = 4'h7 == show_result ? 7'h78 : _io_out_result_T_14; // @[Mux.scala 81:58]
+  wire [6:0] _io_out_result_T_18 = 4'h8 == show_result ? 7'h0 : _io_out_result_T_16; // @[Mux.scala 81:58]
+  assign io_out_result = 4'h9 == show_result ? 7'h10 : _io_out_result_T_18; // @[Mux.scala 81:58]
   assign io_valid = valid; // @[Show.scala 32:12]
   assign io_seg_choice = seg_choice; // @[Show.scala 38:17]
   always @(posedge clock) begin
@@ -2868,7 +2878,7 @@ module Top(
   input         clock,
   input         reset,
   input  [7:0]  io_a,
-  output [15:0] io_segOut,
+  output [6:0]  io_segOut,
   output        io_segValid,
   output [1:0]  io_segChoice,
   output [11:0] io_forward_cnt,
@@ -2902,7 +2912,7 @@ module Top(
   wire  seg7_reset; // @[Top.scala 20:20]
   wire  seg7_io_start; // @[Top.scala 20:20]
   wire [63:0] seg7_io_in_result; // @[Top.scala 20:20]
-  wire [15:0] seg7_io_out_result; // @[Top.scala 20:20]
+  wire [6:0] seg7_io_out_result; // @[Top.scala 20:20]
   wire  seg7_io_valid; // @[Top.scala 20:20]
   wire [1:0] seg7_io_seg_choice; // @[Top.scala 20:20]
   Core core ( // @[Top.scala 18:20]

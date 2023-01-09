@@ -1,12 +1,12 @@
 package rainy.shaheway.org
 package display
 import chisel3._
-import chisel3.util.Cat
+import chisel3.util.{Cat, MuxLookup}
 class Show extends Module{
   val io = IO(new Bundle() {
     val start = Input(Bool())
     val in_result = Input(UInt(64.W))
-    val out_result = Output(UInt(16.W))
+    val out_result = Output(UInt(7.W))
     val valid = Output(Bool())
     val seg_choice = Output(UInt(2.W))
   })
@@ -36,4 +36,22 @@ class Show extends Module{
   slow_clock := slow_clock + 1.U(4.W)
   seg_choice := seg_choice + slow_clock(3)
   io.seg_choice := seg_choice
+  val show_result = MuxLookup(seg_choice, 0.U(4.W), IndexedSeq(
+    0.U(2.W) -> Cat(bcd41(2, 0), bcd0),
+    1.U(2.W) -> Cat(bcd85(2, 0), bcd41(3)),
+    2.U(2.W) -> Cat(bcd129(2, 0), bcd85(3)),
+    3.U(2.W) -> Cat(bcd1513, bcd129(3))
+  ))
+  io.out_result := MuxLookup(show_result, 0.U(7.W), IndexedSeq(
+    0.U(4.W) -> 64.U(7.W),
+    1.U(4.W) -> 121.U(7.W),
+    2.U(4.W) -> 36.U(7.W),
+    3.U(4.W) -> 48.U(7.W),
+    4.U(4.W) -> 25.U(7.W),
+    5.U(4.W) -> 18.U(7.W),
+    6.U(4.W) -> 2.U(7.W),
+    7.U(4.W) -> 120.U(7.W),
+    8.U(4.W) -> 0.U(7.W),
+    9.U(4.W) -> 16.U(7.W)
+  ))
 }

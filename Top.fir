@@ -1371,7 +1371,7 @@ circuit Top :
   module Show :
     input clock : Clock
     input reset : Reset
-    output io : { flip start : UInt<1>, flip in_result : UInt<64>, out_result : UInt<16>, valid : UInt<1>, seg_choice : UInt<2>}
+    output io : { flip start : UInt<1>, flip in_result : UInt<64>, out_result : UInt<7>, valid : UInt<1>, seg_choice : UInt<2>}
 
     reg bin : UInt<64>, clock with :
       reset => (reset, UInt<64>("h0")) @[Show.scala 13:20]
@@ -1496,11 +1496,48 @@ circuit Top :
     node _seg_choice_T_2 = tail(_seg_choice_T_1, 1) @[Show.scala 37:28]
     seg_choice <= _seg_choice_T_2 @[Show.scala 37:14]
     io.seg_choice <= seg_choice @[Show.scala 38:17]
+    node _show_result_T = bits(bcd41, 2, 0) @[Show.scala 40:26]
+    node _show_result_T_1 = cat(_show_result_T, bcd0) @[Cat.scala 31:58]
+    node _show_result_T_2 = bits(bcd85, 2, 0) @[Show.scala 41:26]
+    node _show_result_T_3 = bits(bcd41, 3, 3) @[Show.scala 41:39]
+    node _show_result_T_4 = cat(_show_result_T_2, _show_result_T_3) @[Cat.scala 31:58]
+    node _show_result_T_5 = bits(bcd129, 2, 0) @[Show.scala 42:27]
+    node _show_result_T_6 = bits(bcd85, 3, 3) @[Show.scala 42:40]
+    node _show_result_T_7 = cat(_show_result_T_5, _show_result_T_6) @[Cat.scala 31:58]
+    node _show_result_T_8 = bits(bcd129, 3, 3) @[Show.scala 43:36]
+    node _show_result_T_9 = cat(bcd1513, _show_result_T_8) @[Cat.scala 31:58]
+    node _show_result_T_10 = eq(UInt<2>("h1"), seg_choice) @[Mux.scala 81:61]
+    node _show_result_T_11 = mux(_show_result_T_10, _show_result_T_4, _show_result_T_1) @[Mux.scala 81:58]
+    node _show_result_T_12 = eq(UInt<2>("h2"), seg_choice) @[Mux.scala 81:61]
+    node _show_result_T_13 = mux(_show_result_T_12, _show_result_T_7, _show_result_T_11) @[Mux.scala 81:58]
+    node _show_result_T_14 = eq(UInt<2>("h3"), seg_choice) @[Mux.scala 81:61]
+    node show_result = mux(_show_result_T_14, _show_result_T_9, _show_result_T_13) @[Mux.scala 81:58]
+    node _io_out_result_T_1 = eq(UInt<4>("h0"), show_result) @[Mux.scala 81:61]
+    node _io_out_result_T_2 = mux(_io_out_result_T_1, UInt<7>("h40"), UInt<7>("h0")) @[Mux.scala 81:58]
+    node _io_out_result_T_3 = eq(UInt<4>("h1"), show_result) @[Mux.scala 81:61]
+    node _io_out_result_T_4 = mux(_io_out_result_T_3, UInt<7>("h79"), _io_out_result_T_2) @[Mux.scala 81:58]
+    node _io_out_result_T_5 = eq(UInt<4>("h2"), show_result) @[Mux.scala 81:61]
+    node _io_out_result_T_6 = mux(_io_out_result_T_5, UInt<7>("h24"), _io_out_result_T_4) @[Mux.scala 81:58]
+    node _io_out_result_T_7 = eq(UInt<4>("h3"), show_result) @[Mux.scala 81:61]
+    node _io_out_result_T_8 = mux(_io_out_result_T_7, UInt<7>("h30"), _io_out_result_T_6) @[Mux.scala 81:58]
+    node _io_out_result_T_9 = eq(UInt<4>("h4"), show_result) @[Mux.scala 81:61]
+    node _io_out_result_T_10 = mux(_io_out_result_T_9, UInt<7>("h19"), _io_out_result_T_8) @[Mux.scala 81:58]
+    node _io_out_result_T_11 = eq(UInt<4>("h5"), show_result) @[Mux.scala 81:61]
+    node _io_out_result_T_12 = mux(_io_out_result_T_11, UInt<7>("h12"), _io_out_result_T_10) @[Mux.scala 81:58]
+    node _io_out_result_T_13 = eq(UInt<4>("h6"), show_result) @[Mux.scala 81:61]
+    node _io_out_result_T_14 = mux(_io_out_result_T_13, UInt<7>("h2"), _io_out_result_T_12) @[Mux.scala 81:58]
+    node _io_out_result_T_15 = eq(UInt<4>("h7"), show_result) @[Mux.scala 81:61]
+    node _io_out_result_T_16 = mux(_io_out_result_T_15, UInt<7>("h78"), _io_out_result_T_14) @[Mux.scala 81:58]
+    node _io_out_result_T_17 = eq(UInt<4>("h8"), show_result) @[Mux.scala 81:61]
+    node _io_out_result_T_18 = mux(_io_out_result_T_17, UInt<7>("h0"), _io_out_result_T_16) @[Mux.scala 81:58]
+    node _io_out_result_T_19 = eq(UInt<4>("h9"), show_result) @[Mux.scala 81:61]
+    node _io_out_result_T_20 = mux(_io_out_result_T_19, UInt<7>("h10"), _io_out_result_T_18) @[Mux.scala 81:58]
+    io.out_result <= _io_out_result_T_20 @[Show.scala 45:17]
 
   module Top :
     input clock : Clock
     input reset : UInt<1>
-    output io : { flip a : UInt<8>, segOut : UInt<16>, segValid : UInt<1>, segChoice : UInt<2>, forward_cnt : UInt<12>, stall_cnt : UInt<12>}
+    output io : { flip a : UInt<8>, segOut : UInt<7>, segValid : UInt<1>, segChoice : UInt<2>, forward_cnt : UInt<12>, stall_cnt : UInt<12>}
 
     inst core of Core @[Top.scala 18:20]
     core.clock <= clock
