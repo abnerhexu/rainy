@@ -9,7 +9,7 @@ import display.Show
 class Top extends Module {
   val io = IO(new Bundle() {
     val a = Input(UInt(8.W))
-    val segOut = Output(UInt(10.W))
+    val segOut = Output(UInt(11.W))
     val segValid = Output(Bool())
     // val segChoice = Output(UInt(2.W))
     val forward_cnt = Output(UInt(12.W))

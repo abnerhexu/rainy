@@ -6,7 +6,7 @@ class Show extends Module{
   val io = IO(new Bundle() {
     val start = Input(Bool())
     val in_result = Input(UInt(64.W))
-    val out_result = Output(UInt(10.W))
+    val out_result = Output(UInt(11.W))
     val valid = Output(Bool())
     // val seg_choice = Output(UInt(2.W))
   })

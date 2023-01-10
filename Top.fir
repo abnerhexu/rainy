@@ -1371,7 +1371,7 @@ circuit Top :
   module Show :
     input clock : Clock
     input reset : Reset
-    output io : { flip start : UInt<1>, flip in_result : UInt<64>, out_result : UInt<10>, valid : UInt<1>}
+    output io : { flip start : UInt<1>, flip in_result : UInt<64>, out_result : UInt<11>, valid : UInt<1>}
 
     reg bin : UInt<64>, clock with :
       reset => (reset, UInt<64>("h0")) @[Show.scala 13:20]
@@ -1543,7 +1543,7 @@ circuit Top :
   module Top :
     input clock : Clock
     input reset : UInt<1>
-    output io : { flip a : UInt<8>, segOut : UInt<10>, segValid : UInt<1>, forward_cnt : UInt<12>, stall_cnt : UInt<12>}
+    output io : { flip a : UInt<8>, segOut : UInt<11>, segValid : UInt<1>, forward_cnt : UInt<12>, stall_cnt : UInt<12>}
 
     inst core of Core @[Top.scala 18:20]
     core.clock <= clock

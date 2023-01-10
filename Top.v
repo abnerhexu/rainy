@@ -2657,7 +2657,7 @@ module Show(
   input         reset,
   input         io_start,
   input  [63:0] io_in_result,
-  output [9:0]  io_out_result,
+  output [10:0] io_out_result,
   output        io_valid
 );
 `ifdef RANDOMIZE_REG_INIT
@@ -2715,8 +2715,7 @@ module Show(
   wire [3:0] _show_choice_T_1 = 2'h1 == seg_choice ? 4'hd : 4'he; // @[Mux.scala 81:58]
   wire [3:0] _show_choice_T_3 = 2'h2 == seg_choice ? 4'hb : _show_choice_T_1; // @[Mux.scala 81:58]
   wire [3:0] show_choice = 2'h3 == seg_choice ? 4'h7 : _show_choice_T_3; // @[Mux.scala 81:58]
-  wire [10:0] _io_out_result_T_1 = {show_choice,show_bcd}; // @[Cat.scala 31:58]
-  assign io_out_result = _io_out_result_T_1[9:0]; // @[Show.scala 63:17]
+  assign io_out_result = {show_choice,show_bcd}; // @[Cat.scala 31:58]
   assign io_valid = valid; // @[Show.scala 32:12]
   always @(posedge clock) begin
     if (reset) begin // @[Show.scala 13:20]
@@ -2881,7 +2880,7 @@ module Top(
   input         clock,
   input         reset,
   input  [7:0]  io_a,
-  output [9:0]  io_segOut,
+  output [10:0] io_segOut,
   output        io_segValid,
   output [11:0] io_forward_cnt,
   output [11:0] io_stall_cnt
@@ -2914,7 +2913,7 @@ module Top(
   wire  seg7_reset; // @[Top.scala 20:20]
   wire  seg7_io_start; // @[Top.scala 20:20]
   wire [63:0] seg7_io_in_result; // @[Top.scala 20:20]
-  wire [9:0] seg7_io_out_result; // @[Top.scala 20:20]
+  wire [10:0] seg7_io_out_result; // @[Top.scala 20:20]
   wire  seg7_io_valid; // @[Top.scala 20:20]
   Core core ( // @[Top.scala 18:20]
     .clock(core_clock),
